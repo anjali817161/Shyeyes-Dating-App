@@ -56,10 +56,10 @@ class MyApp extends StatelessWidget {
 
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
-      getPages: [
-        GetPage(name: '/login', page: () => LoginView()),
-        GetPage(name: '/signup', page: () => SignUpView()),
-      ],
+      // getPages: [
+      //   GetPage(name: '/login', page: () => LoginView()),
+      //   GetPage(name: '/signup', page: () => SignUpView()),
+      // ],
     );
   }
 }

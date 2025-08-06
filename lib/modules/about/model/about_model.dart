@@ -17,6 +17,7 @@ class AboutModel {
   final String smoking;
   final String pets;
   final String workout;
+  final String active;
 
   AboutModel({
     required this.name,
@@ -28,6 +29,7 @@ class AboutModel {
     required this.college,
     required this.location,
     required this.about,
+    required this.active,
     required this.interests,
     required this.zodiac,
     required this.education,

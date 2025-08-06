@@ -50,7 +50,7 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '',
+      height: '', active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image2.png',
@@ -70,7 +70,7 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '',
+      height: '', active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image3.png',
@@ -90,7 +90,7 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '',
+      height: '', active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image4.png',
@@ -110,7 +110,7 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '',
+      height: '', active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image5.png',
@@ -130,116 +130,11 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '',
+      height: '', active: '',
     ),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    // Show dialog only once after the first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showWelcomeDialog(context);
-    });
-  }
-
-  void showWelcomeDialog(BuildContext context) {
-    final theme = Theme.of(context);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          insetPadding: const EdgeInsets.all(20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                  child: Lottie.asset(
-                    'assets/lotties/congratulation.json',
-                    fit: BoxFit.cover,
-                    repeat: true,
-                  ),
-                ),
-
-                // Foreground Content
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    maxWidth: MediaQuery.of(context).size.width * 0.85,
-                  ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Lottie.asset(
-                          'assets/lotties/love2.json',
-                          width: 180,
-                          height: 180,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Welcome to ShyEyes!",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.deepPurple,
-                            letterSpacing: 1.2,
-                            fontFamily: 'Montserrat',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Start exploring new connections.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.black87,
-                            fontFamily: 'Poppins',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            elevation: 4,
-                          ),
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            "Continue",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.1,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -266,7 +161,7 @@ class _HomeViewState extends State<HomeView> {
                     onTap: () async {
                       final controller = Get.find<AboutController>();
                       controller.setProfile(profile);
-                      await Get.to(() => AboutView());
+                      await Get.to(() => AboutView(profileData: profile,));
                     },
                     child: Image.asset(profile.image, fit: BoxFit.cover),
                   ),

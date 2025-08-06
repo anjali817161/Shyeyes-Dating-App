@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shyeyes/modules/bottom_tab/bottom_navbar.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/users.dart';
+import 'package:shyeyes/modules/dashboard/view/dashboard_view.dart';
 import 'package:shyeyes/modules/explore/view/explore_view.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
@@ -35,7 +36,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     // );
 
     _screens = [
-      HomeView(),
+      DashboardPage(),
       ExploreView(),
       LikesScreen(),
       ProfileListPage(),
@@ -73,10 +74,10 @@ class _MainScaffoldState extends State<MainScaffold> {
             icon: Icon(Icons.chat_bubble_outline),
             label: "Chats",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.person_outline),
+          //   label: "Profile",
+          // ),
         ],
       ),
     );

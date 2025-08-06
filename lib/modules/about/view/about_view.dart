@@ -1,117 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/about/controller/about_controller.dart';
+import 'package:shyeyes/modules/about/model/about_model.dart';
 
 class AboutView extends StatelessWidget {
-  final profile = Get.find<AboutController>().selectedProfile.value!;
+  final AboutModel profileData;
 
-  AboutView({super.key});
+  AboutView({super.key, required this.profileData});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (profile == null) {
-      return Scaffold(
-        body: Center(
-          child: Text(
-            "No profile data found",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        backgroundColor: Colors.black,
-      );
-    }
+    final primaryColor = theme.colorScheme.primary;
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: Text(profileData.name!, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile image
+            // Profile Image
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               child: Image.asset(
-                profile.image,
-                height: 360,
+                profileData.image!,
+                height: 320,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
             Text(
-              "${profile.name}, ${profile.age}",
+              profileData.name ?? '',
               style: const TextStyle(
-                color: Colors.white,
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
+
             const SizedBox(height: 8),
-            Text(profile.distance, style: const TextStyle(color: Colors.grey)),
-
-            const SizedBox(height: 16),
-            _infoRow(Icons.work, profile.job),
-            _infoRow(Icons.school, profile.college),
-            _infoRow(Icons.location_on, profile.location),
-
-            const SizedBox(height: 24),
-            const Divider(color: Colors.white24),
-            _matchmakerCard(),
-            const SizedBox(height: 16),
-            _infoRow(Icons.chat, profile.about),
-
-            const SizedBox(height: 24),
-            _sectionTitle(Icons.interests, "Interests"),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: profile.interests.map((interest) {
-                return Chip(
-                  label: Text(interest),
-                  backgroundColor: Colors.grey[850],
-                  labelStyle: const TextStyle(color: Colors.white),
-                );
-              }).toList(),
+            Text(
+              'Active ${profileData.active} ago',
+              style: const TextStyle(color: Colors.grey),
             ),
 
             const SizedBox(height: 24),
-            _firstImpressionBox(),
+
+            _infoTile(Icons.work, "Job", "Software Engineer"),
+            _infoTile(Icons.school, "College", "IIT Bombay"),
+            _infoTile(Icons.location_on, "Location", "Mumbai"),
+            _infoTile(Icons.info_outline, "About", "I love building cool apps and exploring new places."),
+            _infoTile(Icons.favorite, "Interests", "Music, Coding, Movies"),
 
             const SizedBox(height: 24),
-            _actionButton("Share ${profile.name}'s profile"),
-            _actionButton("Block ${profile.name}"),
-            _actionButton("Report ${profile.name}", isDestructive: true),
+
+            _sectionTitle(Icons.chat, "Send a First Impression"),
+
+            const SizedBox(height: 10),
+
+            _firstImpressionBox(primaryColor),
+
+            const SizedBox(height: 30),
+
+            _actionButton("Share Profile"),
+            _actionButton("Block User"),
+            _actionButton("Report", isDestructive: true),
 
             const SizedBox(height: 24),
+
             _bottomActions(),
-            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  // Icon with text
-  Widget _infoRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, color: Color(0xFFDF314D), size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(text, style: const TextStyle(color: Colors.white70)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Matchmaker section
-  Widget _matchmakerCard() {
+  Widget _infoTile(IconData icon, String title, String value) {
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey[900],
@@ -119,27 +94,17 @@ class AboutView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 24,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.person, color: Color(0xFFDF314D)),
-          ),
+          Icon(icon, color: const Color(0xFFDF314D), size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  "Matchmaker",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  "Invite friends to be your Matchmaker",
-                  style: TextStyle(color: Colors.grey),
-                ),
+              children: [
+                Text(title,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text(value,
+                    style: const TextStyle(color: Colors.white, fontSize: 16)),
               ],
             ),
           ),
@@ -148,11 +113,10 @@ class AboutView extends StatelessWidget {
     );
   }
 
-  // Section title with icon
   Widget _sectionTitle(IconData icon, String title) {
     return Row(
       children: [
-        Icon(icon, color: Color(0xFFDF314D), size: 20),
+        Icon(icon, color: const Color(0xFFDF314D), size: 20),
         const SizedBox(width: 6),
         Text(
           title,
@@ -166,78 +130,58 @@ class AboutView extends StatelessWidget {
     );
   }
 
-  // First Impression message box
-  Widget _firstImpressionBox() {
+  Widget _firstImpressionBox(Color primaryColor) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            children: [
-              Icon(Icons.send, color: Colors.blueAccent, size: 20),
-              SizedBox(width: 6),
-              Text(
-                "Stand out with a First Impression",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           const Text(
-            "Send a message before matching to help get their attention. Say what made them stand out, hype them up or make them laugh.",
-            style: TextStyle(color: Colors.white70),
+            "Say something to break the ice!",
+            style: TextStyle(color: Colors.white),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    border: Border.all(color: Colors.white30),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: const TextField(
-                    decoration: InputDecoration(
-                      hintText: "Your message",
-                      hintStyle: TextStyle(color: Colors.grey),
-                      border: InputBorder.none,
+                child: TextField(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "Write a message...",
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.black,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Colors.white30),
                     ),
-                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              TextButton(
+              IconButton(
                 onPressed: () {},
-                child: const Text(
-                  "Send",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+                icon: Icon(Icons.send, color: primaryColor),
+              )
             ],
-          ),
+          )
         ],
       ),
     );
   }
 
-  // Buttons like Share, Block, Report
   Widget _actionButton(String text, {bool isDestructive = false}) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: Colors.grey[850],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
@@ -252,7 +196,6 @@ class AboutView extends StatelessWidget {
     );
   }
 
-  // Bottom 3 action icons
   Widget _bottomActions() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

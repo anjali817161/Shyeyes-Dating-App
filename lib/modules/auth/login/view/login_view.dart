@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/login/controller/login_controller.dart';
+import 'package:shyeyes/modules/auth/signup/view/signup_view.dart';
 
 class LoginView extends StatelessWidget {
   LoginView({super.key});
@@ -104,7 +105,7 @@ class LoginView extends StatelessWidget {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
-                    Get.toNamed('/signup');
+                    Get.offAll(() => SignUpView());
                   },
                   child: Text(
                     "Don't have an account? Sign up",

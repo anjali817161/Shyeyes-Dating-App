@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
 
 class SignUpView extends StatefulWidget {
@@ -177,7 +178,7 @@ class _SignUpViewState extends State<SignUpView>
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () => Get.toNamed('/login'),
+                      onPressed: () => Get.off(() => LoginView()),
                       child: Text(
                         "Already have an account? Login",
                         style: TextStyle(color: primary),

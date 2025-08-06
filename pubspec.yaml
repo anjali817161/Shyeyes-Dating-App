@@ -84,6 +84,8 @@ flutter:
     - assets/lotties/couple.json
     - assets/lotties/like_button.json
     - assets/lotties/done.json
+    - assets/images/home_banner.png
+    - assets/images/home_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
