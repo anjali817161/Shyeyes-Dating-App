@@ -511,7 +511,7 @@ class _DashboardPageState extends State<DashboardPage> {
       child: SizedBox(
         height: 130,
         child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           scrollDirection: Axis.horizontal,
           itemCount: profiles.length > 8 ? 8 : profiles.length,
           separatorBuilder: (context, index) => const SizedBox(width: 12),

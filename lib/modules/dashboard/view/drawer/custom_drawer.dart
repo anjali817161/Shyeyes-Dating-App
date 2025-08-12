@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
+import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
 
@@ -19,8 +20,13 @@ class CustomDrawer extends StatelessWidget {
           Get.to(() => UserProfilePage());
         },
       ),
-      _DrawerItem(icon: Icons.favorite, label: 'Favorites', ontap: () {}),
-      _DrawerItem(icon: Icons.info, label: 'About Us', ontap: () {}),
+      _DrawerItem(
+        icon: Icons.favorite,
+        label: 'Favorites',
+        ontap: () {
+          Get.to(() => FavouritePage());
+        },
+      ),
       _DrawerItem(
         icon: Icons.notifications,
         label: 'Terms & Conditions',
@@ -59,7 +65,7 @@ class CustomDrawer extends StatelessWidget {
                     Text(
                       "Anjali Chaudhary",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20, // Increased size
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -67,7 +73,7 @@ class CustomDrawer extends StatelessWidget {
                     SizedBox(height: 4),
                     Text(
                       "Flutter Developer",
-                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                      style: TextStyle(fontSize: 15, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -91,15 +97,19 @@ class CustomDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     item.ontap();
                   },
-                  child: ListTile(
-                    leading: Icon(item.icon, color: theme.primaryColor),
-                    title: Text(
-                      item.label,
-                      style: TextStyle(
-                        color: theme.primaryColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14), // more spacing
+                    child: ListTile(
+                      leading: Icon(item.icon, color: theme.primaryColor, size: 26),
+                      title: Text(
+                        item.label,
+                        style: TextStyle(
+                          color: theme.primaryColor,
+                          fontSize: 17, // Increased font size
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                     ),
                   ),
                 );
@@ -142,7 +152,7 @@ class CustomDrawer extends StatelessWidget {
               style: TextStyle(color: theme.colorScheme.primary),
             ),
           ),
-          Spacer(),
+          const Spacer(),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
