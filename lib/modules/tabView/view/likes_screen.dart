@@ -51,7 +51,7 @@ class _LikesScreenState extends State<LikesScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [LikesTab(), TopPicksTab()],
+        children: [LikesPage(), TopPicksTab()],
       ),
       // bottomNavigationBar: BottomNavBar(
       //   currentIndex: _currentIndex,

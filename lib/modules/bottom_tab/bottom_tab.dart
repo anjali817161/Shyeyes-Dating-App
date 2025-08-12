@@ -25,7 +25,7 @@ class _MainScaffoldState extends State<BottomTab> {
     ExploreView(),
     LikesScreen(),
     // ChatScreen(user: user),
-    ProfileView(),
+    // ProfileView(),
   ];
 
   @override

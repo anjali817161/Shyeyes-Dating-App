@@ -15,9 +15,9 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final List<String> messages = [
-    // "Hey, how are you? 💬",
-    // "I was thinking about you 💖",
-    // "Let’s catch up soon!",
+    "Hey, how are you? 💬",
+    "I was thinking about you 💖",
+    "Let’s catch up soon!",
   ];
 
   final TextEditingController controller = TextEditingController();
@@ -167,7 +167,7 @@ class _ChatScreenState extends State<ChatScreen> {
               12,
               8,
               12,
-              16,
+              50,
             ), // More bottom space
             decoration: BoxDecoration(
               color: Colors.white,

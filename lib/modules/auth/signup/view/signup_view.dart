@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
+import 'package:shyeyes/modules/auth/signup/view/personal_info.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -31,165 +32,173 @@ class _SignUpViewState extends State<SignUpView>
         ),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          // Lottie Background
-          Positioned.fill(
-            child: Lottie.asset(
-              'assets/lotties/heart_fly.json',
-              fit: BoxFit.cover,
-              repeat: true,
+      body: Container(
+        color: theme.colorScheme.secondary,
+        child: Stack(
+          children: [
+            // Lottie Background
+            Positioned.fill(
+              child: Lottie.asset(
+                'assets/lotties/heart_fly.json',
+                fit: BoxFit.cover,
+                repeat: true,
+              ),
             ),
-          ),
 
-          // Sign Up Form Overlay
-          Positioned.fill(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      context,
-                      controller: controller.firstNameCtrl,
-                      label: 'First Name',
-                      icon: Icons.person,
-                      keyboardType: TextInputType.name,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Enter first name' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      context,
-                      controller: controller.lastNameCtrl,
-                      label: 'Last Name',
-                      icon: Icons.person,
-                      keyboardType: TextInputType.name,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Enter last name' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      context,
-                      controller: controller.emailCtrl,
-                      label: 'Email',
-                      icon: Icons.email,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Enter email';
-                        if (!value.contains('@')) return 'Enter valid email';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      context,
-                      controller: controller.phoneCtrl,
-                      label: 'Phone',
-                      icon: Icons.phone,
-                      keyboardType: TextInputType.phone,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Enter phone number' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      context,
-                      controller: controller.addressCtrl,
-                      label: 'Address',
-                      icon: Icons.location_city,
-                      keyboardType: TextInputType.streetAddress,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Enter full address' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    Obx(
-                      () => _buildTextField(
+            // Sign Up Form Overlay
+            Positioned.fill(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 30,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      _buildTextField(
                         context,
-                        controller: controller.passCtrl,
-                        label: 'Password',
-                        icon: Icons.lock,
-                        obscureText: !controller.showPassword.value,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.showPassword.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: primary,
-                          ),
-                          onPressed: controller.togglePassword,
-                        ),
+                        controller: controller.firstNameCtrl,
+                        label: 'First Name',
+                        icon: Icons.person,
+                        keyboardType: TextInputType.name,
                         validator: (value) =>
-                            value!.length < 6 ? 'Password too short' : null,
+                            value!.isEmpty ? 'Enter first name' : null,
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Obx(
-                      () => _buildTextField(
+                      const SizedBox(height: 20),
+                      _buildTextField(
                         context,
-                        controller: controller.confirmPassCtrl,
-                        label: 'Confirm Password',
-                        icon: Icons.lock_outline,
-                        obscureText: !controller.showConfirmPassword.value,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.showConfirmPassword.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: primary,
-                          ),
-                          onPressed: controller.toggleConfirmPassword,
-                        ),
+                        controller: controller.lastNameCtrl,
+                        label: 'Last Name',
+                        icon: Icons.person,
+                        keyboardType: TextInputType.name,
+                        validator: (value) =>
+                            value!.isEmpty ? 'Enter last name' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        context,
+                        controller: controller.emailCtrl,
+                        label: 'Email',
+                        icon: Icons.email,
+                        keyboardType: TextInputType.emailAddress,
                         validator: (value) {
-                          if (value != controller.passCtrl.text) {
-                            return 'Passwords do not match';
-                          }
+                          if (value == null || value.isEmpty)
+                            return 'Enter email';
+                          if (!value.contains('@')) return 'Enter valid email';
                           return null;
                         },
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        context,
+                        controller: controller.phoneCtrl,
+                        label: 'Phone',
+                        icon: Icons.phone,
+                        keyboardType: TextInputType.phone,
+                        validator: (value) =>
+                            value!.isEmpty ? 'Enter phone number' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      // _buildTextField(
+                      //   context,
+                      //   controller: controller.addressCtrl,
+                      //   label: 'Address',
+                      //   icon: Icons.location_city,
+                      //   keyboardType: TextInputType.streetAddress,
+                      //   validator: (value) =>
+                      //       value!.isEmpty ? 'Enter full address' : null,
+                      // ),
+                      // const SizedBox(height: 20),
+                      Obx(
+                        () => _buildTextField(
+                          context,
+                          controller: controller.passCtrl,
+                          label: 'Password',
+                          icon: Icons.lock,
+                          obscureText: !controller.showPassword.value,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.showPassword.value
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: primary,
+                            ),
+                            onPressed: controller.togglePassword,
+                          ),
+                          validator: (value) =>
+                              value!.length < 6 ? 'Password too short' : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Obx(
+                        () => _buildTextField(
+                          context,
+                          controller: controller.confirmPassCtrl,
+                          label: 'Confirm Password',
+                          icon: Icons.lock_outline,
+                          obscureText: !controller.showConfirmPassword.value,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.showConfirmPassword.value
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: primary,
+                            ),
+                            onPressed: controller.toggleConfirmPassword,
+                          ),
+                          validator: (value) {
+                            if (value != controller.passCtrl.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            // if (_formKey.currentState!.validate()) {
+                            //   Get.snackbar(
+                            //     'Success',
+                            //     'Signed up successfully',
+                            //     snackPosition: SnackPosition.BOTTOM,
+                            //   );
+                            // }
+
+                            Get.to(() => PersonalInfo());
+                          },
+                          child: const Text(
+                            'Next',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                         ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            Get.snackbar(
-                              'Success',
-                              'Signed up successfully',
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
-                          }
-                        },
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => Get.off(() => LoginView()),
+                        child: Text(
+                          "Already have an account? Login",
+                          style: TextStyle(color: primary),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Get.off(() => LoginView()),
-                      child: Text(
-                        "Already have an account? Login",
-                        style: TextStyle(color: primary),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
