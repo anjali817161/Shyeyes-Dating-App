@@ -1,110 +1,191 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
+import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
+import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
 
-class AboutView extends StatelessWidget {
+class AboutView extends StatefulWidget {
   final AboutModel profileData;
 
   AboutView({super.key, required this.profileData});
 
   @override
+  State<AboutView> createState() => _AboutViewState();
+}
+
+class _AboutViewState extends State<AboutView> {
+  bool isLiked = false;
+  bool playHeartAnimation = false;
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
+    final onPrimaryColor = theme.colorScheme.onPrimary;
+    final secondaryColor = theme.colorScheme.secondary;
+    final onSecondaryColor = theme.colorScheme.onSecondary;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: secondaryColor,
       appBar: AppBar(
-        title: Text(profileData.name!, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
+        title: Text(
+          widget.profileData.name ?? '',
+          style: TextStyle(color: onPrimaryColor),
+        ),
+        backgroundColor: primaryColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: onPrimaryColor),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                profileData.image!,
-                height: 320,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            // Profile Image + Bottom Actions in Stack
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.bottomCenter,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    widget.profileData.image!,
+                    height: 320,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(bottom: -28, child: _bottomActions(theme)),
+              ],
             ),
 
             const SizedBox(height: 20),
 
             Text(
-              profileData.name ?? '',
-              style: const TextStyle(
+              widget.profileData.name ?? '',
+              style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: onSecondaryColor,
               ),
             ),
-
             const SizedBox(height: 8),
             Text(
-              'Active ${profileData.active} ago',
-              style: const TextStyle(color: Colors.grey),
+              'Active ${widget.profileData.active} ago',
+              style: TextStyle(color: onSecondaryColor.withOpacity(0.6)),
             ),
 
             const SizedBox(height: 24),
 
-            _infoTile(Icons.work, "Job", "Software Engineer"),
-            _infoTile(Icons.school, "College", "IIT Bombay"),
-            _infoTile(Icons.location_on, "Location", "Mumbai"),
-            _infoTile(Icons.info_outline, "About", "I love building cool apps and exploring new places."),
-            _infoTile(Icons.favorite, "Interests", "Music, Coding, Movies"),
+            _infoTile(theme, Icons.work, "Job", "Software Engineer"),
+            _infoTile(theme, Icons.school, "College", "IIT Bombay"),
+            _infoTile(theme, Icons.location_on, "Location", "Mumbai"),
+            _infoTile(
+              theme,
+              Icons.info_outline,
+              "About",
+              "I love building cool apps and exploring new places.",
+            ),
+            _infoTile(
+              theme,
+              Icons.favorite,
+              "Interests",
+              "Music, Coding, Movies",
+            ),
 
             const SizedBox(height: 24),
 
-            _sectionTitle(Icons.chat, "Send a First Impression"),
-
+            _sectionTitle(theme, Icons.chat, "Send a First Impression"),
             const SizedBox(height: 10),
-
-            _firstImpressionBox(primaryColor),
+            _firstImpressionBox(theme),
 
             const SizedBox(height: 30),
 
-            _actionButton("Share Profile"),
-            _actionButton("Block User"),
-            _actionButton("Report", isDestructive: true),
+            // Share Button
+            GestureDetector(
+              onTap: () {
+                Share.share(
+                  'Check out ${widget.profileData.name}\'s profile!',
+                  subject: 'Profile from ShyEyes',
+                );
+              },
+              child: _actionButton(theme, "Share Profile"),
+            ),
 
-            const SizedBox(height: 24),
+            // Block Button
+            GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => BlockReasonBottomSheet(
+                    onReasonSelected: (reason) {
+                      Navigator.pop(context);
+                      // Handle block logic
+                    },
+                  ),
+                );
+              },
+              child: _actionButton(theme, "Block User"),
+            ),
 
-            _bottomActions(),
+            // Report Button
+            GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => ReportReasonBottomSheet(
+                    onReasonSelected: (reason) {
+                      Navigator.pop(context);
+                      // Handle report logic
+                    },
+                  ),
+                );
+              },
+              child: _actionButton(theme, "Report", isDestructive: true),
+            ),
+            SizedBox(height: 40,),
           ],
         ),
+        
       ),
+      
     );
   }
 
-  Widget _infoTile(IconData icon, String title, String value) {
+  Widget _infoTile(ThemeData theme, IconData icon, String title, String value) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: theme.colorScheme.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFFDF314D), size: 22),
+          Icon(icon, color: theme.colorScheme.primary, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(value,
-                    style: const TextStyle(color: Colors.white, fontSize: 16)),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
+                    fontSize: 16,
+                  ),
+                ),
               ],
             ),
           ),
@@ -113,15 +194,15 @@ class AboutView extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(IconData icon, String title) {
+  Widget _sectionTitle(ThemeData theme, IconData icon, String title) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFDF314D), size: 20),
+        Icon(icon, color: theme.colorScheme.primary, size: 20),
         const SizedBox(width: 6),
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: theme.colorScheme.onSecondary,
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
@@ -130,36 +211,42 @@ class AboutView extends StatelessWidget {
     );
   }
 
-  Widget _firstImpressionBox(Color primaryColor) {
+  Widget _firstImpressionBox(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.grey[850],
+        color: theme.colorScheme.surfaceVariant,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Say something to break the ice!",
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: "Write a message...",
-                    hintStyle: const TextStyle(color: Colors.grey),
+                    hintStyle: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
                     filled: true,
-                    fillColor: Colors.black,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    fillColor: theme.colorScheme.background,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Colors.white30),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
                     ),
                   ),
                 ),
@@ -167,55 +254,101 @@ class AboutView extends StatelessWidget {
               const SizedBox(width: 8),
               IconButton(
                 onPressed: () {},
-                icon: Icon(Icons.send, color: primaryColor),
-              )
+                icon: Icon(Icons.send, color: theme.colorScheme.primary),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _actionButton(String text, {bool isDestructive = false}) {
+  Widget _actionButton(
+    ThemeData theme,
+    String text, {
+    bool isDestructive = false,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.grey[850],
+        color: theme.colorScheme.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
         child: Text(
           text,
           style: TextStyle(
-            color: isDestructive ? Colors.redAccent : Colors.white,
+            color: isDestructive
+                ? theme.colorScheme.error
+                : theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
     );
   }
+Widget _bottomActions(ThemeData theme) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      // Close button
+      CircleAvatar(
+        radius: 28,
+        backgroundColor: theme.colorScheme.surfaceVariant,
+        child: GestureDetector(
+          onTap: () => Get.back(),
+          child: Icon(Icons.close, color: Colors.blue, size: 28),
+        ),
+      ),
+      const SizedBox(width: 16),
 
-  Widget _bottomActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: const [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: Colors.white10,
-          child: Icon(Icons.close, color: Colors.pinkAccent, size: 28),
+      // Like button with animation
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            isLiked = !isLiked;
+            if (isLiked) {
+              playHeartAnimation = true;
+            }
+          });
+        },
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: theme.colorScheme.surfaceVariant,
+              child: Icon(
+                isLiked ? Icons.favorite : Icons.favorite_border_outlined,
+                color: Colors.redAccent,
+                size: 28,
+              ),
+            ),
+
+            if (playHeartAnimation)
+              Positioned(
+                top: -150,
+                child: Lottie.asset(
+                  'assets/splash/heart.json',
+                  width: 200,
+                  height: 200,
+                  repeat: false,
+                  onLoaded: (composition) {
+                    Future.delayed(composition.duration, () {
+                      if (mounted) {
+                        setState(() => playHeartAnimation = false);
+                      }
+                    });
+                  },
+                ),
+              ),
+          ],
         ),
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: Colors.white10,
-          child: Icon(Icons.star, color: Colors.blueAccent, size: 28),
-        ),
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: Colors.white10,
-          child: Icon(Icons.favorite, color: Colors.greenAccent, size: 28),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
 }

@@ -3,6 +3,7 @@ import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
@@ -22,7 +23,11 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final AboutController controller = Get.put(AboutController());
+  final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
+  List<bool> isLikedList = [];
+  int _currentIndex = 0;
 
+List<bool> playHeartAnimationList = [];
   // final List<String> images = [
   //   'assets/images/profile_image1.png',
   //   'assets/images/profile_image2.png',
@@ -50,7 +55,8 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '', active: '',
+      height: '',
+      active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image2.png',
@@ -70,7 +76,8 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '', active: '',
+      height: '',
+      active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image3.png',
@@ -90,7 +97,8 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '', active: '',
+      height: '',
+      active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image4.png',
@@ -110,7 +118,8 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '', active: '',
+      height: '',
+      active: '',
     ),
     AboutModel(
       image: 'assets/images/profile_image5.png',
@@ -130,15 +139,24 @@ class _HomeViewState extends State<HomeView> {
       education: 'Masters',
       vaccine: 'Yes',
       communication: 'English, Hindi',
-      height: '', active: '',
+      height: '',
+      active: '',
     ),
   ];
 
-  
+@override
+void initState() {
+  super.initState();
+  isLikedList = List.filled(profiles.length, false);
+  playHeartAnimationList = List.filled(profiles.length, false);
+}
+
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    int _currentIndex = 0;
+    
+
     UserModel dummyUser = UserModel(
       name: 'Shaan',
       imageUrl: 'https://i.pravatar.cc/150?img=65',
@@ -161,7 +179,7 @@ class _HomeViewState extends State<HomeView> {
                     onTap: () async {
                       final controller = Get.find<AboutController>();
                       controller.setProfile(profile);
-                      await Get.to(() => AboutView(profileData: profile,));
+                      await Get.to(() => AboutView(profileData: profile));
                     },
                     child: Image.asset(profile.image, fit: BoxFit.cover),
                   ),
@@ -180,7 +198,7 @@ class _HomeViewState extends State<HomeView> {
                   Positioned(
                     left: 16,
                     right: 16,
-                    bottom: 100,
+                    bottom: 180,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
@@ -207,6 +225,198 @@ class _HomeViewState extends State<HomeView> {
                               ),
                             ),
                           ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Positioned(
+                    bottom: 90,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        buildActionButton(
+                          isLikedList[index]
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          Colors.redAccent,
+                          32,
+                           () {
+    setState(() {
+      isLikedList[index] = !isLikedList[index];
+      if (isLikedList[index]) {
+        playHeartAnimationList[index] = true;
+      }
+    });
+  },
+  playAnimation: playHeartAnimationList[index],
+  index: index,
+                        ),
+                        buildActionButton(Icons.call, Colors.teal[400]!, 30, () {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (ctx) => Dialog(
+                              shape: HeartShapeBorder(),
+                              backgroundColor: theme.colorScheme.secondary,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: theme.colorScheme.primary,
+                                      size: 50,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Subscription Required',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'To Proceed with Audio call, You have to Subscribe your Plan.',
+                                      style: TextStyle(fontSize: 16),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 20),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(20),
+                                            ),
+                                          ),
+                                          builder: (context) =>
+                                              const SubscriptionBottomSheet(),
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            theme.colorScheme.primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 32,
+                                          vertical: 12,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Subscribe Now',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        buildActionButton(
+                          Icons.video_call,
+                          Colors.lightBlueAccent,
+                          32,
+                          () {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (ctx) => Dialog(
+                                shape: HeartShapeBorder(),
+                                backgroundColor: theme.colorScheme.secondary,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        color: theme.colorScheme.primary,
+                                        size: 50,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Subscription Required',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'To Proceed with Video call, You have to Subscribe your Plan.',
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 20),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                    top: Radius.circular(20),
+                                                  ),
+                                            ),
+                                            builder: (context) =>
+                                                const SubscriptionBottomSheet(),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              theme.colorScheme.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 32,
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Subscribe Now',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        buildActionButton(
+                          Icons.send,
+                          Colors.blueAccent,
+                          26,
+                          () {
+                            Get.to(() => ChatScreen(user: dummyUser));
+                          },
                         ),
                       ],
                     ),
@@ -240,13 +450,29 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 Row(
                   children: [
-                    Icon(
-                      Icons.notifications_none,
-                      color: Colors.indigoAccent,
-                      size: 24,
-                    ),
                     const SizedBox(width: 18),
-                    Icon(Icons.share, color: Colors.teal, size: 24),
+                    IconButton(
+                      icon: Icon(Icons.share, color: Colors.teal, size: 24),
+                      onPressed: () {
+                        // Get the currently visible profile
+                        final currentProfile =
+                            profiles[_currentIndex]; // You’ll need to track _currentIndex
+
+                        final String shareText =
+                            '''
+${currentProfile.name}, ${currentProfile.age}
+${currentProfile.job} at ${currentProfile.college}
+${currentProfile.location}
+About: ${currentProfile.about}
+Interests: ${currentProfile.interests.join(', ')}
+
+Check out this profile!
+''';
+
+                        Share.share(shareText);
+                      },
+                    ),
+
                     const SizedBox(width: 18),
                     Icon(Icons.flash_on, color: Colors.amber, size: 24),
                   ],
@@ -254,228 +480,78 @@ class _HomeViewState extends State<HomeView> {
               ],
             ),
           ),
-
-          Positioned(
-            bottom: 25,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildActionButton(Icons.favorite, Colors.redAccent, 32, () {}),
-                buildActionButton(Icons.call, Colors.teal[400]!, 30, () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (ctx) => Dialog(
-                      shape: HeartShapeBorder(),
-                      backgroundColor: theme.colorScheme.secondary,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              color: theme.colorScheme.primary,
-                              size: 50,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Subscription Required',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'To Proceed with Audio call, You have to Subscribe your Plan.',
-                              style: TextStyle(fontSize: 16),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                  ),
-                                  builder: (context) =>
-                                      const SubscriptionBottomSheet(),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.colorScheme.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 12,
-                                ),
-                              ),
-                              child: Text(
-                                'Subscribe Now',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                buildActionButton(
-                  Icons.video_call,
-                  Colors.lightBlueAccent,
-                  32,
-                  () {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (ctx) => Dialog(
-                        shape: HeartShapeBorder(),
-                        backgroundColor: theme.colorScheme.secondary,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: theme.colorScheme.primary,
-                                size: 50,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Subscription Required',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'To Proceed with Video call, You have to Subscribe your Plan.',
-                                style: TextStyle(fontSize: 16),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(20),
-                                      ),
-                                    ),
-                                    builder: (context) =>
-                                        const SubscriptionBottomSheet(),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                child: Text(
-                                  'Subscribe Now',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                buildActionButton(Icons.send, Colors.blueAccent, 26, () {
-                  Get.to(() => ChatScreen(user: dummyUser));
-                }),
-              ],
-            ),
-          ),
         ],
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   selectedItemColor: theme.primaryColor,
-      //   unselectedItemColor: Colors.grey,
-      //   currentIndex: _currentIndex,
-      //   showUnselectedLabels: true,
-      //   onTap: (index) {
-      //     setState(() => _currentIndex = index);
-      //     if (index == 0) {
-      //       Get.to(() => HomeView());
-      //     }
-      //     if (index == 1) {
-      //       Get.to(() => ExploreView());
-      //     }
-      //     if (index == 2) {
-      //       Get.to(() => LikesScreen());
-      //     }
-      //     if (index == 3) {
-      //       Get.to(() => ());
-      //     }
-      //   },
-      //   items: [
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.local_fire_department),
-      //       label: "Home",
-      //     ),
-      //     BottomNavigationBarItem(icon: Icon(Icons.search), label: "Explore"),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.favorite_border),
-      //       label: "Likes",
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.chat_bubble_outline),
-      //       label: "Chats",
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.person_outline),
-      //       label: "Profile",
-      //     ),
-      //   ],
-      // ),
     );
   }
 
-  Widget buildActionButton(
-    IconData icon,
-    Color color,
-    double size,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: CircleAvatar(
-        radius: 28,
-        backgroundColor: Colors.white,
-        child: Icon(icon, color: color, size: size),
+ Widget buildActionButton(
+  IconData icon,
+  Color color,
+  double size,
+  VoidCallback onTap, {
+  bool playAnimation = false,
+  int? index,
+}) {
+  return Stack(
+    clipBehavior: Clip.none,
+    alignment: Alignment.center,
+    children: [
+      GestureDetector(
+        onTapDown: (_) => _buttonScale.value = 0.9,
+        onTapUp: (_) {
+          _buttonScale.value = 1.0;
+          onTap();
+        },
+        onTapCancel: () => _buttonScale.value = 1.0,
+        child: ValueListenableBuilder<double>(
+          valueListenable: _buttonScale,
+          builder: (context, scale, child) {
+            return AnimatedScale(
+              scale: scale,
+              duration: const Duration(milliseconds: 150),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.white,
+                  child: Icon(icon, color: color, size: size),
+                ),
+              ),
+            );
+          },
+        ),
       ),
-    );
-  }
+
+      // Lottie animation overlay
+      if (playAnimation)
+        Positioned(
+          top: -100,
+          child: Lottie.asset(
+            'assets/splash/heart.json',
+            width: 150,
+            height: 150,
+            repeat: false,
+            onLoaded: (composition) {
+              Future.delayed(composition.duration, () {
+                if (mounted && index != null) {
+                  setState(() => playHeartAnimationList[index] = false);
+                }
+              });
+            },
+          ),
+        ),
+    ],
+  );
+}
+
 }

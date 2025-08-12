@@ -39,6 +39,9 @@ dependencies:
   flutter_carousel_slider: ^1.1.0
   flutter_svg: ^2.0.9
   percent_indicator: ^4.2.2
+  image_picker: ^1.0.4
+  share_plus: ^10.0.2
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
@@ -55,7 +58,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/app_icon.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -86,6 +89,8 @@ flutter:
     - assets/lotties/done.json
     - assets/images/home_banner.png
     - assets/images/home_icon.png
+    - assets/lotties/heart_loader.json
+    - assets/images/app_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
