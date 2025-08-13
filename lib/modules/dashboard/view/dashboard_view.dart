@@ -602,7 +602,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(width: 1),
 
           GestureDetector(
-            onTap: () {
+            onTap: () {   
               _scaffoldKey.currentState?.openEndDrawer();
             },
             child: Padding(
