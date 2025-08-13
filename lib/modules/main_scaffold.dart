@@ -60,6 +60,7 @@ class _MainScaffoldState extends State<MainScaffold> {
               BottomNavigationBarItem(
                 icon: Icon(
                   _currentIndex == 2
+                
                       ? Icons.auto_awesome
                       : Icons.auto_awesome_outlined,
                   size: 26,

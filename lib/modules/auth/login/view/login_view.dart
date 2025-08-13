@@ -60,7 +60,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                   const SizedBox(height: 20),
                   Obx(
-                    () => _buildTextField(    
+                    () => _buildTextField(
                       context,
                       controller: controller.passCtrl,
                       label: 'Password',

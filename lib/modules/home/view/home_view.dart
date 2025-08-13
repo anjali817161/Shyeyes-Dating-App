@@ -176,13 +176,14 @@ void initState() {
                 fit: StackFit.expand,
                 children: [
                   GestureDetector(
-                    onTap: () async {
-                      final controller = Get.find<AboutController>();
-                      controller.setProfile(profile);
-                      await Get.to(() => AboutView(profileData: profile));
-                    },
-                    child: Image.asset(profile.image, fit: BoxFit.cover),
-                  ),
+                    
+                   
+                     child:  Image.asset(profile.image, fit: BoxFit.cover),
+                      
+                    
+                    ),
+                    
+                  
                   // Container(
                   //   decoration: BoxDecoration(
                   //     gradient: LinearGradient(
@@ -198,10 +199,10 @@ void initState() {
                   Positioned(
                     left: 16,
                     right: 16,
-                    bottom: 180,
+                    bottom: 140,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children:  [
                         Text(
                           "Shaan, 25",
                           style: TextStyle(
@@ -226,12 +227,38 @@ void initState() {
                             ),
                           ],
                         ),
+                        SizedBox(height: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                    onPressed: () async{
+                      
+                      final controller = Get.find<AboutController>();
+                      controller.setProfile(profile);
+                      await Get.to(() => AboutView(profileData: profile));
+                    
+                    },
+                    child: const Text(
+                      "View Profile",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                        
                       ],
                     ),
                   ),
+                  
 
                   Positioned(
-                    bottom: 90,
+                    bottom: 50,
                     left: 0,
                     right: 0,
                     child: Row(

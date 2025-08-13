@@ -12,7 +12,6 @@ import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
-import 'package:shyeyes/modules/home/controller/notificationController.dart';
 
 class DashboardPage extends StatefulWidget {
   DashboardPage({super.key});
@@ -28,11 +27,6 @@ class _DashboardPageState extends State<DashboardPage> {
     {
       'name': 'Aarav Sharma',
       'active': '1 Day',
-      'image': 'assets/images/profile_image1.png',
-    },
-    {
-      'name': 'Harsh Sharma',
-      'active': '2 Day',
       'image': 'assets/images/profile_image1.png',
     },
     {
@@ -515,10 +509,9 @@ class _DashboardPageState extends State<DashboardPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SizedBox(
-        height: 200,
+        height: 130,
         child: ListView.separated(
-          clipBehavior: Clip.none,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           scrollDirection: Axis.horizontal,
           itemCount: profiles.length > 8 ? 8 : profiles.length,
           separatorBuilder: (context, index) => const SizedBox(width: 12),
@@ -530,41 +523,36 @@ class _DashboardPageState extends State<DashboardPage> {
               },
               child: Column(
                 children: [
-                  SizedBox(
-                    width: 110, // larger than size (85) to give headroom
-                    height: 110, // allows pulse to expand above/below
-                    child: Stack(
-                      alignment: Alignment.center,
-                      clipBehavior: Clip.none,
-                      children: [
-                        HomePulse(
-                          size: 85,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.colorScheme.primary,
-                                width: 2,
-                              ),
-                              color: Colors.white,
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 1,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      HomePulse(
+                        size: 85, // size for home page avatars
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: theme.colorScheme.primary,
+                              width: 2,
                             ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                profile['image']!,
-                                fit: BoxFit.cover,
+                            color: Colors.white,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 1,
+                                offset: Offset(0, 2),
                               ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              profile['image']!,
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   SizedBox(
@@ -588,14 +576,10 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  int notificationCount = 3; // starting value
-
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final int notificationCount = 3;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -609,20 +593,16 @@ class _DashboardPageState extends State<DashboardPage> {
               onTap: () {
                 Get.to(() => NotificationsPage());
               },
-              child: Badge(
-                  backgroundColor: Colors.red,
-                  smallSize: 10,
-                  largeSize: 18,
-                  label: Text("3"),
-                  child: Icon(Icons.notifications)),
+              child: const Icon(Icons.notifications, color: Colors.white),
             ),
             onPressed: () {
               Get.snackbar("Notifications", "No new notifications");
             },
           ),
           const SizedBox(width: 1),
+
           GestureDetector(
-            onTap: () {
+            onTap: () {   
               _scaffoldKey.currentState?.openEndDrawer();
             },
             child: Padding(
