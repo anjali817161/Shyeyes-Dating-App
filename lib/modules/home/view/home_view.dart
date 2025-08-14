@@ -13,6 +13,7 @@ import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/explore/view/explore_view.dart';
 import 'package:shyeyes/modules/tabView/view/likes_screen.dart';
+import 'package:shyeyes/modules/dashboard/widget/heartAnimationWidget.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -26,6 +27,8 @@ class _HomeViewState extends State<HomeView> {
   final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
   List<bool> isLikedList = [];
   int _currentIndex = 0;
+  bool isHeartAnimating = false;
+  bool isLiked = false;
 
 List<bool> playHeartAnimationList = [];
   // final List<String> images = [
@@ -152,6 +155,7 @@ void initState() {
 }
 
 
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -175,14 +179,40 @@ void initState() {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  GestureDetector(
-                    
-                   
-                     child:  Image.asset(profile.image, fit: BoxFit.cover),
+                  
+                    GestureDetector(
+                      child: Image.asset(profile.image, fit: BoxFit.cover),
+                      onDoubleTap: (){
+                        setState(() {
+                          isHeartAnimating = true;
+                          isLikedList[index] = true;
+                          playHeartAnimationList[index] = true;
+                        });
+                      },
                       
-                    
-                    ),
-                    
+                      ),
+                      // Opacity(opacity: isHeartAnimating ? 1 : 0,
+                      
+                      // child: HeartAnimationWidget(
+                      //   isAnimating: isHeartAnimating,
+                      //   duration: const Duration(milliseconds: 700),
+                      //   child: Icon(
+                      //     Icons.favorite,
+                      //     color: Colors.red,
+                      //     size: 100,
+                      //   ),
+                      //   onEnd: ()=> setState(() {
+                      //     isHeartAnimating = false;
+                      //   }
+                      //   ),
+                      // ),
+                      // ),
+                     
+                     
+                      
+                      
+                      
+
                   
                   // Container(
                   //   decoration: BoxDecoration(
@@ -562,9 +592,9 @@ Check out this profile!
       // Lottie animation overlay
       if (playAnimation)
         Positioned(
-          top: -100,
+          top: -48,
           child: Lottie.asset(
-            'assets/splash/heart.json',
+            'assets/lotties/newHeart.json',
             width: 150,
             height: 150,
             repeat: false,

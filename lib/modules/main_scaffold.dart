@@ -17,6 +17,8 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   late int _currentIndex;
   late List<Widget> _screens;
+  bool playHeartAnimation = false;
+  bool isLiked = false;
 
   @override
   void initState() {
@@ -29,6 +31,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
+
     });
   }
 
@@ -56,6 +59,10 @@ class _MainScaffoldState extends State<MainScaffold> {
               BottomNavigationBarItem(
                 icon: SizedBox.shrink(), // Empty, heart will be custom
                 label: "",
+                
+                
+                
+                
               ),
               BottomNavigationBarItem(
                 icon: Icon(
@@ -64,7 +71,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                       ? Icons.auto_awesome
                       : Icons.auto_awesome_outlined,
                   size: 26,
+                  
                 ),
+                
                 label: "Likes",
               ),
             ],
@@ -89,12 +98,17 @@ class _MainScaffoldState extends State<MainScaffold> {
                     ),
                   ],
                 ),
-                child: Icon(
+                child: GestureDetector(
+                  child: Icon(
                   _currentIndex == 1 ? Icons.favorite : Icons.favorite_border,
                   color: _currentIndex == 1 ? Colors.red : Colors.grey[700],
+                  
                   size: 32,
                 ),
+                onTap: () => _onTabTapped(1),
               ),
+              ),
+
             ),
           ),
         ],

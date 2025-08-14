@@ -329,9 +329,9 @@ Widget _bottomActions(ThemeData theme) {
 
             if (playHeartAnimation)
               Positioned(
-                top: -150,
+                top: -77,
                 child: Lottie.asset(
-                  'assets/splash/heart.json',
+                  'assets/lotties/newHeart.json',
                   width: 200,
                   height: 200,
                   repeat: false,
