@@ -118,7 +118,8 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         onPressed: controller.isLoading.value
                             ? null
-                            : () => controller.login(_formKey),
+                            : () => controller.login(
+                                  _formKey, isChecked),
                         child: controller.isLoading.value
                             ? const SizedBox(
                                 height: 20,
