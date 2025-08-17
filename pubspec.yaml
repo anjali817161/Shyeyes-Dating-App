@@ -42,6 +42,7 @@ dependencies:
   image_picker: ^1.0.4
   share_plus: ^10.0.2
   intl: ^0.19.0
+  just_audio: ^0.10.4
 
 dev_dependencies:
   flutter_test:
@@ -73,25 +74,12 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/splash/splash_screen.json
-    # - assets/images/logo.png
-    # - assets/images/profile_image1.png
-    # - assets/images/profile_image2.png
-    # - assets/images/profile_image3.png
-    # - assets/images/profile_image4.png
+  
     - assets/images/
     - assets/splash/
     - assets/lotties/
-    # - assets/lotties/love.json
-    # - assets/lotties/heart_fly.json
-    # - assets/lotties/love2.json
-    # - assets/lotties/congratulation.json
-    # - assets/lotties/couple.json
-    # - assets/lotties/like_button.json
-    # - assets/lotties/done.json
-    # - assets/images/home_banner.png
-    # - assets/images/home_icon.png
-    # - assets/lotties/heart_loader.json
-    # - assets/images/app_icon.png
+    - assets/audio/bg.mp3
+  
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

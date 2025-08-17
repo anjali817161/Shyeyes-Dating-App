@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
@@ -11,6 +12,7 @@ import 'package:shyeyes/modules/dashboard/widget/home_pulse.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
+import 'package:shyeyes/modules/widgets/music_controller.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -22,6 +24,8 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final MusicController musicController = Get.find<MusicController>();
 
   final List<Map<String, String>> profiles = [
     {
@@ -50,6 +54,28 @@ class _DashboardPageState extends State<DashboardPage> {
       'image': 'assets/images/profile_image5.png',
     },
   ];
+
+  AboutModel dummyUser = AboutModel(
+    image: 'assets/images/profile_image1.png',
+    name: 'Shaan',
+    age: 25,
+    distance: '2 km away',
+    job: 'Software Engineer',
+    college: 'IIT Delhi',
+    location: 'New Delhi',
+    about: 'Loves traveling and coffee.',
+    interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    pets: 'Dog',
+    drinking: 'Socially',
+    smoking: 'No',
+    workout: 'Daily',
+    zodiac: 'Leo',
+    education: 'Masters',
+    vaccine: 'Yes',
+    communication: 'English, Hindi',
+    height: '',
+    active: '',
+  );
 
   @override
   void initState() {
@@ -200,7 +226,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final theme = Theme.of(context);
 
     // Dummy user for ChatScreen
-    UserModel dummyUser = UserModel(
+    UserModel User = UserModel(
       name: 'Shaan',
       imageUrl: 'https://i.pravatar.cc/150?img=65',
       lastMessage: "Hey, how are you?🥰",
@@ -218,7 +244,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
           return GestureDetector(
             onTap: () {
-              // Handle profile tap
+              Get.to(() => AboutView(profileData: dummyUser));
             },
             child: Container(
               width: 180,
@@ -393,7 +419,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           );
                         }),
                         _iconCircle(Icons.chat_bubble_outline, () {
-                          Get.to(() => ChatScreen(user: dummyUser));
+                          Get.to(() => ChatScreen(user: User));
                         }),
                         _iconCircle(Icons.videocam, () {
                           showDialog(
@@ -519,39 +545,42 @@ class _DashboardPageState extends State<DashboardPage> {
             final profile = profiles[index];
             return GestureDetector(
               onTap: () {
-                // Navigate to profile details
+                Get.to(() => AboutView(profileData: dummyUser));
               },
               child: Column(
                 children: [
                   Stack(
-                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
-                      HomePulse(
-                        size: 85, // size for home page avatars
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: theme.colorScheme.primary,
-                              width: 2,
-                            ),
-                            color: Colors.white,
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 1,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
+                      // Profile Image
+                      Container(
+                        width: 85,
+                        height: 85,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.colorScheme.primary,
+                            width: 2,
                           ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              profile['image']!,
-                              fit: BoxFit.cover,
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 1,
+                              offset: Offset(0, 2),
                             ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            profile['image']!,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
+
+                      // Blinking Green Dot (Active status)
+                      Positioned(bottom: 4, right: 4, child: BlinkingDot()),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -580,14 +609,28 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    RxBool isPlaying = false.obs;
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: theme.colorScheme.secondary,
       appBar: AppBar(
-        title: Image.asset('assets/images/logo.png', height: 40),
+        title: Image.asset('assets/images/app_icon.png', height: 40),
         backgroundColor: primary,
         actions: [
+          Obx(
+            () => IconButton(
+              icon: Icon(
+                musicController.isPlaying.value
+                    ? Icons.music_note
+                    : Icons.music_off_outlined,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                musicController.toggleMusic();
+              },
+            ),
+          ),
           IconButton(
             icon: GestureDetector(
               onTap: () {
@@ -602,7 +645,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(width: 1),
 
           GestureDetector(
-            onTap: () {   
+            onTap: () {
               _scaffoldKey.currentState?.openEndDrawer();
             },
             child: Padding(

@@ -68,51 +68,58 @@ class ChatLobbyPage extends StatelessWidget {
           ),
 
           // Stories / Active users
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(left: 12),
-              scrollDirection: Axis.horizontal,
-              itemCount: controller.chats.length,
-              itemBuilder: (context, index) {
-                final user = controller.chats[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Column(
-                    children: [
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Pulse animation effect
-                          ActivePulse(),
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.colorScheme.primary,
-                                width: 1,
-                              ),
-                              color: Colors.white,
-                            ),
-                            child: CircleAvatar(
-                              radius: 28,
-                              backgroundImage: NetworkImage(user.avatarUrl),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        user.name.split(" ").first,
-                        style: const TextStyle(fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+         // Stories / Active users
+SizedBox(
+  height: 100,
+  child: ListView.builder(
+    padding: const EdgeInsets.only(left: 12),
+    scrollDirection: Axis.horizontal,
+    itemCount: controller.chats.length,
+    itemBuilder: (context, index) {
+      final user = controller.chats[index];
+      return Padding(
+        padding: const EdgeInsets.only(right: 16),
+        child: Column(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: theme.colorScheme.primary,
+                      width: 1,
+                    ),
+                    color: Colors.white,
                   ),
-                );
-              },
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundImage: NetworkImage(user.avatarUrl),
+                  ),
+                ),
+
+                // 👇 Add blinking green dot
+                 Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: BlinkingDot(),
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 6),
+            Text(
+              user.name.split(" ").first,
+              style: const TextStyle(fontSize: 12),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      );
+    },
+  ),
+),
+
 
           const SizedBox(height: 8),
 
@@ -180,42 +187,42 @@ class ChatLobbyPage extends StatelessWidget {
   }
 }
 
-// Green Pulse Effect Widget
-class ActivePulse extends StatefulWidget {
-  @override
-  _ActivePulseState createState() => _ActivePulseState();
-}
+// // Green Pulse Effect Widget
+// class ActivePulse extends StatefulWidget {
+//   @override
+//   _ActivePulseState createState() => _ActivePulseState();
+// }
 
-class _ActivePulseState extends State<ActivePulse>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+// class _ActivePulseState extends State<ActivePulse>
+//     with SingleTickerProviderStateMixin {
+//   late AnimationController _controller;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     _controller = AnimationController(
+//       vsync: this,
+//       duration: const Duration(seconds: 3),
+//     )..repeat();
+//   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     _controller.dispose();
+//     super.dispose();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 70,
-      height: 70,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return CustomPaint(painter: PulsePainter(_controller.value));
-        },
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox(
+//       width: 70,
+//       height: 70,
+//       child: AnimatedBuilder(
+//         animation: _controller,
+//         builder: (context, child) {
+//           return CustomPaint(painter: PulsePainter(_controller.value));
+//         },
+//       ),
+//     );
+//   }
+// }
