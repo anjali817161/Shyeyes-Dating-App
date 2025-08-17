@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/view/signup_view.dart';
 import 'package:shyeyes/modules/splash/splash_screen.dart';
+import 'package:shyeyes/modules/home/controller/notificationController.dart';
 
 void main() {
+  Get.put(NotificationController());
   runApp(const MyApp());
 }
 

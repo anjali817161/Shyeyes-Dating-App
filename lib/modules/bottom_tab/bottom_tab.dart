@@ -19,6 +19,7 @@ class BottomTab extends StatefulWidget {
 
 class _MainScaffoldState extends State<BottomTab> {
   late int _currentIndex;
+  int _centerHeartPlayKey = 0;
 
   final List<Widget> _screens = [
     HomeView(),
@@ -37,6 +38,9 @@ class _MainScaffoldState extends State<BottomTab> {
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
+      if (index == 2) {
+        _centerHeartPlayKey++;
+      }
     });
   }
 
@@ -47,6 +51,7 @@ class _MainScaffoldState extends State<BottomTab> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        centerHeartPlayKey: _centerHeartPlayKey,
       ),
     );
   }
