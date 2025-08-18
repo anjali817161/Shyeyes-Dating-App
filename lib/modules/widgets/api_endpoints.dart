@@ -1,8 +1,12 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://dating-app-dn36.onrender.com/api/";
+  static const String baseUrl = "https://shyeyes.bitmaxtest.com/";
 
   // Auth
-  static const String login = "auth/login";
-  static const String register = "auth/register";
-
+  static const String login = "api/login";
+  static const String registerStep1 = "api/register/step1";
+  static const String registerStep2 = "api/register/step2";
+  static const String profile = "profile";
+  static const String report = "api/report";
+  static const String logout = "api/logout";
+  
 }
