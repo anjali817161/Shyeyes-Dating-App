@@ -4,20 +4,13 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart';
+import 'package:shyeyes/modules/auth/signup/controller/personalinfo_controller.dart';
+import 'package:shyeyes/modules/main_scaffold.dart';
 
-class PersonalInfoController extends GetxController {
-  final fullNameCtrl = TextEditingController();
-  final emailCtrl = TextEditingController();
-  final dobCtrl = TextEditingController();
-  final ageCtrl = TextEditingController();
-  final streetCtrl = TextEditingController();
-  final cityCtrl = TextEditingController();
-  final stateCtrl = TextEditingController();
-  final countryCtrl = TextEditingController();
-  final aboutCtrl = TextEditingController();
-
-  final gender = ''.obs;
-  final Rx<File?> profileImage = Rx<File?>(null);
+class PersonalInfo extends StatelessWidget {
+  PersonalInfo({super.key});
+  final PersonalInfoController controller = Get.put(PersonalInfoController());
+  final _formKey = GlobalKey<FormState>();
 
   void pickDob(BuildContext context) async {
     final now = DateTime.now();
@@ -28,13 +21,13 @@ class PersonalInfoController extends GetxController {
       lastDate: now,
     );
     if (pickedDate != null) {
-      dobCtrl.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+      controller.dobCtrl.text = DateFormat('yyyy-MM-dd').format(pickedDate);
       int age = now.year - pickedDate.year;
       if (now.month < pickedDate.month ||
           (now.month == pickedDate.month && now.day < pickedDate.day)) {
         age--;
       }
-      ageCtrl.text = age.toString();
+      controller.ageCtrl.text = age.toString();
     }
   }
 
@@ -45,29 +38,23 @@ class PersonalInfoController extends GetxController {
       imageQuality: 80,
     );
     if (pickedFile != null) {
-      profileImage.value = File(pickedFile.path);
+      controller.profileImage.value = File(pickedFile.path); // ✅ use controller
     }
   }
 
   @override
   void onClose() {
-    fullNameCtrl.dispose();
-    emailCtrl.dispose();
-    dobCtrl.dispose();
-    ageCtrl.dispose();
-    streetCtrl.dispose();
-    cityCtrl.dispose();
-    stateCtrl.dispose();
-    countryCtrl.dispose();
-    aboutCtrl.dispose();
-    super.onClose();
+    controller.fullNameCtrl.dispose();
+    controller.emailCtrl.dispose();
+    controller.dobCtrl.dispose();
+    controller.ageCtrl.dispose();
+    controller.streetCtrl.dispose();
+    controller.cityCtrl.dispose();
+    controller.stateCtrl.dispose();
+    controller.countryCtrl.dispose();
+    controller.aboutCtrl.dispose();
+    // super.onclose();
   }
-}
-
-class PersonalInfo extends StatelessWidget {
-  PersonalInfo({super.key});
-  final PersonalInfoController controller = Get.put(PersonalInfoController());
-  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -109,16 +96,20 @@ class PersonalInfo extends StatelessWidget {
                     Center(
                       child: Obx(() {
                         return GestureDetector(
-                          onTap: controller.pickProfileImage,
+                          onTap: pickProfileImage,
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor: primary.withOpacity(0.3),
-                            backgroundImage: controller.profileImage.value != null
+                            backgroundImage:
+                                controller.profileImage.value != null
                                 ? FileImage(controller.profileImage.value!)
                                 : null,
                             child: controller.profileImage.value == null
-                                ? Icon(Icons.camera_alt,
-                                    color: primary, size: 40)
+                                ? Icon(
+                                    Icons.camera_alt,
+                                    color: primary,
+                                    size: 40,
+                                  )
                                 : null,
                           ),
                         );
@@ -127,7 +118,7 @@ class PersonalInfo extends StatelessWidget {
                     const SizedBox(height: 25),
 
                     GestureDetector(
-                      onTap: () => controller.pickDob(context),
+                      onTap: () => pickDob(context),
                       child: AbsorbPointer(
                         child: _buildTextField(
                           context,
@@ -242,8 +233,13 @@ class PersonalInfo extends StatelessWidget {
                             Get.snackbar(
                               "Success",
                               "Registration completed",
-                              snackPosition: SnackPosition.BOTTOM,
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.greenAccent.withOpacity(
+                                0.8,
+                              ),
+                              colorText: Colors.white,
                             );
+                            controller.submitPersonalInfo();
                           }
                         },
                         child: const Text(
@@ -289,10 +285,12 @@ class PersonalInfo extends StatelessWidget {
         fillColor: Colors.white.withOpacity(0.85),
         labelText: label,
         labelStyle: TextStyle(color: primary),
-        prefixIcon:
-            prefixIcon != null ? Icon(prefixIcon, color: primary) : null,
-        suffixIcon:
-            suffixIcon != null ? Icon(suffixIcon, color: primary) : null,
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: primary)
+            : null,
+        suffixIcon: suffixIcon != null
+            ? Icon(suffixIcon, color: primary)
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primary),
@@ -310,19 +308,18 @@ class PersonalInfo extends StatelessWidget {
   }
 
   Widget _genderOption(String label) {
-    return Obx(() => Row(
-          children: [
-            Radio(
-              value: label,
-              groupValue: controller.gender.value,
-              onChanged: (val) => controller.gender.value = val.toString(),
-              activeColor: Color(0xFFDF314D),
-            ),
-            Text(
-              label,
-              style: TextStyle(color: Color(0xFFDF314D)),
-            ),
-          ],
-        ));
+    return Obx(
+      () => Row(
+        children: [
+          Radio(
+            value: label,
+            groupValue: controller.gender.value,
+            onChanged: (val) => controller.gender.value = val.toString(),
+            activeColor: Color(0xFFDF314D),
+          ),
+          Text(label, style: TextStyle(color: Color(0xFFDF314D))),
+        ],
+      ),
+    );
   }
 }

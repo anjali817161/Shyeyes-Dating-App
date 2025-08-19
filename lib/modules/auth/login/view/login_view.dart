@@ -43,7 +43,7 @@ class _LoginViewState extends State<LoginView> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 30),
                   Lottie.asset('assets/lotties/love.json', height: 150),
                   const SizedBox(height: 50),
                   _buildTextField(
@@ -118,8 +118,7 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         onPressed: controller.isLoading.value
                             ? null
-                            : () => controller.login(
-                                  _formKey, isChecked),
+                            : () => controller.login(_formKey, isChecked),
                         child: controller.isLoading.value
                             ? const SizedBox(
                                 height: 20,
@@ -149,45 +148,43 @@ class _LoginViewState extends State<LoginView> {
                       style: TextStyle(color: primary),
                     ),
                   ),
-                  SizedBox(height: 14,),
+                  SizedBox(height: 14),
                   Center(
-  child: RichText(
-    textAlign: TextAlign.center,
-    text: TextSpan(
-      style: const TextStyle(
-        fontSize: 12,
-        letterSpacing: 0.5,
-        height: 1.5, // better vertical spacing
-      ),
-      children: [
-        TextSpan(
-          text: "© 2025 ",
-          style: TextStyle(
-            color: primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        TextSpan(
-          text: "SHY-EYES ",
-          style: TextStyle(
-            color: primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const TextSpan(
-          text: "— India’s Most Trusted Dating Platform.",
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'poppins',
-          ),
-        ),
-      ],
-    ),
-  ),
-)
-
-
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 12,
+                          letterSpacing: 0.5,
+                          height: 1.5, // better vertical spacing
+                        ),
+                        children: [
+                          TextSpan(
+                            text: "© 2025 ",
+                            style: TextStyle(
+                              color: primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "SHY-EYES ",
+                            style: TextStyle(
+                              color: primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: "— India’s Most Trusted Dating Platform.",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'poppins',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
