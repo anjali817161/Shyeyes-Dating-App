@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/main_scaffold.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class LoginController extends GetxController {
   final emailCtrl = TextEditingController();
@@ -34,6 +35,12 @@ class LoginController extends GetxController {
 
       final data = jsonDecode(response.body);
       print("response: ${response.body}");
+// ✅ check login status
+      if (data['status'] == true) {
+        String token = data['token'];
+        await SharedPrefHelper.saveToken(token);
+        print("Token saved: $token");
+}
 
       if (response.statusCode == 200) {
         Get.snackbar(

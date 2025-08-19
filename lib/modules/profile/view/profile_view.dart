@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
+import 'package:get/get.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
+import 'package:shyeyes/modules/profile/model/profile_model.dart';
+
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -10,6 +14,15 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  final ProfileController controller = Get.put(ProfileController());
+
+  @override
+  void initState() {
+    super.initState();
+    // 🔑 Pass token from your login/session storage
+    controller.fetchProfile();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -23,123 +36,154 @@ class _UserProfilePageState extends State<UserProfilePage> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Banner with gradient + 2 lotties + profile image
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Gradient banner with 2 Lottie animations side by side
-                Container(
-                  height: 180,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 212, 85, 85),
-                        Color.fromARGB(255, 252, 48, 116),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Lottie.asset(
-                          'assets/lotties/heart_fly.json',
-                          fit: BoxFit.cover,
-                          repeat: true,
-                        ),
-                      ),
-                      Expanded(
-                        child: Lottie.asset(
-                          'assets/lotties/heart_fly.json',
-                          fit: BoxFit.cover,
-                          repeat: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (controller.errorMessage.isNotEmpty) {
+          return Center(child: Text("Error: ${controller.errorMessage}"));
+        }
+        if (controller.profile.value == null) {
+          return const Center(child: Text("No profile data"));
+        }
 
-                // Profile image overlapping banner bottom-left
-                Positioned(
-                  bottom: -50,
-                  left: 40,
-                  child: CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.white,
-                    child: const CircleAvatar(
-                      radius: 50,
-                      backgroundImage: NetworkImage(
-                        'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-                      ),
-                    ),
+        final profileData = controller.profile.value!.data; 
+        return _buildProfileView(theme, profileData!.fName ?? "No name", profileData.email ?? "No email",
+            (profileData.age != null) ? profileData.age.toString() : "N/A", profileData.gender ?? "N/A", profileData.location ?? "N/A",
+            profileData.dob ?? "N/A", profileData.about ?? "Not Provided", profileData.imageUrl ?? "https://via.placeholder.com/150");
+      }),
+    );
+  }
+
+  Widget _buildProfileView(
+    ThemeData theme,
+    String name,
+    String email,
+    String age,
+    String gender,
+    String location,
+    String dob,
+    String about,
+    String imageUrl,
+  ) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Banner with gradient + 2 lotties + profile image
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 180,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 212, 85, 85),
+                      Color.fromARGB(255, 252, 48, 116),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Lottie.asset(
+                        'assets/lotties/heart_fly.json',
+                        fit: BoxFit.cover,
+                        repeat: true,
+                      ),
+                    ),
+                    Expanded(
+                      child: Lottie.asset(
+                        'assets/lotties/heart_fly.json',
+                        fit: BoxFit.cover,
+                        repeat: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Profile image overlapping banner bottom-left
+              Positioned(
+                bottom: -50,
+                left: 40,
+                child: CircleAvatar(
+                  radius: 55,
+                  backgroundColor: Colors.white,
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: imageUrl.isNotEmpty
+        ? NetworkImage(imageUrl)
+        : const NetworkImage("https://via.placeholder.com/150"),
+        onBackgroundImageError: (_, __) {
+      // fallback if the image URL is invalid
+    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 60),
+
+          // Profile details
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                _buildDetail("Name", name),
+                _divider(),
+                _buildDetail("Email", email),
+                _divider(),
+                _buildDetail("Age", age),
+                _divider(),
+                _buildDetail("Gender", gender),
+                _divider(),
+                _buildDetail("Location", location),
+                _divider(),
+                _buildDetail("Date of Birth", dob),
+                _divider(),
+                _buildDetail("About", about),
+                _divider(),
               ],
             ),
+          ),
 
-            const SizedBox(height: 60),
+          const SizedBox(height: 32),
 
-            // Profile details
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  _buildDetail("Name", "Saloni Sharma"),
-                  _divider(),
-                  _buildDetail("Email", "saloni@example.com"),
-                  _divider(),
-                  _buildDetail("Age", "25"),
-                  _divider(),
-                  _buildDetail("Gender", "Female"),
-                  _divider(),
-                  _buildDetail("Location", "Noida"),
-                  _divider(),
-                  _buildDetail("Date of Birth", "2000-01-01"),
-                  _divider(),
-                  _buildDetail("About", "I love travelling and music."),
-                  _divider(),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Edit Profile button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditProfilePage(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+          // Edit Profile button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfilePage(),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text(
-                    "Edit Profile",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                ),
+                child: const Text(
+                  "Edit Profile",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
+          ),
 
-            const SizedBox(height: 20),
-          ],
-        ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
@@ -180,3 +224,4 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 }
+

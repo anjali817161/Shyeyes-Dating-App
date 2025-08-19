@@ -4,6 +4,7 @@ import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
+import 'package:shyeyes/modules/widgets/auth_repository.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -160,9 +161,11 @@ class CustomDrawer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              Get.offAll(() => LoginView());
+              final authRepo = AuthRepository();
+            await authRepo.logout();
+            Get.offAll(() => LoginView());
               print("User Logged Out");
             },
             child: const Text("Logout", style: TextStyle(color: Colors.white)),
