@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/signup/model/signup_model.dart';
 import 'package:shyeyes/modules/auth/signup/view/personal_info.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class SignUpController extends GetxController {
   final AuthRepository _repo = AuthRepository();
@@ -50,6 +51,10 @@ class SignUpController extends GetxController {
       final signupResponse = SignupResponse.fromJson(data);
 
       if (response.statusCode == 200 && signupResponse.status) {
+        if (data['token'] != null) {
+          await SharedPrefHelper.saveToken(data['token']);
+          print("✅ Token saved: ${data['token']}");
+        }
         Get.snackbar("Success", signupResponse.message);
         Get.to(
           () => PersonalInfo(),

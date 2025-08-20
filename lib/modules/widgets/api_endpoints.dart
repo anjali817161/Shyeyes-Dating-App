@@ -1,4 +1,5 @@
 class ApiEndpoints {
+
   static const String baseUrl = "https://bitmaxtest.com/shyeyes/api/";
 
   // Auth
@@ -8,4 +9,5 @@ class ApiEndpoints {
   static const String profile = "profile";
   static const String report = "report";
   static const String logout = "logout";
+
 }

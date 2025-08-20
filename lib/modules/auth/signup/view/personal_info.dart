@@ -7,29 +7,42 @@ import 'package:intl/intl.dart';
 import 'package:shyeyes/modules/auth/signup/controller/personalinfo_controller.dart';
 import 'package:shyeyes/modules/main_scaffold.dart';
 
-class PersonalInfo extends StatelessWidget {
+class PersonalInfo extends StatefulWidget {
   PersonalInfo({super.key});
-  final PersonalInfoController controller = Get.put(PersonalInfoController());
-  final _formKey = GlobalKey<FormState>();
 
-  void pickDob(BuildContext context) async {
-    final now = DateTime.now();
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime(now.year - 18),
-      firstDate: DateTime(1900),
-      lastDate: now,
-    );
-    if (pickedDate != null) {
-      controller.dobCtrl.text = DateFormat('yyyy-MM-dd').format(pickedDate);
-      int age = now.year - pickedDate.year;
-      if (now.month < pickedDate.month ||
-          (now.month == pickedDate.month && now.day < pickedDate.day)) {
-        age--;
-      }
-      controller.ageCtrl.text = age.toString();
+  @override
+  State<PersonalInfo> createState() => _PersonalInfoState();
+}
+
+class _PersonalInfoState extends State<PersonalInfo> {
+  final PersonalInfoController controller = Get.put(PersonalInfoController());
+
+  final _formKey = GlobalKey<FormState>();
+void pickDob(BuildContext context) async {
+  final now = DateTime.now();
+  final pickedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime(now.year - 18),
+    firstDate: DateTime(1900),
+    lastDate: now,
+  );
+  if (pickedDate != null) {
+    // ✅ enforce English month names
+    controller.dobCtrl.text =
+        DateFormat('d MMMM yyyy', 'en_US').format(pickedDate);
+
+    print("📤 DOB sending => ${controller.dobCtrl.text}");
+
+    // Auto calculate age
+    int age = now.year - pickedDate.year;
+    if (now.month < pickedDate.month ||
+        (now.month == pickedDate.month && now.day < pickedDate.day)) {
+      age--;
     }
+    controller.ageCtrl.text = age.toString();
   }
+}
+
 
   Future<void> pickProfileImage() async {
     final ImagePicker picker = ImagePicker();
@@ -230,16 +243,17 @@ class PersonalInfo extends StatelessWidget {
                         ),
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
+                            controller.submitPersonalInfo();
+                          } else {
                             Get.snackbar(
-                              "Success",
-                              "Registration completed",
+                              "Error",
+                              "Failed to complete registration",
                               snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.greenAccent.withOpacity(
+                              backgroundColor: Colors.redAccent.withOpacity(
                                 0.8,
                               ),
                               colorText: Colors.white,
                             );
-                            controller.submitPersonalInfo();
                           }
                         },
                         child: const Text(

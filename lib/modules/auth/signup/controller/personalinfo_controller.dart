@@ -45,6 +45,8 @@ class PersonalInfoController extends GetxController {
         location: location.trim(),
         about: aboutCtrl.text.trim(),
       );
+      print("📩 Status Code => ${response.statusCode}");
+      print("📩 Raw Response => ${response.body}");
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data["status"] == true) {

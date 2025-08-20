@@ -25,7 +25,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final MusicController musicController = Get.find<MusicController>();
+  // final MusicController musicController = Get.find<MusicController>();
 
   final List<Map<String, String>> profiles = [
     {
