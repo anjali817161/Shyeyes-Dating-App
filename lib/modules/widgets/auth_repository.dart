@@ -41,13 +41,12 @@ class AuthRepository {
     if (response.statusCode == 200) {
       print("Profile fetched successfully");
       print("Response Body: ${response.body}");
-    
+
     } else {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
       
     }
     return UserProfileModel.fromJson(jsonDecode(response.body));
-    
     
   }
   Future<void> logout() async {
