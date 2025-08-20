@@ -18,31 +18,32 @@ class _PersonalInfoState extends State<PersonalInfo> {
   final PersonalInfoController controller = Get.put(PersonalInfoController());
 
   final _formKey = GlobalKey<FormState>();
-void pickDob(BuildContext context) async {
-  final now = DateTime.now();
-  final pickedDate = await showDatePicker(
-    context: context,
-    initialDate: DateTime(now.year - 18),
-    firstDate: DateTime(1900),
-    lastDate: now,
-  );
-  if (pickedDate != null) {
-    // ✅ enforce English month names
-    controller.dobCtrl.text =
-        DateFormat('d MMMM yyyy', 'en_US').format(pickedDate);
+  void pickDob(BuildContext context) async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime(now.year - 18),
+      firstDate: DateTime(1900),
+      lastDate: now,
+    );
+    if (pickedDate != null) {
+      // ✅ enforce English month names
+      controller.dobCtrl.text = DateFormat(
+        'dd MMMM yyyy',
+        'en_US',
+      ).format(pickedDate);
 
-    print("📤 DOB sending => ${controller.dobCtrl.text}");
+      print("📤 DOB sending => ${controller.dobCtrl.text}");
 
-    // Auto calculate age
-    int age = now.year - pickedDate.year;
-    if (now.month < pickedDate.month ||
-        (now.month == pickedDate.month && now.day < pickedDate.day)) {
-      age--;
+      // Auto calculate age
+      int age = now.year - pickedDate.year;
+      if (now.month < pickedDate.month ||
+          (now.month == pickedDate.month && now.day < pickedDate.day)) {
+        age--;
+      }
+      controller.ageCtrl.text = age.toString();
     }
-    controller.ageCtrl.text = age.toString();
   }
-}
-
 
   Future<void> pickProfileImage() async {
     final ImagePicker picker = ImagePicker();
