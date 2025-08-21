@@ -14,6 +14,7 @@ import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class DashboardPage extends StatefulWidget {
   DashboardPage({super.key});
@@ -25,7 +26,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // final MusicController musicController = Get.find<MusicController>();
+  final MusicController musicController = Get.find<MusicController>();
 
   final List<Map<String, String>> profiles = [
     {
@@ -85,99 +86,110 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  void showWelcomeDialog(BuildContext context) {
+  void showWelcomeDialog(BuildContext context) async {
+    final token = await SharedPrefHelper.getToken();
+    final isShown = await SharedPrefHelper.isDialogAlreadyShown();
+
     final theme = Theme.of(context);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          insetPadding: const EdgeInsets.all(20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                  child: Lottie.asset(
-                    'assets/lotties/congratulation.json',
-                    fit: BoxFit.cover,
-                    repeat: true,
-                  ),
-                ),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    maxWidth: MediaQuery.of(context).size.width * 0.85,
-                  ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Lottie.asset(
-                          'assets/lotties/love2.json',
-                          width: 180,
-                          height: 180,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Welcome to ShyEyes!",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.deepPurple,
-                            letterSpacing: 1.2,
-                            fontFamily: 'Montserrat',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Start exploring new connections.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.black87,
-                            fontFamily: 'Poppins',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            elevation: 4,
-                          ),
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            "Continue",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.1,
-                            ),
-                          ),
-                        ),
-                      ],
+
+    if (token != null && !isShown) {
+      Future.delayed(Duration.zero, () {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              insetPadding: const EdgeInsets.all(20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: Lottie.asset(
+                        'assets/lotties/congratulation.json',
+                        fit: BoxFit.cover,
+                        repeat: true,
+                      ),
                     ),
-                  ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                        maxWidth: MediaQuery.of(context).size.width * 0.85,
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Lottie.asset(
+                              'assets/lotties/love2.json',
+                              width: 180,
+                              height: 180,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              "Welcome to ShyEyes!",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.deepPurple,
+                                letterSpacing: 1.2,
+                                fontFamily: 'Montserrat',
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Start exploring new connections.",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.black87,
+                                fontFamily: 'Poppins',
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                elevation: 4,
+                              ),
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                await SharedPrefHelper.setDialogShown(true);
+                              },
+                              child: const Text(
+                                "Continue",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
-      },
-    );
+      });
+    }
   }
 
   Widget sectionTitle(String title, VoidCallback onViewMorePressed) {
@@ -618,19 +630,19 @@ class _DashboardPageState extends State<DashboardPage> {
         title: Image.asset('assets/images/logo.png', height: 40),
         backgroundColor: primary,
         actions: [
-          // Obx(
-          //   () => IconButton(
-          //     icon: Icon(
-          //       musicController.isPlaying.value
-          //           ? Icons.music_note
-          //           : Icons.music_off_outlined,
-          //       color: Colors.white,
-          //     ),
-          //     onPressed: () {
-          //       musicController.toggleMusic();
-          //     },
-          //   ),
-          // ),
+          Obx(
+            () => IconButton(
+              icon: Icon(
+                musicController.isPlaying.value
+                    ? Icons.music_note
+                    : Icons.music_off_outlined,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                musicController.toggleMusic();
+              },
+            ),
+          ),
           IconButton(
             icon: GestureDetector(
               onTap: () {

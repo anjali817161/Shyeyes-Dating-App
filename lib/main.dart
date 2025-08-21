@@ -6,7 +6,7 @@ import 'package:shyeyes/modules/widgets/music_controller.dart';
 
 void main() {
   Get.put(NotificationController());
-  // Get.put(MusicController());
+  Get.put(MusicController());
   runApp(const MyApp());
 }
 

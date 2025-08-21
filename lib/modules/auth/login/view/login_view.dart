@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/login/controller/login_controller.dart';
 import 'package:shyeyes/modules/auth/signup/view/signup_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
+import 'package:shyeyes/modules/widgets/music_controller.dart';
 
 class LoginView extends StatefulWidget {
   LoginView({super.key});
@@ -17,6 +18,7 @@ class _LoginViewState extends State<LoginView> {
   bool isChecked = false;
 
   final LoginController controller = Get.put(LoginController());
+  final MusicController musicController = Get.find<MusicController>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,24 @@ class _LoginViewState extends State<LoginView> {
           'Login',
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 25),
         ),
+        actions: [
+          Obx(
+            () => Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                icon: Icon(
+                  musicController.isPlaying.value
+                      ? Icons.music_note
+                      : Icons.music_off_outlined,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  musicController.toggleMusic();
+                },
+              ),
+            ),
+          ),
+        ],
         centerTitle: true,
       ),
       body: Container(

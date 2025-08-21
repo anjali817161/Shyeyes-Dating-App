@@ -24,11 +24,12 @@ class MusicController extends GetxController {
 
   void toggleMusic() {
     if (isPlaying.value) {
-      player.pause();
+      // 👇 update first, then call pause
       isPlaying.value = false;
+      player.pause();
     } else {
-      player.play();
       isPlaying.value = true;
+      player.play();
     }
   }
 
