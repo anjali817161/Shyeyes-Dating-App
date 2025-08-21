@@ -1,11 +1,7 @@
 import 'dart:convert';
-
 import 'dart:io';
-
 import 'package:get/get_connect/http/src/response/response.dart';
-
 import 'package:http/http.dart' as http;
-import 'package:shyeyes/modules/chats/model/chatModel.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/profile/model/profile_model.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
@@ -71,7 +67,6 @@ class AuthRepository {
     print("Token from SharedPref: $token");
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.signupStep2);
     print("Personal Info URL => $url");
-
     var request = http.MultipartRequest('POST', url);
 
     // normal fields
@@ -133,48 +128,96 @@ class AuthRepository {
     print("Token after logout: $token");
   }
 
-  Future<Message> sendMessage(int receiverId, String text) async {
-    final String? token = await SharedPrefHelper.getToken();
-    print("Token from SharedPref: $token");
-    final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.sendMsg);
-    print("Send Message URL => $url");
+  // Future<Message> sendMessage(int receiverId, String text) async {
+  //   final String? token = await SharedPrefHelper.getToken();
+  //   print("Token from SharedPref: $token");
+  //   final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.sendMsg);
+  //   print("Send Message URL => $url");
 
-    final response = await http.post(
-      url,
-      headers: {
-        "Accept": "application/json",
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        'receiver_id': receiverId,
-        'message': text,
-      }),
+  //   final response = await http.post(
+  //     url,
+  //     headers: {
+  //       "Accept": "application/json",
+  //       "Authorization": "Bearer $token",
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: jsonEncode({
+  //       'receiver_id': receiverId,
+  //       'message': text,
+  //     }),
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     print("Message sent successfully");
+  //     print("Response Body: ${response.body}");
+  //     return Message.fromJson(jsonDecode(response.body));
+  //   } else {
+  //     throw Exception("Failed to send message: ${response.statusCode}");
+  //   }
+  // }
+  // Future<List<Message>> getMessages(int receiverId) async {
+  //   final url = Uri.parse("baseUrl/messages/$receiverId");
+  //   final response = await http.get(url);
+
+  //   if (response.statusCode == 200) {
+  //     final data = jsonDecode(response.body);
+  //     if (data is Map) {
+  //       // case: single object
+  //       print(response.body);
+  //       return [Message.fromJson(data as Map<String, dynamic>)];
+  //     } else {
+  //       throw Exception("Unexpected response format");
+  //     }
+  //   } else {
+  //     throw Exception("Failed to load messages: ${response.statusCode}");
+  //   }
+  // }
+  Future<http.Response> editProfile({
+  String? fName,
+  String? lName,
+  String? phone,
+  String? age,
+  String? dob,
+  String? gender,
+  String? location,
+  String? about,
+  File? img,
+}) async {
+  final String? token = await SharedPrefHelper.getToken();
+  final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.updateProfile);
+  print("Edit Profile URL => $url");
+
+  var request = http.MultipartRequest('POST', url);
+
+  // fields (only add if not null/empty)
+  if (fName != null && fName.isNotEmpty) request.fields['f_name'] = fName;
+  if (lName != null && lName.isNotEmpty) request.fields['l_name'] = lName;
+  if (phone != null && phone.isNotEmpty) request.fields['phone'] = phone;
+  if (age != null && age.isNotEmpty) request.fields['age'] = age;
+  if (dob != null && dob.isNotEmpty) request.fields['dob'] = dob;
+  if (gender != null && gender.isNotEmpty) request.fields['gender'] = gender;
+  if (location != null && location.isNotEmpty) request.fields['location'] = location;
+  if (about != null && about.isNotEmpty) request.fields['about'] = about;
+
+  // file (optional)
+  if (img != null) {
+    request.files.add(
+      await http.MultipartFile.fromPath('img', img.path),
     );
-
-    if (response.statusCode == 200) {
-      print("Message sent successfully");
-      print("Response Body: ${response.body}");
-      return Message.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception("Failed to send message: ${response.statusCode}");
-    }
   }
-  Future<List<Message>> getMessages(int receiverId) async {
-    final url = Uri.parse("baseUrl/messages/$receiverId");
-    final response = await http.get(url);
+  
+  request.headers.addAll({
+    "Accept": "application/json",
+    "Authorization": "Bearer $token",
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data is Map) {
-        // case: single object
-        print(response.body);
-        return [Message.fromJson(data as Map<String, dynamic>)];
-      } else {
-        throw Exception("Unexpected response format");
-      }
-    } else {
-      throw Exception("Failed to load messages: ${response.statusCode}");
-    }
-  }
+  });
+
+  var streamedResponse = await request.send();
+  
+  print("Streamed Response: ${streamedResponse}");
+  print("Streamed Response: ${streamedResponse.statusCode}");
+  print("Fields => ${request.fields}");
+print("Files => ${request.files.map((f) => f.filename).toList()}");
+  return http.Response.fromStream(streamedResponse);
+}
 }

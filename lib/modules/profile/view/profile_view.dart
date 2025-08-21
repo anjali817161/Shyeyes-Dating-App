@@ -145,7 +145,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 _divider(),
                 _buildDetail("Date of Birth", dob),
                 _divider(),
-                _buildDetail("About", about),
+                _buildDetail("Bio", about),
                 _divider(),
               ],
             ),

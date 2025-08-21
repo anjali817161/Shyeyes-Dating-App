@@ -11,6 +11,7 @@ import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
 import 'package:shyeyes/modules/dashboard/widget/home_pulse.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
@@ -54,6 +55,7 @@ class _DashboardPageState extends State<DashboardPage> {
       'image': 'assets/images/profile_image5.png',
     },
   ];
+
 
   AboutModel dummyUser = AboutModel(
     image: 'assets/images/profile_image1.png',
@@ -604,11 +606,12 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
-
+  final ProfileController controller = Get.find<ProfileController>();
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final user = controller.profile.value?.data;  
     RxBool isPlaying = false.obs;
 
     return Scaffold(
@@ -650,9 +653,11 @@ class _DashboardPageState extends State<DashboardPage> {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 28,
-                backgroundImage: AssetImage('assets/images/profile_image1.png'),
+                backgroundImage: (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
+                        ? NetworkImage(user.imageUrl!)
+                        : const NetworkImage("https://via.placeholder.com/150"),
               ),
             ),
           ),
