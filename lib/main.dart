@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/auth/login/view/login_view.dart';
-import 'package:shyeyes/modules/auth/signup/view/signup_view.dart';
 import 'package:shyeyes/modules/splash/splash_screen.dart';
 import 'package:shyeyes/modules/home/controller/notificationController.dart';
-import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
 
 void main() {
   Get.put(NotificationController());
-  Get.put(MusicController());
+  // Get.put(MusicController());
   runApp(const MyApp());
 }
 
@@ -61,10 +57,6 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
-      // getPages: [
-      //   GetPage(name: '/login', page: () => LoginView()),
-      //   GetPage(name: '/signup', page: () => SignUpView()),
-      // ],
     );
   }
 }

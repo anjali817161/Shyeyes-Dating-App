@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
 import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
+import 'package:shyeyes/modules/chats/model/chat_model.dart';
 
 class AboutView extends StatefulWidget {
   final AboutModel profileData;
@@ -26,6 +27,29 @@ class _AboutViewState extends State<AboutView> {
     final secondaryColor = theme.colorScheme.secondary;
     final onSecondaryColor = theme.colorScheme.onSecondary;
 
+   
+  AboutModel dummyUser = AboutModel(
+    image: 'assets/images/profile_image1.png',
+    name: 'Shaan',
+    age: 25,
+    distance: '2 km away',
+    job: 'Software Engineer',
+    college: 'IIT Delhi',
+    location: 'New Delhi',
+    about: 'Loves traveling and coffee.',
+    interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    pets: 'Dog',
+    drinking: 'Socially',
+    smoking: 'No',
+    workout: 'Daily',
+    zodiac: 'Leo',
+    education: 'Masters',
+    vaccine: 'Yes',
+    communication: 'English, Hindi',
+    height: '',
+    active: '',
+  );
+
     return Scaffold(
       backgroundColor: secondaryColor,
       appBar: AppBar(
@@ -38,26 +62,31 @@ class _AboutViewState extends State<AboutView> {
         iconTheme: IconThemeData(color: onPrimaryColor),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Image + Bottom Actions in Stack
-            Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.bottomCenter,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    widget.profileData.image!,
-                    height: 320,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () {
+                Get.to(() => AboutView(profileData: dummyUser));
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.bottomCenter,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      widget.profileData.image!,
+                      height: 320,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-                Positioned(bottom: -28, child: _bottomActions(theme)),
-              ],
+                  Positioned(bottom: -28, child: _bottomActions(theme)),
+                ],
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -146,12 +175,10 @@ class _AboutViewState extends State<AboutView> {
               },
               child: _actionButton(theme, "Report", isDestructive: true),
             ),
-            SizedBox(height: 40,),
+            SizedBox(height: 40),
           ],
         ),
-        
       ),
-      
     );
   }
 
@@ -288,67 +315,67 @@ class _AboutViewState extends State<AboutView> {
       ),
     );
   }
-Widget _bottomActions(ThemeData theme) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      // Close button
-      CircleAvatar(
-        radius: 28,
-        backgroundColor: theme.colorScheme.surfaceVariant,
-        child: GestureDetector(
-          onTap: () => Get.back(),
-          child: Icon(Icons.close, color: Colors.blue, size: 28),
+
+  Widget _bottomActions(ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Close button
+        CircleAvatar(
+          radius: 28,
+          backgroundColor: theme.colorScheme.surfaceVariant,
+          child: GestureDetector(
+            onTap: () => Get.back(),
+            child: Icon(Icons.close, color: Colors.blue, size: 28),
+          ),
         ),
-      ),
-      const SizedBox(width: 16),
+        const SizedBox(width: 16),
 
-      // Like button with animation
-      GestureDetector(
-        onTap: () {
-          setState(() {
-            isLiked = !isLiked;
-            if (isLiked) {
-              playHeartAnimation = true;
-            }
-          });
-        },
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: theme.colorScheme.surfaceVariant,
-              child: Icon(
-                isLiked ? Icons.favorite : Icons.favorite_border_outlined,
-                color: Colors.redAccent,
-                size: 28,
-              ),
-            ),
-
-            if (playHeartAnimation)
-              Positioned(
-                top: -77,
-                child: Lottie.asset(
-                  'assets/lotties/newHeart.json',
-                  width: 200,
-                  height: 200,
-                  repeat: false,
-                  onLoaded: (composition) {
-                    Future.delayed(composition.duration, () {
-                      if (mounted) {
-                        setState(() => playHeartAnimation = false);
-                      }
-                    });
-                  },
+        // Like button with animation
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              isLiked = !isLiked;
+              if (isLiked) {
+                playHeartAnimation = true;
+              }
+            });
+          },
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: theme.colorScheme.surfaceVariant,
+                child: Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border_outlined,
+                  color: Colors.redAccent,
+                  size: 28,
                 ),
               ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
 
+              if (playHeartAnimation)
+                Positioned(
+                  top: -77,
+                  child: Lottie.asset(
+                    'assets/lotties/newHeart.json',
+                    width: 200,
+                    height: 200,
+                    repeat: false,
+                    onLoaded: (composition) {
+                      Future.delayed(composition.duration, () {
+                        if (mounted) {
+                          setState(() => playHeartAnimation = false);
+                        }
+                      });
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }

@@ -1,11 +1,13 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://bitmaxtest.com/shyeyes/";
+
+  static const String baseUrl = "https://bitmaxtest.com/shyeyes/api/";
 
   // Auth
-  static const String login = "api/login";
-  static const String registerStep1 = "api/register/step1";
-  static const String registerStep2 = "api/register/step2";
-  static const String profile = "api/profile";
-  static const String report = "api/report";
-  static const String logout = "api/logout";
+  static const String login = "login";
+  static const String signupStep1 = "register/step1";
+  static const String signupStep2 = "register/step2";
+  static const String profile = "profile";
+  static const String report = "report";
+  static const String logout = "logout";
+
 }

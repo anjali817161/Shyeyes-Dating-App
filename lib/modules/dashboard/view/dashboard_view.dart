@@ -25,7 +25,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final MusicController musicController = Get.find<MusicController>();
+  // final MusicController musicController = Get.find<MusicController>();
 
   final List<Map<String, String>> profiles = [
     {
@@ -615,22 +615,22 @@ class _DashboardPageState extends State<DashboardPage> {
       key: _scaffoldKey,
       backgroundColor: theme.colorScheme.secondary,
       appBar: AppBar(
-        title: Image.asset('assets/images/app_icon.png', height: 40),
+        title: Image.asset('assets/images/logo.png', height: 40),
         backgroundColor: primary,
         actions: [
-          Obx(
-            () => IconButton(
-              icon: Icon(
-                musicController.isPlaying.value
-                    ? Icons.music_note
-                    : Icons.music_off_outlined,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                musicController.toggleMusic();
-              },
-            ),
-          ),
+          // Obx(
+          //   () => IconButton(
+          //     icon: Icon(
+          //       musicController.isPlaying.value
+          //           ? Icons.music_note
+          //           : Icons.music_off_outlined,
+          //       color: Colors.white,
+          //     ),
+          //     onPressed: () {
+          //       musicController.toggleMusic();
+          //     },
+          //   ),
+          // ),
           IconButton(
             icon: GestureDetector(
               onTap: () {
@@ -725,6 +725,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     Get.to(() => HomeView());
                   }),
                   profileList(),
+                  SizedBox(height: 20),
                 ],
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
@@ -63,20 +64,24 @@ class _SignUpViewState extends State<SignUpView>
                         label: 'First Name',
                         icon: Icons.person,
                         keyboardType: TextInputType.name,
-                        validator: (value) =>
-                            value!.isEmpty ? 'Enter first name' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Enter first name'
+                            : null,
                       ),
                       const SizedBox(height: 20),
+
                       _buildTextField(
                         context,
                         controller: controller.lastNameCtrl,
                         label: 'Last Name',
                         icon: Icons.person,
                         keyboardType: TextInputType.name,
-                        validator: (value) =>
-                            value!.isEmpty ? 'Enter last name' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Enter last name'
+                            : null,
                       ),
                       const SizedBox(height: 20),
+
                       _buildTextField(
                         context,
                         controller: controller.emailCtrl,
@@ -86,31 +91,35 @@ class _SignUpViewState extends State<SignUpView>
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Enter email';
-                          if (!value.contains('@')) return 'Enter valid email';
+                          if (!value.contains('@') || !value.contains('.')) {
+                            return 'Enter a valid email';
+                          }
                           return null;
                         },
                       ),
                       const SizedBox(height: 20),
+
                       _buildTextField(
                         context,
                         controller: controller.phoneCtrl,
                         label: 'Phone',
                         icon: Icons.phone,
                         keyboardType: TextInputType.phone,
-                        validator: (value) =>
-                            value!.isEmpty ? 'Enter phone number' : null,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Enter phone number';
+                          } else if (value.length != 10) {
+                            return 'Phone number must be 10 digits';
+                          }
+                          return null;
+                        },
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
                       ),
                       const SizedBox(height: 20),
-                      // _buildTextField(
-                      //   context,
-                      //   controller: controller.addressCtrl,
-                      //   label: 'Address',
-                      //   icon: Icons.location_city,
-                      //   keyboardType: TextInputType.streetAddress,
-                      //   validator: (value) =>
-                      //       value!.isEmpty ? 'Enter full address' : null,
-                      // ),
-                      // const SizedBox(height: 20),
+
                       Obx(
                         () => _buildTextField(
                           context,
@@ -127,11 +136,17 @@ class _SignUpViewState extends State<SignUpView>
                             ),
                             onPressed: controller.togglePassword,
                           ),
-                          validator: (value) =>
-                              value!.length < 6 ? 'Password too short' : null,
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Enter password';
+                            if (value.length < 6)
+                              return 'Password must be at least 6 characters';
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(height: 20),
+
                       Obx(
                         () => _buildTextField(
                           context,
@@ -149,6 +164,9 @@ class _SignUpViewState extends State<SignUpView>
                             onPressed: controller.toggleConfirmPassword,
                           ),
                           validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Confirm your password';
+                            }
                             if (value != controller.passCtrl.text) {
                               return 'Passwords do not match';
                             }
@@ -156,34 +174,52 @@ class _SignUpViewState extends State<SignUpView>
                           },
                         ),
                       ),
+
                       const SizedBox(height: 28),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        child: Obx(
+                          () => ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              backgroundColor: primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                          ),
-                          onPressed: () {
-                            // if (_formKey.currentState!.validate()) {
-                            //   Get.snackbar(
-                            //     'Success',
-                            //     'Signed up successfully',
-                            //     snackPosition: SnackPosition.BOTTOM,
-                            //   );
-                            // }
-
-                            Get.to(() => PersonalInfo());
-                          },
-                          child: const Text(
-                            'Next',
-                            style: TextStyle(fontSize: 18, color: Colors.white),
+                            onPressed: controller.isLoading.value
+                                ? null // disable while loading
+                                : () async {
+                                    print("👉 Button pressed");
+                                    if (_formKey.currentState!.validate()) {
+                                      print(
+                                        "👉 Form validated, calling signupUser()",
+                                      );
+                                      await controller.signupUser();
+                                    } else {
+                                      print("❌ Form validation failed");
+                                    }
+                                  },
+                            child: controller.isLoading.value
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Next',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () => Get.off(() => LoginView()),
@@ -212,6 +248,7 @@ class _SignUpViewState extends State<SignUpView>
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final primary = Theme.of(context).colorScheme.primary;
 
@@ -221,6 +258,7 @@ class _SignUpViewState extends State<SignUpView>
       obscureText: obscureText,
       cursorColor: primary,
       validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white.withOpacity(0.85),
