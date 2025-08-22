@@ -7,6 +7,7 @@ import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
+import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
 import 'package:shyeyes/modules/dashboard/widget/home_pulse.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
@@ -27,6 +28,9 @@ class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final MusicController musicController = Get.find<MusicController>();
+  final ActiveUsersController usersController = Get.put(
+    ActiveUsersController(),
+  );
 
   final List<Map<String, String>> profiles = [
     {
@@ -83,6 +87,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showWelcomeDialog(context);
+      usersController.fetchActiveUsers();
     });
   }
 
@@ -544,77 +549,105 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget circularProfileList(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SizedBox(
-        height: 130,
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          scrollDirection: Axis.horizontal,
-          itemCount: profiles.length > 8 ? 8 : profiles.length,
-          separatorBuilder: (context, index) => const SizedBox(width: 12),
-          itemBuilder: (context, index) {
-            final profile = profiles[index];
-            return GestureDetector(
-              onTap: () {
-                Get.to(() => AboutView(profileData: dummyUser));
-              },
-              child: Column(
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Profile Image
-                      Container(
-                        width: 85,
-                        height: 85,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: theme.colorScheme.primary,
-                            width: 2,
-                          ),
-                          color: Colors.white,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 1,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            profile['image']!,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
+    final controller = Get.put(ActiveUsersController()); // inject controller
 
-                      // Blinking Green Dot (Active status)
-                      Positioned(bottom: 4, right: 4, child: BlinkingDot()),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    width: 72,
-                    child: Text(
-                      profile['name']!,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (controller.activeUsers.isEmpty) {
+        return const Center(child: Text("No active users"));
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: SizedBox(
+          height: 130,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            scrollDirection: Axis.horizontal,
+            itemCount: controller.activeUsers.length > 30
+                ? 30
+                : controller.activeUsers.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final profile = controller.activeUsers[index];
+              return GestureDetector(
+                onTap: () {
+                  // Get.to(() => AboutView(profileData: profile));
+                },
+                child: Column(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 85,
+                          height: 85,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: theme.colorScheme.primary,
+                              width: 2,
+                            ),
+                            color: Colors.white,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 1,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child:
+                                profile.image != null &&
+                                    profile.image!.isNotEmpty
+                                ? Image.network(
+                                    profile.image!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) => Image.asset(
+                                          "assets/images/profile_image1.png", 
+                                          fit: BoxFit.cover,
+                                        ),
+                                  )
+                                : Image.asset(
+                                    "assets/images/profile_image2.png", 
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
+
+                        Positioned(bottom: 4, right: 4, child: BlinkingDot()),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      width: 72,
+                      child: Text(
+                        profile.name ?? "Unknown",
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+                  ],
+                ),
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   @override

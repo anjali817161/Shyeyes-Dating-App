@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:get/get_connect/http/src/response/response.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/profile/model/profile_model.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
@@ -122,6 +123,36 @@ class AuthRepository {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
     }
     return UserProfileModel.fromJson(jsonDecode(response.body));
+  }
+
+  Future<List<ActiveUserModel>> getActiveUsers() async {
+    final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.activeUsers);
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+    print("Fetching active users from: $url with token: $token");
+
+    final response = await http.get(
+      url,
+      headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
+    );
+    print("response body:------ ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data['data'] is List) {
+        // Case 1: API returns a list of users
+        return (data['data'] as List)
+            .map((e) => ActiveUserModel.fromJson(e))
+            .toList();
+      } else if (data['data'] is Map) {
+        // Case 2: API returns a single user
+        return [ActiveUserModel.fromJson(data['data'])];
+      } else {
+        throw Exception("Invalid API response format");
+      }
+    } else {
+      throw Exception("Failed to fetch active users: ${response.statusCode}");
+    }
   }
 
   Future<void> logout() async {
