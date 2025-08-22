@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/splash/splash_screen.dart';
 import 'package:shyeyes/modules/home/controller/notificationController.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
 
 void main() {
+  Get.put(ProfileController());
   Get.put(NotificationController());
   Get.put(MusicController());
   runApp(const MyApp());

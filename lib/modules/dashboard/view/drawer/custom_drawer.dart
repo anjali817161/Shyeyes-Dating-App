@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final ProfileController controller = Get.find<ProfileController>();
 
     final List<_DrawerItem> items = [
       _DrawerItem(
@@ -48,39 +50,50 @@ class CustomDrawer extends StatelessWidget {
       backgroundColor: const Color(0xFFF9F9F9),
       child: Column(
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFFDF314D)),
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  radius: 32,
-                  backgroundImage: AssetImage(
-                    'assets/images/profile_image1.png',
+          /// 🔹 DrawerHeader linked with Profile Data
+          Obx(() {
+            final user = controller.profile.value?.data;
+            return DrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFFDF314D)),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundImage: (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
+                        ? NetworkImage(user.imageUrl!)
+                        : const NetworkImage("https://via.placeholder.com/150"),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Anjali Chaudhary",
-                      style: TextStyle(
-                        fontSize: 20, // Increased size
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  const SizedBox(width: 16),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user?.fullName ?? "No Name",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Flutter Developer",
-                      style: TextStyle(fontSize: 15, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        user?.about ?? "No about info",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white70,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          /// 🔹 Drawer Menu Items
           Expanded(
             child: ListView.separated(
               itemCount: items.length,
@@ -99,14 +112,14 @@ class CustomDrawer extends StatelessWidget {
                     item.ontap();
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14), // more spacing
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     child: ListTile(
                       leading: Icon(item.icon, color: theme.primaryColor, size: 26),
                       title: Text(
                         item.label,
                         style: TextStyle(
                           color: theme.primaryColor,
-                          fontSize: 17, // Increased font size
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -164,8 +177,8 @@ class CustomDrawer extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(context);
               final authRepo = AuthRepository();
-            await authRepo.logout();
-            Get.offAll(() => LoginView());
+              await authRepo.logout();
+              Get.offAll(() => LoginView());
               print("User Logged Out");
             },
             child: const Text("Logout", style: TextStyle(color: Colors.white)),
@@ -187,3 +200,4 @@ class _DrawerItem {
     required this.ontap,
   });
 }
+

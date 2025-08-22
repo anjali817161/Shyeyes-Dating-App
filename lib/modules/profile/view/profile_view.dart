@@ -48,7 +48,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         }
 
         final profileData = controller.profile.value!.data; 
-        return _buildProfileView(theme, profileData!.fName ?? "No name", profileData.email ?? "No email",
+        return _buildProfileView(theme, profileData!.fullName ?? "No name", profileData.email ?? "No email",
             (profileData.age != null) ? profileData.age.toString() : "N/A", profileData.gender ?? "N/A", profileData.location ?? "N/A",
             profileData.dob ?? "N/A", profileData.about ?? "Not Provided", profileData.imageUrl ?? "https://via.placeholder.com/150");
       }),
@@ -145,7 +145,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 _divider(),
                 _buildDetail("Date of Birth", dob),
                 _divider(),
-                _buildDetail("About", about),
+                _buildDetail("Bio", about),
                 _divider(),
               ],
             ),

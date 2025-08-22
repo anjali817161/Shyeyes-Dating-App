@@ -1,7 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
+import 'package:shyeyes/modules/tabView/view/likes_tab.dart';
+import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -12,21 +16,68 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   File? _imageFile;
+  @override
+void initState() {
+  super.initState();
+  final ProfileController controller = Get.find<ProfileController>();
+  final user = controller.profile.value?.data;
+
+  if (user != null) {
+    nameController.text = user.fullName ?? "";
+    phoneController.text = user.phone ?? "";
+    ageController.text = user.age?.toString() ?? "";
+    genderController.text = user.gender ?? "";
+    locationController.text = user.location ?? "";
+    dobController.text = user.dob ?? "";
+    aboutController.text = user.about ?? "";
+  }
+}
+Widget _buildPhoneField() {
+  final theme = Theme.of(context);
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: TextField(
+      controller: phoneController,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly, // only digits allowed
+        LengthLimitingTextInputFormatter(10),  // max 10 digits
+      ],
+      style: const TextStyle(color: Colors.grey),
+      decoration: InputDecoration(
+        labelText: "Phone",
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: TextStyle(color: theme.colorScheme.primary),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.primary),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    ),
+  );
+}
+
 
   final TextEditingController nameController =
-      TextEditingController(text: "Saloni Sharma");
-  final TextEditingController emailController =
-      TextEditingController(text: "saloni@example.com");
+      TextEditingController();
+  final TextEditingController phoneController =
+      TextEditingController();
   final TextEditingController ageController =
-      TextEditingController(text: "25");
+      TextEditingController();
   final TextEditingController genderController =
-      TextEditingController(text: "Female");
+      TextEditingController();
   final TextEditingController locationController =
-      TextEditingController(text: "Noida");
+      TextEditingController();
   final TextEditingController dobController =
-      TextEditingController(text: "2000-01-01");
+      TextEditingController();
   final TextEditingController aboutController =
-      TextEditingController(text: "I love travelling and music.");
+      TextEditingController();
 
   Future<void> _pickImage() async {
     try {
@@ -65,8 +116,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
     );
   }
-
+  
   Widget _buildProfileImage() {
+    final ProfileController controller = Get.find<ProfileController>();
+    final user = controller.profile.value?.data;
+
     return GestureDetector(
       onTap: _pickImage, // Tap avatar to change image
       child: Stack(
@@ -78,10 +132,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
             child: CircleAvatar(
               radius: 50,
               backgroundImage: _imageFile != null
-                  ? FileImage(_imageFile!)
-                  : const NetworkImage(
-                      'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-                    ) as ImageProvider,
+                ? FileImage(_imageFile!) // ✅ Show newly picked image immediately
+                : (user?.imageUrl != null && user!.imageUrl!.isNotEmpty
+                    ? NetworkImage(user.imageUrl!)
+                    : const NetworkImage("https://via.placeholder.com/150") as ImageProvider), // fallback
             ),
           ),
           Positioned(
@@ -108,7 +162,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -171,31 +225,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: Column(
                 children: [
                   _buildEditableField("Name", nameController),
-                  _buildEditableField("Email", emailController),
+                  _buildPhoneField(),
+                  // _buildEditableField("Phone", phoneController),
                   _buildEditableField("Age", ageController),
-                  _buildEditableField("Gender", genderController),
+                  // _buildEditableField("Gender", genderController),
                   _buildEditableField("Location", locationController),
                   _buildEditableField("Date of Birth", dobController),
-                  _buildEditableField("About", aboutController),
+                  _buildEditableField("Bio", aboutController),
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+  onPressed: () async {
+    final ProfileController controller = Get.find<ProfileController>();
+
+    await controller.updateProfile(
+      fullName: nameController.text.trim(),
+      phone: phoneController.text.trim(),
+      age: ageController.text.trim(),
+      dob: dobController.text.trim(),
+      gender: genderController.text.trim(),
+      location: locationController.text.trim(),
+      about: aboutController.text.trim(),
+      img: _imageFile, // if user picked an image
+    );
+
+    Navigator.pop(context); // ✅ only pop after updating
+  },
+  style: ElevatedButton.styleFrom(
+    backgroundColor: theme.colorScheme.primary,
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+  ),
+  child: const Text(
+    "Submit",
+    style: TextStyle(fontSize: 16, color: Colors.white),
+  ),
+),
                   ),
                   const SizedBox(height: 20),
                 ],

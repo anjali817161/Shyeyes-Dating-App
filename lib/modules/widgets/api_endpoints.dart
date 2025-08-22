@@ -9,4 +9,5 @@ class ApiEndpoints {
   static const String report = "report";
   static const String logout = "logout";
   static const String activeUsers = "active-users";
+  static const String updateProfile = "profile/update";
 }
