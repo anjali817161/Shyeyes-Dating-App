@@ -119,7 +119,6 @@ class AuthRepository {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
     }
     return UserProfileModel.fromJson(jsonDecode(response.body));
-    
   }
 
   Future<List<ActiveUserModel>> getActiveUsers() async {
@@ -149,6 +148,34 @@ class AuthRepository {
       }
     } else {
       throw Exception("Failed to fetch active users: ${response.statusCode}");
+    }
+  }
+
+  Future<List<BestMatchModel>> fetchBestMatches() async {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+    try {
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.bestMatches),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded["status"] == true && decoded["data"] != null) {
+          List data = decoded["data"];
+          return data.map((e) => BestMatchModel.fromJson(e)).toList();
+        } else {
+          return [];
+        }
+      } else {
+        throw Exception("Failed to fetch best matches");
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -204,51 +231,49 @@ class AuthRepository {
   //   }
   // }
   Future<http.Response> editProfile({
-  String? fName,
-  String? lName,
-  String? phone,
-  String? age,
-  String? dob,
-  String? gender,
-  String? location,
-  String? about,
-  File? img,
-}) async {
-  final String? token = await SharedPrefHelper.getToken();
-  final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.updateProfile);
-  print("Edit Profile URL => $url");
+    String? fName,
+    String? lName,
+    String? phone,
+    String? age,
+    String? dob,
+    String? gender,
+    String? location,
+    String? about,
+    File? img,
+  }) async {
+    final String? token = await SharedPrefHelper.getToken();
+    final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.updateProfile);
+    print("Edit Profile URL => $url");
 
-  var request = http.MultipartRequest('POST', url);
+    var request = http.MultipartRequest('POST', url);
 
-  // fields (only add if not null/empty)
-  if (fName != null && fName.isNotEmpty) request.fields['f_name'] = fName;
-  if (lName != null && lName.isNotEmpty) request.fields['l_name'] = lName;
-  if (phone != null && phone.isNotEmpty) request.fields['phone'] = phone;
-  if (age != null && age.isNotEmpty) request.fields['age'] = age;
-  if (dob != null && dob.isNotEmpty) request.fields['dob'] = dob;
-  if (gender != null && gender.isNotEmpty) request.fields['gender'] = gender;
-  if (location != null && location.isNotEmpty) request.fields['location'] = location;
-  if (about != null && about.isNotEmpty) request.fields['about'] = about;
+    // fields (only add if not null/empty)
+    if (fName != null && fName.isNotEmpty) request.fields['f_name'] = fName;
+    if (lName != null && lName.isNotEmpty) request.fields['l_name'] = lName;
+    if (phone != null && phone.isNotEmpty) request.fields['phone'] = phone;
+    if (age != null && age.isNotEmpty) request.fields['age'] = age;
+    if (dob != null && dob.isNotEmpty) request.fields['dob'] = dob;
+    if (gender != null && gender.isNotEmpty) request.fields['gender'] = gender;
+    if (location != null && location.isNotEmpty)
+      request.fields['location'] = location;
+    if (about != null && about.isNotEmpty) request.fields['about'] = about;
 
-  // file (optional)
-  if (img != null) {
-    request.files.add(
-      await http.MultipartFile.fromPath('img', img.path),
-    );
+    // file (optional)
+    if (img != null) {
+      request.files.add(await http.MultipartFile.fromPath('img', img.path));
+    }
+
+    request.headers.addAll({
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+    });
+
+    var streamedResponse = await request.send();
+
+    print("Streamed Response: ${streamedResponse}");
+    print("Streamed Response: ${streamedResponse.statusCode}");
+    print("Fields => ${request.fields}");
+    print("Files => ${request.files.map((f) => f.filename).toList()}");
+    return http.Response.fromStream(streamedResponse);
   }
-  
-  request.headers.addAll({
-    "Accept": "application/json",
-    "Authorization": "Bearer $token",
-
-  });
-
-  var streamedResponse = await request.send();
-  
-  print("Streamed Response: ${streamedResponse}");
-  print("Streamed Response: ${streamedResponse.statusCode}");
-  print("Fields => ${request.fields}");
-print("Files => ${request.files.map((f) => f.filename).toList()}");
-  return http.Response.fromStream(streamedResponse);
-}
 }

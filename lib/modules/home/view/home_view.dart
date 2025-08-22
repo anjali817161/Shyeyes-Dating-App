@@ -30,7 +30,7 @@ class _HomeViewState extends State<HomeView> {
   bool isHeartAnimating = false;
   bool isLiked = false;
 
-List<bool> playHeartAnimationList = [];
+  List<bool> playHeartAnimationList = [];
   // final List<String> images = [
   //   'assets/images/profile_image1.png',
   //   'assets/images/profile_image2.png',
@@ -147,19 +147,16 @@ List<bool> playHeartAnimationList = [];
     ),
   ];
 
-@override
-void initState() {
-  super.initState();
-  isLikedList = List.filled(profiles.length, false);
-  playHeartAnimationList = List.filled(profiles.length, false);
-}
-
-
+  @override
+  void initState() {
+    super.initState();
+    isLikedList = List.filled(profiles.length, false);
+    playHeartAnimationList = List.filled(profiles.length, false);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
 
     UserModel dummyUser = UserModel(
       name: 'Shaan',
@@ -179,41 +176,33 @@ void initState() {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  
-                    GestureDetector(
-                      child: Image.asset(profile.image, fit: BoxFit.cover),
-                      onDoubleTap: (){
-                        setState(() {
-                          isHeartAnimating = true;
-                          isLikedList[index] = true;
-                          playHeartAnimationList[index] = true;
-                        });
-                      },
-                      
-                      ),
-                      // Opacity(opacity: isHeartAnimating ? 1 : 0,
-                      
-                      // child: HeartAnimationWidget(
-                      //   isAnimating: isHeartAnimating,
-                      //   duration: const Duration(milliseconds: 700),
-                      //   child: Icon(
-                      //     Icons.favorite,
-                      //     color: Colors.red,
-                      //     size: 100,
-                      //   ),
-                      //   onEnd: ()=> setState(() {
-                      //     isHeartAnimating = false;
-                      //   }
-                      //   ),
-                      // ),
-                      // ),
-                     
-                     
-                      
-                      
-                      
+                  GestureDetector(
+                    child: Image.asset(profile.image, fit: BoxFit.cover),
+                    onDoubleTap: () {
+                      setState(() {
+                        isHeartAnimating = true;
+                        isLikedList[index] = true;
+                        playHeartAnimationList[index] = true;
+                      });
+                    },
+                  ),
+                  // Opacity(opacity: isHeartAnimating ? 1 : 0,
 
-                  
+                  // child: HeartAnimationWidget(
+                  //   isAnimating: isHeartAnimating,
+                  //   duration: const Duration(milliseconds: 700),
+                  //   child: Icon(
+                  //     Icons.favorite,
+                  //     color: Colors.red,
+                  //     size: 100,
+                  //   ),
+                  //   onEnd: ()=> setState(() {
+                  //     isHeartAnimating = false;
+                  //   }
+                  //   ),
+                  // ),
+                  // ),
+
                   // Container(
                   //   decoration: BoxDecoration(
                   //     gradient: LinearGradient(
@@ -232,7 +221,7 @@ void initState() {
                     bottom: 140,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children:  [
+                      children: [
                         Text(
                           "Shaan, 25",
                           style: TextStyle(
@@ -269,23 +258,19 @@ void initState() {
                               vertical: 12,
                             ),
                           ),
-                    onPressed: () async{
-                      
-                      final controller = Get.find<AboutController>();
-                      controller.setProfile(profile);
-                      await Get.to(() => AboutView(profileData: profile));
-                    
-                    },
-                    child: const Text(
-                      "View Profile",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                        
+                          onPressed: () async {
+                            final controller = Get.find<AboutController>();
+                            controller.setProfile(profile);
+                            await Get.to(() => AboutView(profileData: profile));
+                          },
+                          child: const Text(
+                            "View Profile",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  
 
                   Positioned(
                     bottom: 50,
@@ -300,16 +285,16 @@ void initState() {
                               : Icons.favorite_border,
                           Colors.redAccent,
                           32,
-                           () {
-    setState(() {
-      isLikedList[index] = !isLikedList[index];
-      if (isLikedList[index]) {
-        playHeartAnimationList[index] = true;
-      }
-    });
-  },
-  playAnimation: playHeartAnimationList[index],
-  index: index,
+                          () {
+                            setState(() {
+                              isLikedList[index] = !isLikedList[index];
+                              if (isLikedList[index]) {
+                                playHeartAnimationList[index] = true;
+                              }
+                            });
+                          },
+                          playAnimation: playHeartAnimationList[index],
+                          index: index,
                         ),
                         buildActionButton(Icons.call, Colors.teal[400]!, 30, () {
                           showDialog(
@@ -542,73 +527,72 @@ Check out this profile!
     );
   }
 
- Widget buildActionButton(
-  IconData icon,
-  Color color,
-  double size,
-  VoidCallback onTap, {
-  bool playAnimation = false,
-  int? index,
-}) {
-  return Stack(
-    clipBehavior: Clip.none,
-    alignment: Alignment.center,
-    children: [
-      GestureDetector(
-        onTapDown: (_) => _buttonScale.value = 0.9,
-        onTapUp: (_) {
-          _buttonScale.value = 1.0;
-          onTap();
-        },
-        onTapCancel: () => _buttonScale.value = 1.0,
-        child: ValueListenableBuilder<double>(
-          valueListenable: _buttonScale,
-          builder: (context, scale, child) {
-            return AnimatedScale(
-              scale: scale,
-              duration: const Duration(milliseconds: 150),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Icon(icon, color: color, size: size),
-                ),
-              ),
-            );
+  Widget buildActionButton(
+    IconData icon,
+    Color color,
+    double size,
+    VoidCallback onTap, {
+    bool playAnimation = false,
+    int? index,
+  }) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        GestureDetector(
+          onTapDown: (_) => _buttonScale.value = 0.9,
+          onTapUp: (_) {
+            _buttonScale.value = 1.0;
+            onTap();
           },
-        ),
-      ),
-
-      // Lottie animation overlay
-      if (playAnimation)
-        Positioned(
-          top: -48,
-          child: Lottie.asset(
-            'assets/lotties/newHeart.json',
-            width: 150,
-            height: 150,
-            repeat: false,
-            onLoaded: (composition) {
-              Future.delayed(composition.duration, () {
-                if (mounted && index != null) {
-                  setState(() => playHeartAnimationList[index] = false);
-                }
-              });
+          onTapCancel: () => _buttonScale.value = 1.0,
+          child: ValueListenableBuilder<double>(
+            valueListenable: _buttonScale,
+            builder: (context, scale, child) {
+              return AnimatedScale(
+                scale: scale,
+                duration: const Duration(milliseconds: 150),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.white,
+                    child: Icon(icon, color: color, size: size),
+                  ),
+                ),
+              );
             },
           ),
         ),
-    ],
-  );
-}
 
+        // Lottie animation overlay
+        if (playAnimation)
+          Positioned(
+            top: -48,
+            child: Lottie.asset(
+              'assets/lotties/newHeart.json',
+              width: 150,
+              height: 150,
+              repeat: false,
+              onLoaded: (composition) {
+                Future.delayed(composition.duration, () {
+                  if (mounted && index != null) {
+                    setState(() => playHeartAnimationList[index] = false);
+                  }
+                });
+              },
+            ),
+          ),
+      ],
+    );
+  }
 }

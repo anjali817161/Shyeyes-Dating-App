@@ -13,3 +13,37 @@ class ActiveUserModel {
     );
   }
 }
+
+
+class BestMatchModel {
+  final int? userId;
+  final String? name;
+  final int? age;
+  final String? img;
+
+  BestMatchModel({
+    this.userId,
+    this.name,
+    this.age,
+    this.img,
+  });
+
+  factory BestMatchModel.fromJson(Map<String, dynamic> json) {
+    return BestMatchModel(
+      userId: json['userid'],
+      name: json['name'],
+      age: json['age'],
+      img: json['img'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "userid": userId,
+      "name": name,
+      "age": age,
+      "img": img,
+    };
+  }
+}
+

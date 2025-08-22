@@ -10,4 +10,5 @@ class ApiEndpoints {
   static const String logout = "logout";
   static const String activeUsers = "active-users";
   static const String updateProfile = "profile/update";
+  static const String bestMatches = "best-matches";
 }

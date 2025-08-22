@@ -7,8 +7,9 @@ class ActiveUsersController extends GetxController {
 
   /// Observables
   var isLoading = false.obs;
-  var activeUsers = <ActiveUserModel>[].obs; // list of active users
+  var activeUsers = <ActiveUserModel>[].obs; 
   var errorMessage = "".obs;
+   var bestMatches = <BestMatchModel>[].obs;
 
   /// Fetch Active Users
   Future<void> fetchActiveUsers() async {
@@ -23,6 +24,18 @@ class ActiveUsersController extends GetxController {
     } catch (e) {
       errorMessage.value = e.toString();
       print("❌ Error fetching active users: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+   Future<void> fetchBestMatches() async {
+    try {
+      isLoading.value = true;
+      final matches = await _userRepository.fetchBestMatches();
+      bestMatches.assignAll(matches);
+    } catch (e) {
+      print("Error fetching matches: $e");
     } finally {
       isLoading.value = false;
     }
