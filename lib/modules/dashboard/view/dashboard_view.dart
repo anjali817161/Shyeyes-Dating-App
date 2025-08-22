@@ -56,7 +56,6 @@ class _DashboardPageState extends State<DashboardPage> {
     },
   ];
 
-
   AboutModel dummyUser = AboutModel(
     image: 'assets/images/profile_image1.png',
     name: 'Shaan',
@@ -82,6 +81,8 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    final ProfileController controller = Get.find<ProfileController>();
+    controller.fetchProfile();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showWelcomeDialog(context);
     });
@@ -606,12 +607,14 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
+
   final ProfileController controller = Get.find<ProfileController>();
+  
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final user = controller.profile.value?.data;  
+    final user = controller.profile.value?.data;
     RxBool isPlaying = false.obs;
 
     return Scaffold(
@@ -646,20 +649,38 @@ class _DashboardPageState extends State<DashboardPage> {
             },
           ),
           const SizedBox(width: 1),
+          Obx(() {
+            final user = controller.profile.value?.data;
+            print("Profile updated: ${user?.imageUrl}");
 
-          GestureDetector(
-            onTap: () {
-              _scaffoldKey.currentState?.openEndDrawer();
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-              child: CircleAvatar(
-                radius: 28,
-                backgroundImage: (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
-                        ? NetworkImage(user.imageUrl!)
-                        : const NetworkImage("https://via.placeholder.com/150"),
+            if (user == null) {
+              // 👇 If profile data is not yet available, return a placeholder avatar
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundImage: NetworkImage(
+                    "https://via.placeholder.com/150",
+                  ),
+                ),
+              );
+            }
+            return GestureDetector(
+              onTap: () {
+                _scaffoldKey.currentState?.openEndDrawer();
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundImage:
+                      (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
+                      ? NetworkImage(user.imageUrl!)
+                      : const NetworkImage("https://via.placeholder.com/150"),
+                ),
               ),
-            ),
+            );
+          }
           ),
         ],
       ),

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/tabView/view/likes_tab.dart';
+import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -31,6 +32,37 @@ void initState() {
     aboutController.text = user.about ?? "";
   }
 }
+Widget _buildPhoneField() {
+  final theme = Theme.of(context);
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: TextField(
+      controller: phoneController,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly, // only digits allowed
+        LengthLimitingTextInputFormatter(10),  // max 10 digits
+      ],
+      style: const TextStyle(color: Colors.grey),
+      decoration: InputDecoration(
+        labelText: "Phone",
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: TextStyle(color: theme.colorScheme.primary),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.primary),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    ),
+  );
+}
+
 
   final TextEditingController nameController =
       TextEditingController();
@@ -99,9 +131,11 @@ void initState() {
             backgroundColor: Colors.white,
             child: CircleAvatar(
               radius: 50,
-              backgroundImage: (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
-                        ? NetworkImage(user.imageUrl!)
-                        : const NetworkImage("https://via.placeholder.com/150"),
+              backgroundImage: _imageFile != null
+                ? FileImage(_imageFile!) // ✅ Show newly picked image immediately
+                : (user?.imageUrl != null && user!.imageUrl!.isNotEmpty
+                    ? NetworkImage(user.imageUrl!)
+                    : const NetworkImage("https://via.placeholder.com/150") as ImageProvider), // fallback
             ),
           ),
           Positioned(
@@ -191,7 +225,8 @@ void initState() {
               child: Column(
                 children: [
                   _buildEditableField("Name", nameController),
-                  _buildEditableField("Phone", phoneController),
+                  _buildPhoneField(),
+                  // _buildEditableField("Phone", phoneController),
                   _buildEditableField("Age", ageController),
                   // _buildEditableField("Gender", genderController),
                   _buildEditableField("Location", locationController),

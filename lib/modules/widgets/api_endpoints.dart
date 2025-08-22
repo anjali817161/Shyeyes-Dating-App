@@ -1,6 +1,6 @@
 class ApiEndpoints {
 
-  static const String baseUrl = "https://bitmaxtest.com/shyeyes/api/";
+  static const String baseUrl = "https://chat.bitmaxtest.com/admin/api/";
 
   // Auth
   static const String login = "login";
