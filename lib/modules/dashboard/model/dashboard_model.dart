@@ -1,19 +1,31 @@
 class ActiveUserModel {
-  final int id;
-  final String name;
+  final int? id;
+  final String? name;
   final String? image;
+  final int? age;
+  final String? location;
+  final String? about;
 
-  ActiveUserModel({required this.id, required this.name, this.image});
+  ActiveUserModel({
+    required this.age,
+    required this.location,
+    required this.about,
+    required this.id,
+    required this.name,
+    this.image,
+  });
 
   factory ActiveUserModel.fromJson(Map<String, dynamic> json) {
     return ActiveUserModel(
       id: json['id'],
-      name: json['name'],
-      image: json['image'],
+      age: int.tryParse(json['age'].toString()) ?? 0,
+      location: json['location'] ?? 'N/A',
+      about: json['about'] ?? 'N/A',
+      name: json['name'] ?? 'N/A',
+      image: json['image'] ?? null,
     );
   }
 }
-
 
 class BestMatchModel {
   final int? userId;
@@ -21,12 +33,7 @@ class BestMatchModel {
   final int? age;
   final String? img;
 
-  BestMatchModel({
-    this.userId,
-    this.name,
-    this.age,
-    this.img,
-  });
+  BestMatchModel({this.userId, this.name, this.age, this.img});
 
   factory BestMatchModel.fromJson(Map<String, dynamic> json) {
     return BestMatchModel(
@@ -38,12 +45,6 @@ class BestMatchModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "userid": userId,
-      "name": name,
-      "age": age,
-      "img": img,
-    };
+    return {"userid": userId, "name": name, "age": age, "img": img};
   }
 }
-

@@ -29,6 +29,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final MusicController musicController = Get.find<MusicController>();
+
   final ActiveUsersController usersController = Get.put(
     ActiveUsersController(),
   );
@@ -317,28 +318,65 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 8),
 
                     // Send Request button
-                    ElevatedButton(
-                      onPressed: () {
-                        showSuccessSnackbar(
-                          context,
-                          "Request sent successfully",
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
+                    Obx(() {
+                      final receiverId = profile.userId ?? 0;
+                      final status =
+                          usersController.requestStatus[receiverId] ?? "none";
+                      final loading =
+                          usersController.Loading[receiverId] ?? false;
+
+                      return ElevatedButton(
+                        onPressed: loading
+                            ? null
+                            : () {
+                                if (status == "pending") {
+                                  usersController.cancelRequest(receiverId);
+                                } else {
+                                  usersController.sendRequest(receiverId);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: status == "pending"
+                              ? Colors.red
+                              : theme.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          minimumSize: const Size(120, 30),
                         ),
-                        minimumSize: const Size(120, 30),
-                      ),
-                      child: const Text(
-                        "Send Request",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                    ),
+                        child: loading
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    status == "pending"
+                                        ? Icons.cancel
+                                        : Icons.send,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    status == "pending"
+                                        ? "Cancel Request"
+                                        : "Send Request",
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                      );
+                    }),
 
                     const SizedBox(height: 8),
 
@@ -374,7 +412,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     Text(
                       profile.age != null
                           ? "${profile.age} years old"
-                          : "Age N/A",
+                          : "Age not specified",
                       style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
 
@@ -387,13 +425,159 @@ class _DashboardPageState extends State<DashboardPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _iconCircle(Icons.call, () {
-                            // your existing call logic
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (ctx) => Dialog(
+                                shape: HeartShapeBorder(),
+                                backgroundColor: theme.colorScheme.secondary,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        color: theme.colorScheme.primary,
+                                        size: 50,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Subscription Required',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'To Proceed with Audio call, You have to Subscribe your Plan.',
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 20),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                    top: Radius.circular(20),
+                                                  ),
+                                            ),
+                                            builder: (context) =>
+                                                const SubscriptionBottomSheet(),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              theme.colorScheme.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 32,
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Subscribe Now',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
                             Get.to(() => ChatScreen(user: dummyUser));
                           }),
                           _iconCircle(Icons.videocam, () {
-                            // your existing video logic
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (ctx) => Dialog(
+                                shape: HeartShapeBorder(),
+                                backgroundColor: theme.colorScheme.secondary,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        color: theme.colorScheme.primary,
+                                        size: 50,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Subscription Required',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'To Proceed with Video call, You have to Subscribe your Plan.',
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 20),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                    top: Radius.circular(20),
+                                                  ),
+                                            ),
+                                            builder: (context) =>
+                                                const SubscriptionBottomSheet(),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              theme.colorScheme.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 32,
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Subscribe Now',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
                           }),
                         ],
                       ),
@@ -450,8 +634,8 @@ class _DashboardPageState extends State<DashboardPage> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             scrollDirection: Axis.horizontal,
-            itemCount: controller.activeUsers.length > 30
-                ? 30
+            itemCount: controller.activeUsers.length > 8
+                ? 8
                 : controller.activeUsers.length,
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {

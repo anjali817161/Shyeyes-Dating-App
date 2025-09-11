@@ -3,6 +3,7 @@ import 'package:get/route_manager.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
+import 'package:shyeyes/modules/invitation/view/invitation_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
@@ -31,7 +32,14 @@ class CustomDrawer extends StatelessWidget {
         },
       ),
       _DrawerItem(
-        icon: Icons.notifications,
+        icon: Icons.insert_invitation_rounded,
+        label: 'Invitations',
+        ontap: () {
+          Get.to(() => InvitationPage());
+        },
+      ),
+      _DrawerItem(
+        icon: Icons.description,
         label: 'Terms & Conditions',
         ontap: () {
           Get.to(() => const TermsAndConditions());
@@ -59,7 +67,8 @@ class CustomDrawer extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage: (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
+                    backgroundImage:
+                        (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
                         ? NetworkImage(user.imageUrl!)
                         : const NetworkImage("https://via.placeholder.com/150"),
                   ),
@@ -114,7 +123,11 @@ class CustomDrawer extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: ListTile(
-                      leading: Icon(item.icon, color: theme.primaryColor, size: 26),
+                      leading: Icon(
+                        item.icon,
+                        color: theme.primaryColor,
+                        size: 26,
+                      ),
                       title: Text(
                         item.label,
                         style: TextStyle(
@@ -123,7 +136,9 @@ class CustomDrawer extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
                     ),
                   ),
                 );
@@ -200,4 +215,3 @@ class _DrawerItem {
     required this.ontap,
   });
 }
-

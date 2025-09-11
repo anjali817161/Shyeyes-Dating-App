@@ -230,6 +230,9 @@ class AuthRepository {
   //     throw Exception("Failed to load messages: ${response.statusCode}");
   //   }
   // }
+
+
+  
   Future<http.Response> editProfile({
     String? fName,
     String? lName,
@@ -275,5 +278,118 @@ class AuthRepository {
     print("Fields => ${request.fields}");
     print("Files => ${request.files.map((f) => f.filename).toList()}");
     return http.Response.fromStream(streamedResponse);
+  }
+
+  static Future<Map<String, dynamic>?> sendRequest(int receiverId) async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.sentRequest),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"receiver_id": receiverId}),
+      );
+
+      print("📩 Response: ${response.body}");
+      // print("➡️ Receiver ID: $receiverId");
+      //  print("🔑 Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print("⚠️ Failed with status: ${response.statusCode}");
+        return {"message": "Failed", "status_code": response.statusCode};
+      }
+    } catch (e) {
+      print("❌ Error sending request: $e");
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> cancelRequest(int requestId) async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+      final response = await http.delete(
+        Uri.parse("${ApiEndpoints.baseUrl}/message-requests/$requestId/reject"),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("❌ Cancel Request Response: ${response.body}");
+      print("➡️ Request ID: $requestId");
+      print("🔑 Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print("⚠️ Failed with status: ${response.statusCode}");
+        return {"message": "Failed", "status_code": response.statusCode};
+      }
+    } catch (e) {
+      print("❌ Error canceling request: $e");
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getInvitations() async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.requestRecieved),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("📩 Invitations Response: ${response.body}");
+      print("🔑 Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {"message": "Failed", "status_code": response.statusCode};
+      }
+    } catch (e) {
+      print("❌ Error fetching invitations: $e");
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> acceptRequest(int requestId) async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+      final response = await http.post(
+        Uri.parse("${ApiEndpoints.baseUrl}/message-requests/$requestId/accept"),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("✅ Accept Request Response: ${response.body}");
+      print("➡️ Request ID: $requestId");
+      print("🔑 Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {"message": "Failed", "status_code": response.statusCode};
+      }
+    } catch (e) {
+      print("❌ Error accepting request: $e");
+      return null;
+    }
   }
 }

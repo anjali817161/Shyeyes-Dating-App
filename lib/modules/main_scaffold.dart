@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shyeyes/modules/chats/view/users_chat.dart';
 import 'package:shyeyes/modules/dashboard/view/dashboard_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
-import 'package:shyeyes/modules/tabView/view/likes_tab.dart';
+import 'package:shyeyes/modules/likes/likes_tab.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 
 class MainScaffold extends StatefulWidget {

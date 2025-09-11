@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
-import 'package:shyeyes/modules/tabView/view/likes_tab.dart';
+import 'package:shyeyes/modules/likes/likes_tab.dart';
 import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
