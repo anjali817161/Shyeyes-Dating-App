@@ -3,8 +3,6 @@ import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
-import 'package:shyeyes/modules/profile/model/profile_model.dart';
-
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -17,20 +15,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final ProfileController controller = Get.put(ProfileController());
 
   @override
-  void initState() {
-    super.initState();
-    // 🔑 Pass token from your login/session storage
-    controller.fetchProfile();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Your Profile", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Your Profile",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: theme.colorScheme.primary,
         elevation: 1,
         centerTitle: true,
@@ -47,10 +41,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
           return const Center(child: Text("No profile data"));
         }
 
-        final profileData = controller.profile.value!.data; 
-        return _buildProfileView(theme, profileData!.fullName ?? "No name", profileData.email ?? "No email",
-            (profileData.age != null) ? profileData.age.toString() : "N/A", profileData.gender ?? "N/A", profileData.location ?? "N/A",
-            profileData.dob ?? "N/A", profileData.about ?? "Not Provided", profileData.imageUrl ?? "https://via.placeholder.com/150");
+        final profileData = controller.profile.value!.data;
+        return _buildProfileView(
+          theme,
+          profileData!.fullName ?? "No name",
+          profileData.email ?? "No email",
+          (profileData.age != null) ? profileData.age.toString() : "N/A",
+          profileData.gender ?? "N/A",
+          profileData.location ?? "N/A",
+          profileData.dob ?? "N/A",
+          profileData.about ?? "Not Provided",
+          profileData.imageUrl ?? "https://via.placeholder.com/150",
+        );
       }),
     );
   }
@@ -105,7 +107,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
               ),
 
-              // Profile image overlapping banner bottom-left
+              // Profile image overlapping banner bottom
               Positioned(
                 bottom: -50,
                 left: 40,
@@ -115,11 +117,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundImage: imageUrl.isNotEmpty
-        ? NetworkImage(imageUrl)
-        : const NetworkImage("https://via.placeholder.com/150"),
-        onBackgroundImageError: (_, __) {
-      // fallback if the image URL is invalid
-    },
+                        ? NetworkImage(imageUrl)
+                        : const NetworkImage("https://via.placeholder.com/150"),
+                    onBackgroundImageError: (_, __) {
+                      // fallback if the image URL
+                    },
                   ),
                 ),
               ),
@@ -217,11 +219,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _divider() {
-    return Divider(
-      color: Colors.grey.shade300,
-      height: 0,
-      thickness: 1,
-    );
+    return Divider(color: Colors.grey.shade300, height: 0, thickness: 1);
   }
 }
-

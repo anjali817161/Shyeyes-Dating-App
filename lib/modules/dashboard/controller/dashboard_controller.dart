@@ -20,10 +20,10 @@ class ActiveUsersController extends GetxController {
       final users = await _userRepository.getActiveUsers();
       activeUsers.assignAll(users);
 
-      print("✅ Active users fetched: ${activeUsers.length}");
+      print(" Active users fetched: ${activeUsers.length}");
     } catch (e) {
       errorMessage.value = e.toString();
-      print("❌ Error fetching active users: $e");
+      print(" Error fetching active users: $e");
     } finally {
       isLoading.value = false;
     }

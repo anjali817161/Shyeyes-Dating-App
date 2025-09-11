@@ -70,7 +70,7 @@ class HomePulsePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
 
-    // Bigger pulse size: expands beyond avatar
+    // Bigger pulse size:
     final double radius = (maxSize / 2) * (0.8 + progress * 0.4);
     canvas.drawCircle(size.center(Offset.zero), radius, paint);
   }

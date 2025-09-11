@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
-import 'package:shyeyes/modules/auth/signup/view/personal_info.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});

@@ -68,58 +68,53 @@ class ChatLobbyPage extends StatelessWidget {
           ),
 
           // Stories / Active users
-         // Stories / Active users
-SizedBox(
-  height: 100,
-  child: ListView.builder(
-    padding: const EdgeInsets.only(left: 12),
-    scrollDirection: Axis.horizontal,
-    itemCount: controller.chats.length,
-    itemBuilder: (context, index) {
-      final user = controller.chats[index];
-      return Padding(
-        padding: const EdgeInsets.only(right: 16),
-        child: Column(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: theme.colorScheme.primary,
-                      width: 1,
-                    ),
-                    color: Colors.white,
-                  ),
-                  child: CircleAvatar(
-                    radius: 28,
-                    backgroundImage: NetworkImage(user.avatarUrl),
-                  ),
-                ),
+          // Stories / Active users
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              padding: const EdgeInsets.only(left: 12),
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.chats.length,
+              itemBuilder: (context, index) {
+                final user = controller.chats[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Column(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: theme.colorScheme.primary,
+                                width: 1,
+                              ),
+                              color: Colors.white,
+                            ),
+                            child: CircleAvatar(
+                              radius: 28,
+                              backgroundImage: NetworkImage(user.avatarUrl),
+                            ),
+                          ),
 
-                // 👇 Add blinking green dot
-                 Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: BlinkingDot(),
-                ),
-              ],
+                          //  Add blinking green dot
+                          Positioned(bottom: 4, right: 4, child: BlinkingDot()),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        user.name.split(" ").first,
+                        style: const TextStyle(fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 6),
-            Text(
-              user.name.split(" ").first,
-              style: const TextStyle(fontSize: 12),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      );
-    },
-  ),
-),
-
+          ),
 
           const SizedBox(height: 8),
 

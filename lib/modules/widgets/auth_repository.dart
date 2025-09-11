@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:get/get_connect/http/src/response/response.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
@@ -96,6 +96,9 @@ class AuthRepository {
     return http.Response.fromStream(streamedResponse);
   }
 
+
+// your profile api  
+
   Future<UserProfileModel> getProfile() async {
     final String? token = await SharedPrefHelper.getToken();
     print("Token from SharedPref: $token");
@@ -107,7 +110,7 @@ class AuthRepository {
       Uri.parse(Url),
       headers: {
         "Accept": "application/json",
-        "Authorization": "Bearer $token", // 🔑 usually required
+        "Authorization": "Bearer $token", // 🔑 usually
       },
     );
     print("Status Code: ${response.statusCode}");

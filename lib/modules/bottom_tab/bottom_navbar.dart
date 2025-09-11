@@ -8,7 +8,11 @@ class BottomNavBar extends StatelessWidget {
   final Function(int) onTap;
   final int? centerHeartPlayKey;
 
-  const BottomNavBar({required this.currentIndex, required this.onTap, this.centerHeartPlayKey});
+  const BottomNavBar({
+    required this.currentIndex,
+    required this.onTap,
+    this.centerHeartPlayKey,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +33,8 @@ class BottomNavBar extends StatelessWidget {
           label: "Explore",
         ),
         BottomNavigationBarItem(
-          icon: _CenterHeartIcon(
-            playKey: null,
-          ),
-          activeIcon: _CenterHeartIcon(
-            playKey: centerHeartPlayKey,
-          ),
+          icon: _CenterHeartIcon(playKey: null),
+          activeIcon: _CenterHeartIcon(playKey: centerHeartPlayKey),
           label: "Likes",
         ),
         const BottomNavigationBarItem(

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
-import 'package:shyeyes/modules/tabView/view/likes_tab.dart';
 import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -17,72 +17,66 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   File? _imageFile;
   @override
-void initState() {
-  super.initState();
-  final ProfileController controller = Get.find<ProfileController>();
-  final user = controller.profile.value?.data;
+  void initState() {
+    super.initState();
+    final ProfileController controller = Get.find<ProfileController>();
+    final user = controller.profile.value?.data;
 
-  if (user != null) {
-    nameController.text = user.fullName ?? "";
-    phoneController.text = user.phone ?? "";
-    ageController.text = user.age?.toString() ?? "";
-    genderController.text = user.gender ?? "";
-    locationController.text = user.location ?? "";
-    dobController.text = user.dob ?? "";
-    aboutController.text = user.about ?? "";
+    if (user != null) {
+      nameController.text = user.fullName ?? "";
+      phoneController.text = user.phone ?? "";
+      ageController.text = user.age?.toString() ?? "";
+      genderController.text = user.gender ?? "";
+      locationController.text = user.location ?? "";
+      dobController.text = user.dob ?? "";
+      aboutController.text = user.about ?? "";
+    }
   }
-}
-Widget _buildPhoneField() {
-  final theme = Theme.of(context);
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: TextField(
-      controller: phoneController,
-      keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly, // only digits allowed
-        LengthLimitingTextInputFormatter(10),  // max 10 digits
-      ],
-      style: const TextStyle(color: Colors.grey),
-      decoration: InputDecoration(
-        labelText: "Phone",
-        filled: true,
-        fillColor: Colors.white,
-        labelStyle: TextStyle(color: theme.colorScheme.primary),
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: theme.colorScheme.primary),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-          borderRadius: BorderRadius.circular(10),
+  Widget _buildPhoneField() {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextField(
+        controller: phoneController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly, // only digits allowed
+          LengthLimitingTextInputFormatter(10), // max 10 digits
+        ],
+        style: const TextStyle(color: Colors.grey),
+        decoration: InputDecoration(
+          labelText: "Phone",
+          filled: true,
+          fillColor: Colors.white,
+          labelStyle: TextStyle(color: theme.colorScheme.primary),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: theme.colorScheme.primary),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-  final TextEditingController nameController =
-      TextEditingController();
-  final TextEditingController phoneController =
-      TextEditingController();
-  final TextEditingController ageController =
-      TextEditingController();
-  final TextEditingController genderController =
-      TextEditingController();
-  final TextEditingController locationController =
-      TextEditingController();
-  final TextEditingController dobController =
-      TextEditingController();
-  final TextEditingController aboutController =
-      TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
+  final TextEditingController locationController = TextEditingController();
+  final TextEditingController dobController = TextEditingController();
+  final TextEditingController aboutController = TextEditingController();
 
   Future<void> _pickImage() async {
     try {
-      final pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
       if (pickedFile != null) {
         setState(() => _imageFile = File(pickedFile.path));
       }
@@ -116,7 +110,7 @@ Widget _buildPhoneField() {
       ),
     );
   }
-  
+
   Widget _buildProfileImage() {
     final ProfileController controller = Get.find<ProfileController>();
     final user = controller.profile.value?.data;
@@ -132,10 +126,13 @@ Widget _buildPhoneField() {
             child: CircleAvatar(
               radius: 50,
               backgroundImage: _imageFile != null
-                ? FileImage(_imageFile!) // ✅ Show newly picked image immediately
-                : (user?.imageUrl != null && user!.imageUrl!.isNotEmpty
-                    ? NetworkImage(user.imageUrl!)
-                    : const NetworkImage("https://via.placeholder.com/150") as ImageProvider), // fallback
+                  ? FileImage(
+                      _imageFile!,
+                    ) // ✅ Show newly picked image immediately
+                  : (user?.imageUrl != null && user!.imageUrl!.isNotEmpty
+                        ? NetworkImage(user.imageUrl!)
+                        : const NetworkImage("https://via.placeholder.com/150")
+                              as ImageProvider), // fallback
             ),
           ),
           Positioned(
@@ -162,11 +159,14 @@ Widget _buildPhoneField() {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Edit Profile", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Edit Profile",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: theme.colorScheme.primary,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -180,7 +180,7 @@ Widget _buildPhoneField() {
               alignment: Alignment.center, // Center profile image horizontally
               children: [
                 Container(
-                  height: 180,
+                  height: 160,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -232,40 +232,40 @@ Widget _buildPhoneField() {
                   _buildEditableField("Location", locationController),
                   _buildEditableField("Date of Birth", dobController),
                   _buildEditableField("Bio", aboutController),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-  onPressed: () async {
-    final ProfileController controller = Get.find<ProfileController>();
+                      onPressed: () async {
+                        final ProfileController controller =
+                            Get.find<ProfileController>();
 
-    await controller.updateProfile(
-      fullName: nameController.text.trim(),
-      phone: phoneController.text.trim(),
-      age: ageController.text.trim(),
-      dob: dobController.text.trim(),
-      gender: genderController.text.trim(),
-      location: locationController.text.trim(),
-      about: aboutController.text.trim(),
-      img: _imageFile, // if user picked an image
-    );
+                        await controller.updateProfile(
+                          fullName: nameController.text.trim(),
+                          phone: phoneController.text.trim(),
+                          age: ageController.text.trim(),
+                          dob: dobController.text.trim(),
+                          gender: genderController.text.trim(),
+                          location: locationController.text.trim(),
+                          about: aboutController.text.trim(),
+                          img: _imageFile, // if user picked an image
+                        );
 
-    Navigator.pop(context); // ✅ only pop after updating
-  },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: theme.colorScheme.primary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-  ),
-  child: const Text(
-    "Submit",
-    style: TextStyle(fontSize: 16, color: Colors.white),
-  ),
-),
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        "Submit",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),

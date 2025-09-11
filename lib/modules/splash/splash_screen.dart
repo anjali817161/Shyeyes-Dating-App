@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shyeyes/modules/auth/login/view/login_view.dart';
-import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/main_scaffold.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -55,8 +53,8 @@ class _SplashScreenState extends State<SplashScreen>
     _textAnimationController.forward();
 
     Future.delayed(const Duration(seconds: 6), () {
-      // Get.offAll(() => MainScaffold());
-      Get.offAll(() => LoginView());
+      Get.offAll(() => MainScaffold());
+      // Get.offAll(() => LoginView());
     });
   }
 

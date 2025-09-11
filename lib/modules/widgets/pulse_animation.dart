@@ -34,11 +34,7 @@ class _BlinkingDotState extends State<BlinkingDot>
       child: Container(
         width: 14,
         height: 14,
-        decoration: BoxDecoration(
-          color: Colors.green,
-          shape: BoxShape.circle,
-          
-        ),
+        decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
       ),
     );
   }

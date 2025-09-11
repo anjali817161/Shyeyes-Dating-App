@@ -11,9 +11,6 @@ import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
-import 'package:shyeyes/modules/explore/view/explore_view.dart';
-import 'package:shyeyes/modules/tabView/view/likes_screen.dart';
-import 'package:shyeyes/modules/dashboard/widget/heartAnimationWidget.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -26,125 +23,115 @@ class _HomeViewState extends State<HomeView> {
   final AboutController controller = Get.put(AboutController());
   final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
   List<bool> isLikedList = [];
-  int _currentIndex = 0;
-  bool isHeartAnimating = false;
-  bool isLiked = false;
-
   List<bool> playHeartAnimationList = [];
-  // final List<String> images = [
-  //   'assets/images/profile_image1.png',
-  //   'assets/images/profile_image2.png',
-  //   'assets/images/profile_image3.png',
-  //   'assets/images/profile_image4.png',
-  //   'assets/images/profile_image5.png',
-  // ];
+  int _currentIndex = 0;
 
   final List<AboutModel> profiles = [
-    AboutModel(
-      image: 'assets/images/profile_image1.png',
-      name: 'Shaan',
-      age: 25,
-      distance: '2 km away',
-      job: 'Software Engineer',
-      college: 'IIT Delhi',
-      location: 'New Delhi',
-      about: 'Loves traveling and coffee.',
-      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-      pets: 'Dog',
-      drinking: 'Socially',
-      smoking: 'No',
-      workout: 'Daily',
-      zodiac: 'Leo',
-      education: 'Masters',
-      vaccine: 'Yes',
-      communication: 'English, Hindi',
-      height: '',
-      active: '',
-    ),
-    AboutModel(
-      image: 'assets/images/profile_image2.png',
-      name: 'Shaan',
-      age: 25,
-      distance: '2 km away',
-      job: 'Software Engineer',
-      college: 'IIT Delhi',
-      location: 'New Delhi',
-      about: 'Loves traveling and coffee.',
-      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-      pets: 'Dog',
-      drinking: 'Socially',
-      smoking: 'No',
-      workout: 'Daily',
-      zodiac: 'Leo',
-      education: 'Masters',
-      vaccine: 'Yes',
-      communication: 'English, Hindi',
-      height: '',
-      active: '',
-    ),
-    AboutModel(
-      image: 'assets/images/profile_image3.png',
-      name: 'Shaan',
-      age: 25,
-      distance: '2 km away',
-      job: 'Software Engineer',
-      college: 'IIT Delhi',
-      location: 'New Delhi',
-      about: 'Loves traveling and coffee.',
-      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-      pets: 'Dog',
-      drinking: 'Socially',
-      smoking: 'No',
-      workout: 'Daily',
-      zodiac: 'Leo',
-      education: 'Masters',
-      vaccine: 'Yes',
-      communication: 'English, Hindi',
-      height: '',
-      active: '',
-    ),
-    AboutModel(
-      image: 'assets/images/profile_image4.png',
-      name: 'Shaan',
-      age: 25,
-      distance: '2 km away',
-      job: 'Software Engineer',
-      college: 'IIT Delhi',
-      location: 'New Delhi',
-      about: 'Loves traveling and coffee.',
-      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-      pets: 'Dog',
-      drinking: 'Socially',
-      smoking: 'No',
-      workout: 'Daily',
-      zodiac: 'Leo',
-      education: 'Masters',
-      vaccine: 'Yes',
-      communication: 'English, Hindi',
-      height: '',
-      active: '',
-    ),
-    AboutModel(
-      image: 'assets/images/profile_image5.png',
-      name: 'Eshaan',
-      age: 25,
-      distance: '2 km away',
-      job: 'Software Engineer',
-      college: 'IIT Delhi',
-      location: 'New Delhi',
-      about: 'Loves traveling and coffee.',
-      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-      pets: 'Dog',
-      drinking: 'Socially',
-      smoking: 'No',
-      workout: 'Daily',
-      zodiac: 'Leo',
-      education: 'Masters',
-      vaccine: 'Yes',
-      communication: 'English, Hindi',
-      height: '',
-      active: '',
-    ),
+    // AboutModel(
+    //   image: 'assets/images/profile_image1.png',
+    //   name: 'Shaan',
+    //   age: 25,
+    //   distance: '2 km away',
+    //   job: 'Software Engineer',
+    //   college: 'IIT Delhi',
+    //   location: 'New Delhi',
+    //   about: 'Loves traveling and coffee.',
+    //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    //   pets: 'Dog',
+    //   drinking: 'Socially',
+    //   smoking: 'No',
+    //   workout: 'Daily',
+    //   zodiac: 'Leo',
+    //   education: 'Masters',
+    //   vaccine: 'Yes',
+    //   communication: 'English, Hindi',
+    //   height: '',
+    //   active: '',
+    // ),
+    // AboutModel(
+    //   image: 'assets/images/profile_image2.png',
+    //   name: 'Shaan',
+    //   age: 25,
+    //   distance: '2 km away',
+    //   job: 'Software Engineer',
+    //   college: 'IIT Delhi',
+    //   location: 'New Delhi',
+    //   about: 'Loves traveling and coffee.',
+    //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    //   pets: 'Dog',
+    //   drinking: 'Socially',
+    //   smoking: 'No',
+    //   workout: 'Daily',
+    //   zodiac: 'Leo',
+    //   education: 'Masters',
+    //   vaccine: 'Yes',
+    //   communication: 'English, Hindi',
+    //   height: '',
+    //   active: '',
+    // ),
+    // AboutModel(
+    //   image: 'assets/images/profile_image3.png',
+    //   name: 'Shaan',
+    //   age: 25,
+    //   distance: '2 km away',
+    //   job: 'Software Engineer',
+    //   college: 'IIT Delhi',
+    //   location: 'New Delhi',
+    //   about: 'Loves traveling and coffee.',
+    //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    //   pets: 'Dog',
+    //   drinking: 'Socially',
+    //   smoking: 'No',
+    //   workout: 'Daily',
+    //   zodiac: 'Leo',
+    //   education: 'Masters',
+    //   vaccine: 'Yes',
+    //   communication: 'English, Hindi',
+    //   height: '',
+    //   active: '',
+    // ),
+    // AboutModel(
+    //   image: 'assets/images/profile_image4.png',
+    //   name: 'Shaan',
+    //   age: 25,
+    //   distance: '2 km away',
+    //   job: 'Software Engineer',
+    //   college: 'IIT Delhi',
+    //   location: 'New Delhi',
+    //   about: 'Loves traveling and coffee.',
+    //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    //   pets: 'Dog',
+    //   drinking: 'Socially',
+    //   smoking: 'No',
+    //   workout: 'Daily',
+    //   zodiac: 'Leo',
+    //   education: 'Masters',
+    //   vaccine: 'Yes',
+    //   communication: 'English, Hindi',
+    //   height: '',
+    //   active: '',
+    // ),
+    // AboutModel(
+    //   image: 'assets/images/profile_image5.png',
+    //   name: 'Eshaan',
+    //   age: 25,
+    //   distance: '2 km away',
+    //   job: 'Software Engineer',
+    //   college: 'IIT Delhi',
+    //   location: 'New Delhi',
+    //   about: 'Loves traveling and coffee.',
+    //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+    //   pets: 'Dog',
+    //   drinking: 'Socially',
+    //   smoking: 'No',
+    //   workout: 'Daily',
+    //   zodiac: 'Leo',
+    //   education: 'Masters',
+    //   vaccine: 'Yes',
+    //   communication: 'English, Hindi',
+    //   height: '',
+    //   active: '',
+    // ),
   ];
 
   @override
@@ -180,98 +167,134 @@ class _HomeViewState extends State<HomeView> {
                     child: Image.asset(profile.image, fit: BoxFit.cover),
                     onDoubleTap: () {
                       setState(() {
-                        isHeartAnimating = true;
-                        isLikedList[index] = true;
-                        playHeartAnimationList[index] = true;
+                        isLikedList[index] = !isLikedList[index];
+                        playHeartAnimationList[index] =
+                            true; // Trigger heart beating
                       });
                     },
                   ),
-                  // Opacity(opacity: isHeartAnimating ? 1 : 0,
 
-                  // child: HeartAnimationWidget(
-                  //   isAnimating: isHeartAnimating,
-                  //   duration: const Duration(milliseconds: 700),
-                  //   child: Icon(
-                  //     Icons.favorite,
-                  //     color: Colors.red,
-                  //     size: 100,
-                  //   ),
-                  //   onEnd: ()=> setState(() {
-                  //     isHeartAnimating = false;
-                  //   }
-                  //   ),
-                  // ),
-                  // ),
+                  // HeartBeating Animation Center
+                  if (playHeartAnimationList[index])
+                    Center(
+                      child: Lottie.asset(
+                        'assets/lotties/Heartbeating.json',
+                        width: 600,
+                        height: 600,
+                        repeat: false,
+                        onLoaded: (composition) {
+                          Future.delayed(composition.duration, () {
+                            if (mounted) {
+                              setState(
+                                () => playHeartAnimationList[index] = false,
+                              );
+                            }
+                          });
+                        },
+                      ),
+                    ),
 
-                  // Container(
-                  //   decoration: BoxDecoration(
-                  //     gradient: LinearGradient(
-                  //       colors: [
-                  //         Colors.transparent,
-                  //         Colors.black.withOpacity(0.8),
-                  //       ],
-                  //       begin: Alignment.topCenter,
-                  //       end: Alignment.bottomCenter,
-                  //     ),
-                  //   ),
-                  // ),
                   Positioned(
                     left: 16,
                     right: 16,
                     bottom: 140,
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Shaan, 25",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.school, color: Colors.white, size: 18),
-                            SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                "Indian Institute of Technology, Delhi",
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${profile.name}, ${profile.age}",
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 14,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                          ),
-                          onPressed: () async {
-                            final controller = Get.find<AboutController>();
-                            controller.setProfile(profile);
-                            await Get.to(() => AboutView(profileData: profile));
-                          },
-                          child: const Text(
-                            "View Profile",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.school,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      profile.college,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          theme.colorScheme.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      final controller =
+                                          Get.find<AboutController>();
+                                      controller.setProfile(profile);
+                                      await Get.to(
+                                        () => AboutView(profileData: profile),
+                                      );
+                                    },
+                                    child: const Text(
+                                      "View Profile",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 12, top: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    padding: EdgeInsets.all(10),
+                                    child: Image.asset(
+                                      "assets/images/invite.png",
+                                      scale: 17,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
 
+                  // Bottom Buttons
                   Positioned(
                     bottom: 50,
                     left: 0,
@@ -453,7 +476,7 @@ class _HomeViewState extends State<HomeView> {
                           },
                         ),
                         buildActionButton(
-                          Icons.send,
+                          Icons.chat,
                           Colors.blueAccent,
                           26,
                           () {
@@ -470,8 +493,14 @@ class _HomeViewState extends State<HomeView> {
             enableAutoSlider: false,
             unlimitedMode: true,
             initialPage: 0,
+            onSlideChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
           ),
 
+          // Top Bar
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 16,
@@ -481,11 +510,6 @@ class _HomeViewState extends State<HomeView> {
               children: [
                 Row(
                   children: [
-                    // Icon(
-                    //   Icons.local_fire_department,
-                    //   color: Colors.white,
-                    //   size: 28,
-                    // ),
                     const SizedBox(width: 8),
                     Image.asset('assets/images/logo.png', height: 40),
                   ],
@@ -496,10 +520,7 @@ class _HomeViewState extends State<HomeView> {
                     IconButton(
                       icon: Icon(Icons.share, color: Colors.teal, size: 24),
                       onPressed: () {
-                        // Get the currently visible profile
-                        final currentProfile =
-                            profiles[_currentIndex]; // You’ll need to track _currentIndex
-
+                        final currentProfile = profiles[_currentIndex];
                         final String shareText =
                             '''
 ${currentProfile.name}, ${currentProfile.age}
@@ -510,11 +531,9 @@ Interests: ${currentProfile.interests.join(', ')}
 
 Check out this profile!
 ''';
-
                         Share.share(shareText);
                       },
                     ),
-
                     const SizedBox(width: 18),
                     Icon(Icons.flash_on, color: Colors.amber, size: 24),
                   ],
@@ -574,7 +593,7 @@ Check out this profile!
           ),
         ),
 
-        // Lottie animation overlay
+        // Small heart for bottom
         if (playAnimation)
           Positioned(
             top: -48,

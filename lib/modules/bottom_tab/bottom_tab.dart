@@ -1,10 +1,8 @@
 // main_scaffold.dart
 
 import 'package:flutter/material.dart';
-import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/explore/view/explore_view.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
-import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/tabView/view/likes_screen.dart';
 import 'package:shyeyes/modules/bottom_tab/bottom_navbar.dart';
 
