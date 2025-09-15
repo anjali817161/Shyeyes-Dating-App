@@ -54,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     Future.delayed(const Duration(seconds: 6), () {
       Get.offAll(() => MainScaffold());
-      // Get.offAll(() => LoginView());
+       //Get.offAll(() => LoginView());
     });
   }
 

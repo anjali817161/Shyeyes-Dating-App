@@ -25,6 +25,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           "Your Profile",
           style: TextStyle(color: Colors.white),
         ),
+
         backgroundColor: theme.colorScheme.primary,
         elevation: 1,
         centerTitle: true,
@@ -219,6 +220,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _divider() {
+    return Divider(color: Colors.grey.shade300, height: 0, thickness: 1);
     return Divider(color: Colors.grey.shade300, height: 0, thickness: 1);
   }
 }

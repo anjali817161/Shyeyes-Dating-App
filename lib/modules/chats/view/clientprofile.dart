@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UserBottomSheet {
   static void show(BuildContext context) {
@@ -11,12 +12,11 @@ class UserBottomSheet {
         return Align(
           alignment: Alignment.topCenter,
           child: Material(
-            color: Color(0xFFFFF3F3),
+            color: const Color(0xFFFFF3F3),
             child: Container(
-              //margin: const EdgeInsets.only(0),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
               decoration: BoxDecoration(
-                color: Color(0xFFFFF3F3),
+                color: const Color(0xFFFFF3F3),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: SingleChildScrollView(
@@ -29,9 +29,9 @@ class UserBottomSheet {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(60),
-                          border: Border.all(color: Color(0xFFDF314D)),
+                          border: Border.all(color: const Color(0xFFDF314D)),
                         ),
-                        child: CircleAvatar(
+                        child: const CircleAvatar(
                           radius: 40,
                           backgroundImage: NetworkImage(
                             "https://i.pravatar.cc/150?img=3",
@@ -55,23 +55,35 @@ class UserBottomSheet {
                     // Row with Call, Video Call, Share
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
-                        Column(
+                      children: [
+                        const Column(
                           children: [
                             Icon(Icons.call, color: Colors.green),
                             Text("Call"),
                           ],
                         ),
-                        Column(
+                        const Column(
                           children: [
                             Icon(Icons.videocam, color: Colors.blue),
                             Text("Video"),
                           ],
                         ),
+                        // 👉 Share icon with onTap
                         Column(
                           children: [
-                            Icon(Icons.share, color: Colors.purple),
-                            Text("Share"),
+                            InkWell(
+                              onTap: () {
+                                Share.share(
+                                  "Hey! Check out Shaan's profile.\n📞 +91 9876543210\nAbout: Flutter developer & tech enthusiast",
+                                  subject: "Profile Share",
+                                );
+                              },
+                              child: const Icon(
+                                Icons.share,
+                                color: Colors.purple,
+                              ),
+                            ),
+                            const Text("Share"),
                           ],
                         ),
                       ],
@@ -80,9 +92,9 @@ class UserBottomSheet {
                     const SizedBox(height: 20),
 
                     // Phone Number
-                    Padding(
-                      padding: const EdgeInsets.only(left: 15),
-                      child: const Align(
+                    const Padding(
+                      padding: EdgeInsets.only(left: 15),
+                      child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           "📞 +91 9876543210",
@@ -103,12 +115,12 @@ class UserBottomSheet {
 
                     const SizedBox(height: 25),
 
-                    ListTile(
+                    const ListTile(
                       leading: Icon(Icons.block, color: Colors.red),
                       title: Text("Block"),
                     ),
 
-                    ListTile(
+                    const ListTile(
                       leading: Icon(Icons.report, color: Colors.orange),
                       title: Text("Report"),
                     ),

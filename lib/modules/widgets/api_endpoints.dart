@@ -11,4 +11,7 @@ class ApiEndpoints {
   static const String activeUsers = "active-users";
   static const String updateProfile = "profile/update";
   static const String bestMatches = "best-matches";
+  static const String sentRequest = "message-requests";
+  static const String requestRecieved = "message-requests/received";
+  // static const String cancelRequest = "cancel-requests";
 }

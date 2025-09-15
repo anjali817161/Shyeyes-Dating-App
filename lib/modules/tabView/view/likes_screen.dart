@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shyeyes/modules/tabView/view/likes_tab.dart';
+import 'package:shyeyes/modules/likes/likes_tab.dart';
 import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
 
 class LikesScreen extends StatefulWidget {
