@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart';
 import 'package:shyeyes/modules/auth/signup/controller/personalinfo_controller.dart';
-import 'package:shyeyes/modules/main_scaffold.dart';
 
 class PersonalInfo extends StatefulWidget {
   PersonalInfo({super.key});

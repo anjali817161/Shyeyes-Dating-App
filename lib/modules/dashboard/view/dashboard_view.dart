@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
-import 'package:shyeyes/modules/about/view/about_view.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
-import 'package:shyeyes/modules/dashboard/widget/home_pulse.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
-import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
@@ -61,28 +58,6 @@ class _DashboardPageState extends State<DashboardPage> {
       'image': 'assets/images/profile_image5.png',
     },
   ];
-
-  AboutModel dummyUser = AboutModel(
-    image: 'assets/images/profile_image1.png',
-    name: 'Shaan',
-    age: 25,
-    distance: '2 km away',
-    job: 'Software Engineer',
-    college: 'IIT Delhi',
-    location: 'New Delhi',
-    about: 'Loves traveling and coffee.',
-    interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-    pets: 'Dog',
-    drinking: 'Socially',
-    smoking: 'No',
-    workout: 'Daily',
-    zodiac: 'Leo',
-    education: 'Masters',
-    vaccine: 'Yes',
-    communication: 'English, Hindi',
-    height: '',
-    active: '',
-  );
 
   @override
   void initState() {
@@ -236,7 +211,7 @@ class _DashboardPageState extends State<DashboardPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.green, // Success color
+        backgroundColor: Colors.green, // Success
         behavior: SnackBarBehavior.floating, // Optional: floating style
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         duration: const Duration(seconds: 3),
@@ -323,7 +298,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       final status =
                           usersController.requestStatus[receiverId] ?? "none";
                       final loading =
-                          usersController.Loading[receiverId] ?? false;
+                          usersController.requestLoading[receiverId] ?? false;
 
                       return ElevatedButton(
                         onPressed: loading
@@ -848,7 +823,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   // ✅ New Members
                   sectionTitle("Active Now", () {
-                    Get.to(() => HomeView());
+                    Get.to(() => HomeView(viewType: HomeViewType.activeUsers));
                   }),
                   circularProfileList(context),
 
@@ -856,7 +831,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   // ✅ Active Members
                   sectionTitle("Best Matches for you", () {
-                    Get.to(() => HomeView());
+                    Get.to(() => HomeView(viewType: HomeViewType.bestMatches));
                   }),
                   profileList(),
                   SizedBox(height: 20),

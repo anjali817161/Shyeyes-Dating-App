@@ -3,7 +3,7 @@ import 'package:just_audio/just_audio.dart';
 
 class MusicController extends GetxController {
   final AudioPlayer player = AudioPlayer();
-  var isPlaying = true.obs; // 👈 track music state
+  var isPlaying = true.obs;
 
   @override
   void onInit() {
@@ -24,7 +24,6 @@ class MusicController extends GetxController {
 
   void toggleMusic() {
     if (isPlaying.value) {
-      // 👇 update first, then call pause
       isPlaying.value = false;
       player.pause();
     } else {

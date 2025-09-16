@@ -42,15 +42,14 @@ class _HeartAnimationWidgetState extends State<HeartAnimationWidget>
   }
 
   Future doAnimation() async {
-    if(widget.isAnimating){
+    if (widget.isAnimating) {
       await controller.forward();
-    await controller.reverse();
-    await Future.delayed(Duration(milliseconds: 400));
-    if(widget.onEnd != null) {
-      widget.onEnd!();
+      await controller.reverse();
+      await Future.delayed(Duration(milliseconds: 400));
+      if (widget.onEnd != null) {
+        widget.onEnd!();
+      }
     }
-    }
-    
   }
 
   @override

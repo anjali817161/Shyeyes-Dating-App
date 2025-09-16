@@ -5,7 +5,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
 import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
-import 'package:shyeyes/modules/chats/model/chat_model.dart';
 
 class AboutView extends StatefulWidget {
   final AboutModel profileData;
@@ -27,28 +26,27 @@ class _AboutViewState extends State<AboutView> {
     final secondaryColor = theme.colorScheme.secondary;
     final onSecondaryColor = theme.colorScheme.onSecondary;
 
-   
-  AboutModel dummyUser = AboutModel(
-    image: 'assets/images/profile_image1.png',
-    name: 'Shaan',
-    age: 25,
-    distance: '2 km away',
-    job: 'Software Engineer',
-    college: 'IIT Delhi',
-    location: 'New Delhi',
-    about: 'Loves traveling and coffee.',
-    interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-    pets: 'Dog',
-    drinking: 'Socially',
-    smoking: 'No',
-    workout: 'Daily',
-    zodiac: 'Leo',
-    education: 'Masters',
-    vaccine: 'Yes',
-    communication: 'English, Hindi',
-    height: '',
-    active: '',
-  );
+    AboutModel dummyUser = AboutModel(
+      image: 'assets/images/profile_image1.png',
+      name: 'Shaan',
+      age: 25,
+      distance: '2 km away',
+      job: 'Software Engineer',
+      college: 'IIT Delhi',
+      location: 'New Delhi',
+      about: 'Loves traveling and coffee.',
+      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+      pets: 'Dog',
+      drinking: 'Socially',
+      smoking: 'No',
+      workout: 'Daily',
+      zodiac: 'Leo',
+      education: 'Masters',
+      vaccine: 'Yes',
+      communication: 'English, Hindi',
+      height: '',
+      active: '',
+    );
 
     return Scaffold(
       backgroundColor: secondaryColor,

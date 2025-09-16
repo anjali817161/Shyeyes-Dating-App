@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
+import 'package:shyeyes/modules/chats/view/clientprofile.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 
@@ -82,8 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             top: Radius.circular(20),
                           ),
                         ),
-                        builder: (context) =>
-                            const SubscriptionBottomSheet(),
+                        builder: (context) => const SubscriptionBottomSheet(),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -117,12 +117,21 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: theme.colorScheme.secondary,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.primary,
-        title: Row(
-          children: [
-            CircleAvatar(backgroundImage: NetworkImage(widget.user.imageUrl)),
-            const SizedBox(width: 12),
-            Text(widget.user.name),
-          ],
+        title: InkWell(
+          onTap: () {
+            UserBottomSheet.show(context);
+          },
+          child: SizedBox(
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: NetworkImage(widget.user.imageUrl),
+                ),
+                const SizedBox(width: 12),
+                Text(widget.user.name),
+              ],
+            ),
+          ),
         ),
       ),
       body: Stack(
@@ -132,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Opacity(
               opacity: 0.7, // keep it light
               child: Lottie.asset(
-              'assets/lotties/heart_fly.json', // replace with your Lottie file
+                'assets/lotties/heart_fly.json', // replace with your Lottie file
                 fit: BoxFit.cover,
                 repeat: true,
               ),
@@ -149,15 +158,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   itemBuilder: (context, index) {
                     final isMe = index % 2 == 0;
                     return Align(
-                      alignment:
-                          isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: isMe
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 6),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          color:
-                              isMe ? theme.colorScheme.primary : Colors.white,
+                          color: isMe
+                              ? theme.colorScheme.primary
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -193,22 +206,19 @@ class _ChatScreenState extends State<ChatScreen> {
                             vertical: 12,
                           ),
                           hintText: "Type a message 💌",
-                          hintStyle:
-                              TextStyle(color: Colors.grey.shade500),
+                          hintStyle: TextStyle(color: Colors.grey.shade500),
                           filled: true,
                           fillColor: theme.colorScheme.secondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25),
                             borderSide: BorderSide(
-                              color:
-                                  theme.colorScheme.primary.withOpacity(0.4),
+                              color: theme.colorScheme.primary.withOpacity(0.4),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25),
                             borderSide: BorderSide(
-                              color:
-                                  theme.colorScheme.primary.withOpacity(0.3),
+                              color: theme.colorScheme.primary.withOpacity(0.3),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:get/get_connect/http/src/response/response.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
@@ -96,6 +96,8 @@ class AuthRepository {
     return http.Response.fromStream(streamedResponse);
   }
 
+  // your profile api
+
   Future<UserProfileModel> getProfile() async {
     final String? token = await SharedPrefHelper.getToken();
     print("Token from SharedPref: $token");
@@ -107,7 +109,7 @@ class AuthRepository {
       Uri.parse(Url),
       headers: {
         "Accept": "application/json",
-        "Authorization": "Bearer $token", // 🔑 usually required
+        "Authorization": "Bearer $token", // 🔑 usually
       },
     );
     print("Status Code: ${response.statusCode}");
@@ -231,8 +233,6 @@ class AuthRepository {
   //   }
   // }
 
-
-  
   Future<http.Response> editProfile({
     String? fName,
     String? lName,
@@ -293,18 +293,16 @@ class AuthRepository {
         body: jsonEncode({"receiver_id": receiverId}),
       );
 
-      print("📩 Response: ${response.body}");
-      // print("➡️ Receiver ID: $receiverId");
-      //  print("🔑 Status Code: ${response.statusCode}");
+      print(" Response: ${response.body}");
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        print("⚠️ Failed with status: ${response.statusCode}");
+        print(" Failed with status: ${response.statusCode}");
         return {"message": "Failed", "status_code": response.statusCode};
       }
     } catch (e) {
-      print("❌ Error sending request: $e");
+      print(" Error sending request: $e");
       return null;
     }
   }
@@ -322,18 +320,18 @@ class AuthRepository {
         },
       );
 
-      print("❌ Cancel Request Response: ${response.body}");
-      print("➡️ Request ID: $requestId");
-      print("🔑 Status Code: ${response.statusCode}");
+      print(" Cancel Request Response: ${response.body}");
+      print(" Request ID: $requestId");
+      print(" Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        print("⚠️ Failed with status: ${response.statusCode}");
+        print(" Failed with status: ${response.statusCode}");
         return {"message": "Failed", "status_code": response.statusCode};
       }
     } catch (e) {
-      print("❌ Error canceling request: $e");
+      print(" Error canceling request: $e");
       return null;
     }
   }
@@ -351,8 +349,8 @@ class AuthRepository {
         },
       );
 
-      print("📩 Invitations Response: ${response.body}");
-      print("🔑 Status Code: ${response.statusCode}");
+      print(" Invitations Response: ${response.body}");
+      print(" Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -360,7 +358,7 @@ class AuthRepository {
         return {"message": "Failed", "status_code": response.statusCode};
       }
     } catch (e) {
-      print("❌ Error fetching invitations: $e");
+      print(" Error fetching invitations: $e");
       return null;
     }
   }
@@ -378,9 +376,9 @@ class AuthRepository {
         },
       );
 
-      print("✅ Accept Request Response: ${response.body}");
-      print("➡️ Request ID: $requestId");
-      print("🔑 Status Code: ${response.statusCode}");
+      print(" Accept Request Response: ${response.body}");
+      print(" Request ID: $requestId");
+      print(" Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -388,7 +386,7 @@ class AuthRepository {
         return {"message": "Failed", "status_code": response.statusCode};
       }
     } catch (e) {
-      print("❌ Error accepting request: $e");
+      print(" Error accepting request: $e");
       return null;
     }
   }

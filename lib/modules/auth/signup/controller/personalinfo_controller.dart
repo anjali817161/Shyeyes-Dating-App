@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/dashboard/view/dashboard_view.dart';
 import 'package:shyeyes/modules/main_scaffold.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 

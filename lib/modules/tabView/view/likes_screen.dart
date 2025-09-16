@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/get_core.dart';
-import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/likes/likes_tab.dart';
 import 'package:shyeyes/modules/tabView/view/top_picks_tab.dart';
-import 'package:shyeyes/modules/bottom_tab/bottom_navbar.dart';
 
 class LikesScreen extends StatefulWidget {
   @override

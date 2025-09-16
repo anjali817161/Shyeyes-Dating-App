@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Color(0xFFDF314D),
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.white
         ),
         textTheme: const TextTheme(
           bodyMedium: TextStyle(color: Colors.black),
