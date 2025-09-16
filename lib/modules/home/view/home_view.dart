@@ -149,27 +149,32 @@ class _HomeViewState extends State<HomeView> {
                     ),
 
                     /// ❤️ Animation
-                    if (widget.viewType == HomeViewType.activeUsers)
-                      Obx(() {
-                        final id = (user as dynamic).id;
-                        if (id != null &&
-                            usersController.recentlyLikedUsers.contains(id)) {
-                          return Center(
-                            child: Lottie.asset(
-                              'assets/lotties/Heartbeating.json',
-                              width: 600,
-                              height: 600,
-                              repeat: false,
-                              onLoaded: (composition) {
-                                Future.delayed(composition.duration, () {
-                                  usersController.recentlyLikedUsers.remove(id);
-                                });
-                              },
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }),
+                    Obx(() {
+                      final int? id;
+                      if (widget.viewType == HomeViewType.activeUsers) {
+                        id = (user as dynamic).id;
+                      } else {
+                        id = (user as BestMatchModel).userId;
+                      }
+
+                      if (id != null &&
+                          usersController.recentlyLikedUsers.contains(id)) {
+                        return Center(
+                          child: Lottie.asset(
+                            'assets/lotties/Heartbeating.json',
+                            width: 600,
+                            height: 600,
+                            repeat: false,
+                            onLoaded: (composition) {
+                              Future.delayed(composition.duration, () {
+                                usersController.recentlyLikedUsers.remove(id);
+                              });
+                            },
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
 
                     /// User Info + Profile Buttons
                     Positioned(
