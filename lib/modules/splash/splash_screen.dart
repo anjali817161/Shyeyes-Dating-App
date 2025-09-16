@@ -55,8 +55,8 @@ class _SplashScreenState extends State<SplashScreen>
     _textAnimationController.forward();
 
     Future.delayed(const Duration(seconds: 6), () {
-      Get.offAll(() => MainScaffold());
-      // Get.offAll(() => LoginView());
+      //Get.offAll(() => MainScaffold());
+        Get.offAll(() => LoginView());
     });
   }
 
