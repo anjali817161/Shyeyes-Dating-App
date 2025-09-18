@@ -98,7 +98,7 @@ class _HomeViewState extends State<HomeView> {
               slideBuilder: (index) {
                 final user = users[index];
 
-                // For bestMatches, user model is BestMatchModel, for activeUsers it's ActiveUser Model
+                // For bestMatches, user model is BestMatchModel, for activeUsers it's ActiveUser  Model
                 // So we need to handle both types safely
                 final String? imageUrl;
                 final String name;
@@ -107,7 +107,7 @@ class _HomeViewState extends State<HomeView> {
                 final String about;
 
                 if (widget.viewType == HomeViewType.activeUsers) {
-                  // ActiveUser Model assumed to have these fields
+                  // ActiveUser  Model assumed to have these fields
                   imageUrl = (user as dynamic).image;
                   name = (user as dynamic).name ?? 'Unknown';
                   age = (user as dynamic).age ?? 0;
@@ -128,15 +128,22 @@ class _HomeViewState extends State<HomeView> {
                     /// Image with double-tap ❤️
                     GestureDetector(
                       onDoubleTap: () async {
-                        if (widget.viewType == HomeViewType.activeUsers) {
-                          final id = (user as dynamic).id;
-                          if (id != null) {
-                            await usersController.handleDoubleTap(id);
-                          }
-                        } else {
-                          final userId = (user as BestMatchModel).userId;
-                          if (userId != null) {
-                            await usersController.handleDoubleTap(userId);
+                        final id = widget.viewType == HomeViewType.activeUsers
+                            ? (user as dynamic).id
+                            : (user as BestMatchModel).userId;
+
+                        if (id != null) {
+                          // API call karega aur likedUsers update karega
+                          final success = await usersController.toggleFavorite(
+                            id,
+                          );
+
+                          if (success) {
+                            // Show heart beating animation on image
+                            usersController.recentlyLikedUsers.add(id);
+                            Future.delayed(const Duration(seconds: 2), () {
+                              usersController.recentlyLikedUsers.remove(id);
+                            });
                           }
                         }
                       },
@@ -148,7 +155,7 @@ class _HomeViewState extends State<HomeView> {
                             ),
                     ),
 
-                    /// ❤️ Animation
+                    ///  Animation
                     Obx(() {
                       final int? id;
                       if (widget.viewType == HomeViewType.activeUsers) {
@@ -288,28 +295,30 @@ class _HomeViewState extends State<HomeView> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           /// ❤️ Favorite Button
-                          Obx(
-                            () => buildActionButton(
-                              usersController.isLiked(
-                                    widget.viewType == HomeViewType.activeUsers
-                                        ? (user as dynamic).id ?? -1
-                                        : (user as BestMatchModel).userId ?? -1,
-                                  )
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              Colors.red,
+                          /// ❤️ Favorite Button
+                          Obx(() {
+                            final id =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? (user as dynamic).id ?? -1
+                                : (user as BestMatchModel).userId ?? -1;
+
+                            final isLiked = usersController.isLiked(id);
+
+                            return buildActionButton(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              isLiked
+                                  ? Colors.red
+                                  : Colors.grey, // 🔴 red if liked, grey if not
                               30,
                               () async {
-                                final id =
-                                    widget.viewType == HomeViewType.activeUsers
-                                    ? (user as dynamic).id
-                                    : (user as BestMatchModel).userId;
                                 if (id != null) {
-                                  await usersController.toggleFavorite(id);
+                                  await usersController.toggleFavorite(
+                                    id,
+                                  ); // API + state update
                                 }
                               },
-                            ),
-                          ),
+                            );
+                          }),
 
                           /// 📞 Call
                           buildActionButton(

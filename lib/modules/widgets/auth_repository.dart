@@ -390,4 +390,17 @@ class AuthRepository {
       return null;
     }
   }
+
+  // forget pass api
+
+  static Future<dynamic> forgetPass({required String email}) async {
+    String url = ApiEndpoints.baseUrl + ApiEndpoints.forgetemail;
+    try {
+      final response = await http.post(Uri.parse(url), body: {'email': email});
+      return response;
+    } catch (e) {
+      print('Error Forget Password API $e');
+      return null;
+    }
+  }
 }

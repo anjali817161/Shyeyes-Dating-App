@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://chat.bitmaxtest.com/admin/api/";
+  static const String baseUrl = "https://shyeyes-b.onrender.com/api/users/";
 
   // Auth
   static const String login = "login";
@@ -13,5 +13,5 @@ class ApiEndpoints {
   static const String bestMatches = "best-matches";
   static const String sentRequest = "message-requests";
   static const String requestRecieved = "message-requests/received";
-  // static const String cancelRequest = "cancel-requests";
+   static const String forgetemail = "forgot-password";
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shyeyes/modules/auth/Forgetpassword/forgetemail.dart';
 import 'package:shyeyes/modules/auth/login/controller/login_controller.dart';
 import 'package:shyeyes/modules/auth/signup/view/signup_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
@@ -99,7 +100,22 @@ class _LoginViewState extends State<LoginView> {
                           value!.isEmpty ? 'Enter password' : null,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 10),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        onTap: () => ForgetEmailBottomSheet.show(context),
+                        child: Text(
+                          "Forget Password",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () => Get.to(() => TermsAndConditions()),
                     child: Row(

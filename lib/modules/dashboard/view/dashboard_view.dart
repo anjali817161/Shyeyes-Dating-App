@@ -738,7 +738,7 @@ class _DashboardPageState extends State<DashboardPage> {
             print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
-              // 👇 If profile data is not yet available, return a placeholder avatar
+              //  If profile data is not yet available, return a placeholder avatar
               return const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
@@ -780,7 +780,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ✅ Banner Section
+                  //  Banner Section
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -821,7 +821,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 30),
 
-                  // ✅ New Members
+                  //  New Members
                   sectionTitle("Active Now", () {
                     Get.to(() => HomeView(viewType: HomeViewType.activeUsers));
                   }),
@@ -829,7 +829,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 30),
 
-                  // ✅ Active Members
+                  //  Active Members
                   sectionTitle("Best Matches for you", () {
                     Get.to(() => HomeView(viewType: HomeViewType.bestMatches));
                   }),
