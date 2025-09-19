@@ -213,6 +213,20 @@ class _PersonalInfoState extends State<PersonalInfo> {
                     ),
                     const SizedBox(height: 15),
                     Text(
+                      "Hobbies",
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildTextField(
+                      context,
+                      controller: controller.hobbiesCtrl,
+                      label: "Hobbies",
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
                       "About",
                       style: TextStyle(
                         color: theme.colorScheme.primary,
@@ -223,7 +237,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                     _buildTextField(
                       context,
                       controller: controller.aboutCtrl,
-                      label: "Tell us about yourself...",
+                      label: "Tell us about yourselfs",
                       maxLines: 4,
                     ),
                     const SizedBox(height: 20),
