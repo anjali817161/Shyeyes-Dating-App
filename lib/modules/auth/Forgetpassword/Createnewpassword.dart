@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
 
 class CreatePasswordBottomSheet {
   static void show(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
-    final SignUpController controller = Get.put(SignUpController());
+    final ForgetPasswordController controller = Get.put(
+      ForgetPasswordController(),
+    );
+
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
 
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
     showModalBottomSheet(
-      backgroundColor: Color(0xFFFFF3F3),
+      backgroundColor: const Color(0xFFFFF3F3),
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -51,10 +57,10 @@ class CreatePasswordBottomSheet {
                 ),
                 const SizedBox(height: 24),
 
-                // New Password Field
+                // New Password
                 _buildTextField(
                   context,
-
+                  controller: newPassCtrl,
                   label: 'New Password',
                   icon: Icons.lock,
                   obscureText: true,
@@ -70,10 +76,10 @@ class CreatePasswordBottomSheet {
                 ),
                 const SizedBox(height: 20),
 
-                // Confirm Password Field
+                // Confirm Password
                 _buildTextField(
                   context,
-                  //  controller: controller.confirmPasswordCtrl,
+                  controller: confirmPassCtrl,
                   label: 'Confirm Password',
                   icon: Icons.lock_outline,
                   obscureText: true,
@@ -81,9 +87,9 @@ class CreatePasswordBottomSheet {
                     if (value == null || value.isEmpty) {
                       return 'Confirm your password';
                     }
-                    // if (value != controller.newPasswordCtrl.text) {
-                    //   return 'Passwords do not match';
-                    // }
+                    if (value != newPassCtrl.text) {
+                      return 'Passwords do not match';
+                    }
                     return null;
                   },
                 ),
@@ -102,7 +108,13 @@ class CreatePasswordBottomSheet {
                         ),
                       ),
                       onPressed: () {
-                        Get.offAll(LoginView());
+                        if (_formKey.currentState!.validate()) {
+                          controller.createNewPassword(
+                            newPassCtrl.text.trim(),
+                            confirmPassCtrl.text.trim(),
+                            context,
+                          );
+                        }
                       },
                       child: controller.isLoading.value
                           ? const SizedBox(
@@ -133,7 +145,7 @@ class CreatePasswordBottomSheet {
 
   static Widget _buildTextField(
     BuildContext context, {
-    // required TextEditingController controller,
+    required TextEditingController controller,
     required String label,
     required IconData icon,
     bool obscureText = false,
@@ -142,7 +154,7 @@ class CreatePasswordBottomSheet {
     final primary = Theme.of(context).colorScheme.primary;
 
     return TextFormField(
-      // controller: controller,
+      controller: controller,
       obscureText: obscureText,
       cursorColor: primary,
       validator: validator,

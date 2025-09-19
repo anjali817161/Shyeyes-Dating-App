@@ -74,7 +74,7 @@ class PersonalInfoController extends GetxController {
         // next step navigate karna ho to yaha kara lo
         Get.offAll(() => LoginView());
       } else {
-        print("❌ Error => ${response.body}");
+        print(" Error => ${response.body}");
         Get.snackbar(
           "Error",
           "Failed to save personal info",

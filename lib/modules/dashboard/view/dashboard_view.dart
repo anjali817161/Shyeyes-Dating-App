@@ -698,7 +698,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final user = controller.profile.value?.data;
+    final user = controller.profile.value?.user;
     RxBool isPlaying = false.obs;
 
     return Scaffold(
@@ -734,8 +734,8 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(width: 1),
           Obx(() {
-            final user = controller.profile.value?.data;
-            print("Profile updated: ${user?.imageUrl}");
+            final user = controller.profile.value?.user;
+          //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
               //  If profile data is not yet available, return a placeholder avatar
@@ -758,8 +758,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: CircleAvatar(
                   radius: 28,
                   backgroundImage:
-                      (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
-                      ? NetworkImage(user.imageUrl!)
+                      (user?.photos != null && user!.photos!.isNotEmpty)
+                       ? NetworkImage("")
                       : const NetworkImage("https://via.placeholder.com/150"),
                 ),
               ),

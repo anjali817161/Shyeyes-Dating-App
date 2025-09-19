@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/auth/Forgetpassword/Createnewpassword.dart';
-import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
+import 'package:pinput/pinput.dart';
+import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
+import 'package:shyeyes/modules/customloader/loader.dart';
 
 class OtpVerifyBottomSheet {
   static void show(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
-    final SignUpController controller = Get.put(SignUpController());
+    final ForgetPasswordController controller = Get.put(
+      ForgetPasswordController(),
+    );
 
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
+    // ✅ Timer turant start ho jaye jab sheet open ho
+    controller.startTimer();
+
     showModalBottomSheet(
-      backgroundColor: Color(0xFFFFF3F3),
+      backgroundColor: const Color(0xFFFFF3F3),
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -32,6 +38,7 @@ class OtpVerifyBottomSheet {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // --- Drag Handle ---
                 Container(
                   height: 5,
                   width: 50,
@@ -41,6 +48,8 @@ class OtpVerifyBottomSheet {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+
+                // --- Title ---
                 Text(
                   "Verify OTP",
                   style: TextStyle(
@@ -50,43 +59,101 @@ class OtpVerifyBottomSheet {
                   ),
                 ),
                 const SizedBox(height: 24),
-                TextFormField(
-                  //controller: controller.otpCtrl,
+
+                // --- OTP Input ---
+                Pinput(
+                  length: 6,
+                  controller: controller
+                      .otpCtrl, // ✅ Controller from ForgetPasswordController
                   keyboardType: TextInputType.number,
-                  maxLength: 6,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  defaultPinTheme: PinTheme(
+                    height: 55,
+                    width: 50,
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: primary.withOpacity(0.5)),
+                    ),
+                  ),
+                  focusedPinTheme: PinTheme(
+                    height: 55,
+                    width: 50,
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: primary, width: 2),
+                    ),
+                  ),
+                  submittedPinTheme: PinTheme(
+                    height: 55,
+                    width: 50,
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: primary),
+                    ),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Enter OTP';
-                    if (value.length < 4) return 'Enter valid OTP';
+                    if (value.length < 6) return 'Enter valid OTP';
                     return null;
                   },
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    letterSpacing: 8,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    counterText: "",
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: "Enter otp",
-                    hintStyle: TextStyle(color: Colors.grey.shade500),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: primary),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: primary, width: 2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: primary.withOpacity(0.5)),
-                    ),
-                  ),
                 ),
+
+                const SizedBox(height: 12),
+
+                // --- Resend / Timer ---
+                Obx(() {
+                  if (controller.isCounting.value) {
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "Resend OTP in ${controller.counter.value}s",
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    );
+                  } else {
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: controller.isResendLoading.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: HeartLoader(),
+                            )
+                          : GestureDetector(
+                              onTap: () {
+                                controller.resendOtp();
+                              },
+                              child: Text(
+                                "Resend OTP",
+                                style: TextStyle(
+                                  color: primary,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                    );
+                  }
+                }),
+
                 const SizedBox(height: 28),
+
+                // --- Verify Button ---
                 SizedBox(
                   width: double.infinity,
                   child: Obx(
@@ -99,7 +166,12 @@ class OtpVerifyBottomSheet {
                         ),
                       ),
                       onPressed: () {
-                        CreatePasswordBottomSheet.show(context);
+                        if (_formKey.currentState!.validate()) {
+                          controller.verifyOtp(
+                            controller.otpCtrl.text, // ✅ Fixed here
+                            context,
+                          );
+                        }
                       },
                       child: controller.isLoading.value
                           ? const SizedBox(

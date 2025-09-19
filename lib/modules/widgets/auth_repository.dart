@@ -416,14 +416,57 @@ class AuthRepository {
 
   // forget pass api
 
-  static Future<dynamic> forgetPass({required String email}) async {
-    String url = ApiEndpoints.baseUrl + ApiEndpoints.forgetemail;
-    try {
-      final response = await http.post(Uri.parse(url), body: {'email': email});
-      return response;
-    } catch (e) {
-      print('Error Forget Password API $e');
-      return null;
-    }
+  // auth_repository.dart
+  Future<http.Response> Forgetpassword(String email) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetemail}");
+    // print("Email: $email);
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.forgetemail),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({'email': email}),
+    );
+  }
+
+  // otp verify
+
+  Future<http.Response> forgetOtpVerify(String otp, String token) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetotp}");
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.forgetotp),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token", // ✅ Token add
+      },
+      body: jsonEncode({'otp': otp}),
+    );
+  }
+
+  // Create new password api
+
+  Future<http.Response> CreateNewPass(
+    String Newpass,
+    String Confrimpass,
+    String token,
+  ) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword}");
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token", // ✅ Token add
+      },
+      body: jsonEncode({
+        'newPassword': Newpass,
+        'confirmPassword': Confrimpass,
+      }),
+    );
   }
 }
