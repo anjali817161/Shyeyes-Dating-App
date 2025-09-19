@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/auth/Forgetpassword/otpverify.dart';
-import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
+import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
+import 'package:shyeyes/modules/customloader/loader.dart';
 
 class ForgetEmailBottomSheet {
   static void show(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
-    final SignUpController controller = Get.put(SignUpController());
+    final ForgetPasswordController controller = Get.put(
+      ForgetPasswordController(),
+    );
 
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
     showModalBottomSheet(
-      backgroundColor: Color(0xFFFFF3F3),
+      backgroundColor: const Color(0xFFFFF3F3),
       context: context,
-      isScrollControlled: true, // keyboard ke sath adjust hoga
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -31,22 +33,27 @@ class ForgetEmailBottomSheet {
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 5,
-                  width: 50,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
+                Center(
+                  child: Container(
+                    height: 5,
+                    width: 50,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-                Text(
-                  "Forget Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: primary,
+                Center(
+                  child: Text(
+                    "Forget Password",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                      color: primary,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -65,6 +72,8 @@ class ForgetEmailBottomSheet {
                   },
                 ),
                 const SizedBox(height: 28),
+
+                // 🔹 Send OTP button
                 SizedBox(
                   width: double.infinity,
                   child: Obx(
@@ -77,17 +86,15 @@ class ForgetEmailBottomSheet {
                         ),
                       ),
                       onPressed: () {
-                        OtpVerifyBottomSheet.show(context);
+                        if (_formKey.currentState!.validate()) {
+                          controller.sendOtp(context); // ✅ OtpVerifyBottomSheet khulega aur timer start hoga
+                        }
                       },
-
                       child: controller.isLoading.value
                           ? const SizedBox(
                               height: 24,
                               width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
+                              child: HeartLoader()
                             )
                           : const Text(
                               'Send OTP',

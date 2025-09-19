@@ -60,7 +60,7 @@ class CustomDrawer extends StatelessWidget {
         children: [
           /// 🔹 DrawerHeader linked with Profile Data
           Obx(() {
-            final user = controller.profile.value?.data;
+            final user = controller.profile.value?.user;
             return DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFFDF314D)),
               child: Row(
@@ -68,8 +68,8 @@ class CustomDrawer extends StatelessWidget {
                   CircleAvatar(
                     radius: 32,
                     backgroundImage:
-                        (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
-                        ? NetworkImage(user.imageUrl!)
+                        (user?.photos != null && user!.photos!.isNotEmpty)
+                        ? NetworkImage("")
                         : const NetworkImage("https://via.placeholder.com/150"),
                   ),
                   const SizedBox(width: 16),
@@ -77,17 +77,17 @@ class CustomDrawer extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        user?.fullName ?? "No Name",
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                      // Text(
+                      //   // user?.name ?? "No Name",
+                      //   style: const TextStyle(
+                      //     fontSize: 20,
+                      //     fontWeight: FontWeight.bold,
+                      //     color: Colors.white,
+                      //   ),
+                      // ),
                       const SizedBox(height: 4),
                       Text(
-                        user?.about ?? "No about info",
+                        user?.bio ?? "No about info",
                         style: const TextStyle(
                           fontSize: 15,
                           color: Colors.white70,

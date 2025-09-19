@@ -1,191 +1,190 @@
-import 'dart:convert';
-
-class UserProfileModel {
-  bool? status;
-  String? message;
-  UserData? data;
-
-  UserProfileModel({this.status, this.message, this.data});
-
-  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
-    return UserProfileModel(
-      status: json['status'],
-      message: json['message'],
-      data: json['data'] != null ? UserData.fromJson(json['data']) : null,
-    );
-  }
-}
-
-class UserData {
-  int? id;
-  String? uniqueId;
-  String? fName;
-  String? lName;
-  String? fullName;
-  String? email;
-  String? phone;
-  String? dob;
-  int? age;
-  String? gender;
-  String? location;
-  String? about;
-  String? imageUrl;
-
-  UserData({
-    this.id,
-    this.uniqueId,
-    this.fName,
-    this.lName,
-    this.fullName,
-    this.email,
-    this.phone,
-    this.dob,
-    this.age,
-    this.gender,
-    this.location,
-    this.about,
-    this.imageUrl,
-  });
-
-  factory UserData.fromJson(Map<String, dynamic> json) {
-    return UserData(
-      id: json['id'],
-      uniqueId: json['unique_id'],
-      fName: json['f_name'],
-      lName: json['l_name'],
-      fullName: json['full_name'],
-      email: json['email'],
-      phone: json['phone'],
-      dob: json['dob'],
-      age: json['age'],
-      gender: json['gender'],
-      location: json['location'],
-      about: json['about'],
-      imageUrl: json['image_url'],
-    );
-  }
-}
-
-// Edit profile model class
-
 // To parse this JSON data, do
 //
-//     final editprofile = editprofileFromJson(jsonString);
+//     final userProfileModel = userProfileModelFromJson(jsonString);
 
+import 'dart:convert';
 
+UserProfileModel userProfileModelFromJson(String str) =>
+    UserProfileModel.fromJson(json.decode(str));
 
-Editprofile editprofileFromJson(String str) =>
-    Editprofile.fromJson(json.decode(str));
+String userProfileModelToJson(UserProfileModel? data) =>
+    json.encode(data?.toJson());
 
-String editprofileToJson(Editprofile data) => json.encode(data.toJson());
-
-class Editprofile {
-  bool? status;
+class UserProfileModel {
   String? message;
-  Data? data;
+  User? user;
 
-  Editprofile({
-    this.status,
+  UserProfileModel({
     this.message,
-    this.data,
+    this.user,
   });
 
-  factory Editprofile.fromJson(Map<String, dynamic> json) => Editprofile(
-        status: json["status"],
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
+      UserProfileModel(
         message: json["message"],
-        data: json["data"] != null ? Data.fromJson(json["data"]) : null,
+        user: json["user"] != null ? User.fromJson(json["user"]) : null,
       );
 
   Map<String, dynamic> toJson() => {
-        "status": status,
         "message": message,
-        "data": data?.toJson(),
+        "user": user?.toJson(),
       };
 }
 
-class Data {
-  int? id;
-  String? uniqueId;
-  String? fName;
-  String? lName;
-  String? fullName;
+class User {
+  Name? name;
+  Location? location;
+  String? id;
   String? email;
-  String? phone;
+  String? phoneNo;
   DateTime? dob;
   int? age;
   String? gender;
-  String? location;
-  String? about;
+  String? bio;
+  List<String>? hobbies;
+  List<String>? photos;
   String? status;
-  String? imageUrl;
-  String? coverPhotoUrl;
+  bool? emailVerified;
+  dynamic membership;
   DateTime? createdAt;
   DateTime? updatedAt;
+  int? v;
+  String? otp;
+  DateTime? otpExpires;
 
-  Data({
+  User({
+    this.name,
+    this.location,
     this.id,
-    this.uniqueId,
-    this.fName,
-    this.lName,
-    this.fullName,
     this.email,
-    this.phone,
+    this.phoneNo,
     this.dob,
     this.age,
     this.gender,
-    this.location,
-    this.about,
+    this.bio,
+    this.hobbies,
+    this.photos,
     this.status,
-    this.imageUrl,
-    this.coverPhotoUrl,
+    this.emailVerified,
+    this.membership,
     this.createdAt,
     this.updatedAt,
+    this.v,
+    this.otp,
+    this.otpExpires,
   });
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-        id: json["id"],
-        uniqueId: json["unique_id"],
-        fName: json["f_name"],
-        lName: json["l_name"],
-        fullName: json["full_name"],
+  factory User.fromJson(Map<String, dynamic> json) => User(
+        name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
+        location: json["location"] != null
+            ? Location.fromJson(json["location"])
+            : null,
+        id: json["_id"],
         email: json["email"],
-        phone: json["phone"],
+        phoneNo: json["phoneNo"],
         dob: json["dob"] != null ? DateTime.tryParse(json["dob"]) : null,
         age: json["age"],
         gender: json["gender"],
-        location: json["location"],
-        about: json["about"],
-        status: json["status"],
-        imageUrl: json["image_url"],
-        coverPhotoUrl: json["cover_photo_url"],
-        createdAt: json["created_at"] != null
-            ? DateTime.tryParse(json["created_at"])
+        bio: json["bio"],
+        hobbies: json["hobbies"] != null
+            ? List<String>.from(json["hobbies"].map((x) => x))
             : null,
-        updatedAt: json["updated_at"] != null
-            ? DateTime.tryParse(json["updated_at"])
+        photos: json["photos"] != null
+            ? List<String>.from(json["photos"].map((x) => x))
+            : null,
+        status: json["status"],
+        emailVerified: json["emailVerified"],
+        membership: json["membership"],
+        createdAt: json["createdAt"] != null
+            ? DateTime.tryParse(json["createdAt"])
+            : null,
+        updatedAt: json["updatedAt"] != null
+            ? DateTime.tryParse(json["updatedAt"])
+            : null,
+        v: json["__v"],
+        otp: json["otp"],
+        otpExpires: json["otpExpires"] != null
+            ? DateTime.tryParse(json["otpExpires"])
             : null,
       );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "unique_id": uniqueId,
-        "f_name": fName,
-        "l_name": lName,
-        "full_name": fullName,
+        "Name": name?.toJson(),
+        "location": location?.toJson(),
+        "_id": id,
         "email": email,
-        "phone": phone,
+        "phoneNo": phoneNo,
         "dob": dob != null
             ? "${dob!.year.toString().padLeft(4, '0')}-${dob!.month.toString().padLeft(2, '0')}-${dob!.day.toString().padLeft(2, '0')}"
             : null,
         "age": age,
         "gender": gender,
-        "location": location,
-        "about": about,
+        "bio": bio,
+        "hobbies": hobbies != null
+            ? List<dynamic>.from(hobbies!.map((x) => x))
+            : null,
+        "photos": photos != null
+            ? List<dynamic>.from(photos!.map((x) => x))
+            : null,
         "status": status,
-        "image_url": imageUrl,
-        "cover_photo_url": coverPhotoUrl,
-        "created_at": createdAt?.toIso8601String(),
-        "updated_at": updatedAt?.toIso8601String(),
+        "emailVerified": emailVerified,
+        "membership": membership,
+        "createdAt": createdAt?.toIso8601String(),
+        "updatedAt": updatedAt?.toIso8601String(),
+        "__v": v,
+        "otp": otp,
+        "otpExpires": otpExpires?.toIso8601String(),
       };
 }
 
+class Location {
+  String? street;
+  String? city;
+  String? state;
+  String? country;
+  String? postalCode;
+
+  Location({
+    this.street,
+    this.city,
+    this.state,
+    this.country,
+    this.postalCode,
+  });
+
+  factory Location.fromJson(Map<String, dynamic> json) => Location(
+        street: json["street"],
+        city: json["city"],
+        state: json["state"],
+        country: json["country"],
+        postalCode: json["postalCode"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "street": street,
+        "city": city,
+        "state": state,
+        "country": country,
+        "postalCode": postalCode,
+      };
+}
+
+class Name {
+  String? firstName;
+  String? lastName;
+
+  Name({
+    this.firstName,
+    this.lastName,
+  });
+
+  factory Name.fromJson(Map<String, dynamic> json) => Name(
+        firstName: json["firstName"],
+        lastName: json["lastName"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "firstName": firstName,
+        "lastName": lastName,
+      };
+}
