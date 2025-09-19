@@ -698,7 +698,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final user = controller.profile.value?.data;
+    final user = controller.profile.value?.user;
     RxBool isPlaying = false.obs;
 
     return Scaffold(
@@ -734,11 +734,11 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(width: 1),
           Obx(() {
-            final user = controller.profile.value?.data;
-            print("Profile updated: ${user?.imageUrl}");
+            final user = controller.profile.value?.user;
+          //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
-              // 👇 If profile data is not yet available, return a placeholder avatar
+              //  If profile data is not yet available, return a placeholder avatar
               return const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
@@ -758,8 +758,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: CircleAvatar(
                   radius: 28,
                   backgroundImage:
-                      (user?.imageUrl != null && user!.imageUrl!.isNotEmpty)
-                      ? NetworkImage(user.imageUrl!)
+                      (user?.photos != null && user!.photos!.isNotEmpty)
+                       ? NetworkImage("")
                       : const NetworkImage("https://via.placeholder.com/150"),
                 ),
               ),
@@ -780,7 +780,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ✅ Banner Section
+                  //  Banner Section
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -821,7 +821,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 30),
 
-                  // ✅ New Members
+                  //  New Members
                   sectionTitle("Active Now", () {
                     Get.to(() => HomeView(viewType: HomeViewType.activeUsers));
                   }),
@@ -829,7 +829,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 30),
 
-                  // ✅ Active Members
+                  //  Active Members
                   sectionTitle("Best Matches for you", () {
                     Get.to(() => HomeView(viewType: HomeViewType.bestMatches));
                   }),

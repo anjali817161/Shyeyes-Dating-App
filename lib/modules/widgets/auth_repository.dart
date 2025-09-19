@@ -35,10 +35,10 @@ class AuthRepository {
     print("Signup URL => $url");
 
     final body = {
-      "f_name": fName,
-      "l_name": lName,
+      "firstName": fName,
+      "lastName": lName,
       "email": email,
-      "phone": phone,
+      "phoneNo": phone,
       "password": password,
     };
 
@@ -54,15 +54,35 @@ class AuthRepository {
     );
   }
 
+  // ✅ Verify OTP
+  Future<http.Response> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final url = Uri.parse(
+      ApiEndpoints.baseUrl + ApiEndpoints.verifyRegisterOTP,
+    );
+
+    final body = {"email": email, "otp": otp};
+
+    print("📩 Verify OTP Body => $body");
+
+    return await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+  }
+
   /// 🔹 Personal Info API (multipart)
   Future<http.Response> submitPersonalInfo({
-    required int userId,
     File? imageFile,
     String? dob,
     String? age,
     String? gender,
     String? location,
     String? about,
+    String? hobbies,
   }) async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
     print("Token from SharedPref: $token");
@@ -71,24 +91,27 @@ class AuthRepository {
     var request = http.MultipartRequest('POST', url);
 
     // normal fields
-    request.fields['user_id'] = userId.toString();
+
     if (dob != null && dob.isNotEmpty) request.fields['dob'] = dob;
     if (age != null && age.isNotEmpty) request.fields['age'] = age;
     if (gender != null && gender.isNotEmpty) request.fields['gender'] = gender;
     if (location != null && location.isNotEmpty) {
       request.fields['location'] = location;
     }
-    if (about != null && about.isNotEmpty) request.fields['about'] = about;
+    if (about != null && about.isNotEmpty) request.fields['bio'] = about;
+    if (hobbies != null && hobbies.isNotEmpty)
+      request.fields['hobbies'] = hobbies;
 
-    // file field (optional)
+    // 👇 Only add if image is selected
     if (imageFile != null) {
       request.files.add(
-        await http.MultipartFile.fromPath('img', imageFile.path),
+        await http.MultipartFile.fromPath("profilePic", imageFile.path),
       );
     }
 
     request.headers.addAll({
       "Accept": "application/json",
+      "Content-Type": "application/json",
       "Authorization": "Bearer $token",
     });
 
@@ -389,5 +412,61 @@ class AuthRepository {
       print(" Error accepting request: $e");
       return null;
     }
+  }
+
+  // forget pass api
+
+  // auth_repository.dart
+  Future<http.Response> Forgetpassword(String email) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetemail}");
+    // print("Email: $email);
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.forgetemail),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({'email': email}),
+    );
+  }
+
+  // otp verify
+
+  Future<http.Response> forgetOtpVerify(String otp, String token) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetotp}");
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.forgetotp),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token", // ✅ Token add
+      },
+      body: jsonEncode({'otp': otp}),
+    );
+  }
+
+  // Create new password api
+
+  Future<http.Response> CreateNewPass(
+    String Newpass,
+    String Confrimpass,
+    String token,
+  ) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword}");
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token", // ✅ Token add
+      },
+      body: jsonEncode({
+        'newPassword': Newpass,
+        'confirmPassword': Confrimpass,
+      }),
+    );
   }
 }

@@ -17,13 +17,12 @@ class ActiveUsersController extends GetxController {
   var successMessage = "".obs;
 
   /// request tracking
-  var requestStatus = <int, String>{}.obs; 
-  var sentRequests = <int, int>{}.obs; 
+  var requestStatus = <int, String>{}.obs;
+  var sentRequests = <int, int>{}.obs;
 
   /// request loading
   var requestLoading = <int, bool>{}.obs;
-  var recentlyLikedUsers =
-      <int>{}.obs; // store userIds that were recently liked
+  var recentlyLikedUsers = <int>{}.obs;
 
   /// like tracking
   var likedUsers = <int>{}.obs; // store liked userIds
@@ -104,12 +103,38 @@ class ActiveUsersController extends GetxController {
 
   bool isRequestSent(int receiverId) => requestStatus[receiverId] == "pending";
 
-  /// Like / Unlike
+  /// Add liked user locally (optimistic update)
+  void addLiked(int userId) {
+    if (!likedUsers.contains(userId)) {
+      likedUsers.add(userId);
+    }
+  }
+
+  /// Remove liked user locally (optimistic update)
+  void removeLiked(int userId) {
+    likedUsers.remove(userId);
+  }
+
+  /// Like / Unlike toggle with optimistic UI update
   Future<bool> toggleFavorite(int likedId) async {
+    // Optimistically toggle liked state locally
+    final currentlyLiked = isLiked(likedId);
+    if (currentlyLiked) {
+      removeLiked(likedId);
+    } else {
+      addLiked(likedId);
+    }
+
     try {
       final token = await SharedPrefHelper.getToken();
       if (token == null || token.isEmpty) {
         Get.snackbar("Error", "Token not found!");
+        // Revert optimistic update
+        if (currentlyLiked) {
+          addLiked(likedId);
+        } else {
+          removeLiked(likedId);
+        }
         return false;
       }
 
@@ -142,13 +167,34 @@ class ActiveUsersController extends GetxController {
         if (data["message"] != null &&
             data["message"].toString().contains("already liked")) {
           print(" User already liked, calling unlike API...");
-          return await unlikeUser(likedId);
+          final unlikeSuccess = await unlikeUser(likedId);
+          if (!unlikeSuccess) {
+            // revert optimistic update
+            if (currentlyLiked) {
+              addLiked(likedId);
+            } else {
+              removeLiked(likedId);
+            }
+          }
+          return unlikeSuccess;
         }
       }
 
+      // On failure revert optimistic update
+      if (currentlyLiked) {
+        addLiked(likedId);
+      } else {
+        removeLiked(likedId);
+      }
       return false;
     } catch (e) {
       print(" Favorite API Error: $e");
+      // Revert optimistic update on error
+      if (currentlyLiked) {
+        addLiked(likedId);
+      } else {
+        removeLiked(likedId);
+      }
       return false;
     }
   }
@@ -191,6 +237,7 @@ class ActiveUsersController extends GetxController {
     }
   }
 
+  /// Handle double tap like/unlike with animation
   Future<void> handleDoubleTap(int userId) async {
     if (isLiked(userId)) {
       bool success = await unlikeUser(userId);

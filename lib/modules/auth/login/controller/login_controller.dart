@@ -16,7 +16,8 @@ class LoginController extends GetxController {
   void togglePassword() => showPassword.value = !showPassword.value;
 
   Future<void> login(GlobalKey<FormState> formKey, bool isTermsChecked) async {
-    var repo = AuthRepository();
+    final repo = AuthRepository();
+
     if (!isTermsChecked) {
       Get.snackbar(
         "Error",
@@ -31,33 +32,48 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
-      final response = await repo.login(emailCtrl.text, passCtrl.text);
+      final response = await repo.login(
+        emailCtrl.text.trim(),
+        passCtrl.text.trim(),
+      );
 
+      print("Raw Response: ${response.body}");
       final data = jsonDecode(response.body);
-      print("response: ${response.body}");
-// ✅ check login status
-      if (data['status'] == true) {
-        String token = data['token'];
-        await SharedPrefHelper.saveToken(token);
-        print("Token saved: $token");
-}
 
       if (response.statusCode == 200) {
+        // ✅ Save token
+        final token = data['token'];
+        if (token != null) {
+          await SharedPrefHelper.saveToken(token);
+          print("Token saved: $token");
+        }
+
+        // ✅ Save user details
+        final user = data['user'];
+        if (user != null) {
+          await SharedPrefHelper.saveUserId(user['id'] ?? '');
+          await SharedPrefHelper.saveUserName(user['name'] ?? '');
+          await SharedPrefHelper.saveUserPic(user['profilePic'] ?? '');
+          print("User saved: ${user['name']}");
+        }
+
         Get.snackbar(
           "Success",
           data["message"] ?? "You are logged in successfully",
           backgroundColor: Colors.green.shade100,
           snackPosition: SnackPosition.TOP,
         );
+
+        // ✅ Navigate to main screen
         Get.offAll(() => MainScaffold());
       } else {
+        // Non-200 response
         Get.snackbar(
           "Login Failed",
-          data["error"] ?? "Invalid credentials",
+          data["message"] ?? "Invalid credentials",
           backgroundColor: Colors.red.shade100,
         );
       }
-      print(response.statusCode);
     } catch (e) {
       Get.snackbar("Error", e.toString(), backgroundColor: Colors.red.shade100);
     } finally {

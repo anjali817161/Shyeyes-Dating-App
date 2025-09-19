@@ -25,7 +25,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           "Your Profile",
           style: TextStyle(color: Colors.white),
         ),
-
         backgroundColor: theme.colorScheme.primary,
         elevation: 1,
         centerTitle: true,
@@ -38,21 +37,27 @@ class _UserProfilePageState extends State<UserProfilePage> {
         if (controller.errorMessage.isNotEmpty) {
           return Center(child: Text("Error: ${controller.errorMessage}"));
         }
-        if (controller.profile.value == null) {
+        if (controller.profile.value == null ||
+            controller.profile.value!.user == null) {
           return const Center(child: Text("No profile data"));
         }
 
-        final profileData = controller.profile.value!.data;
+        final profileData = controller.profile.value!.user!;
+
         return _buildProfileView(
           theme,
-          profileData!.fullName ?? "No name",
+          "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
           profileData.email ?? "No email",
           (profileData.age != null) ? profileData.age.toString() : "N/A",
           profileData.gender ?? "N/A",
-          profileData.location ?? "N/A",
-          profileData.dob ?? "N/A",
-          profileData.about ?? "Not Provided",
-          profileData.imageUrl ?? "https://via.placeholder.com/150",
+          profileData.location?.street ?? "N/A",
+          profileData.dob != null
+              ? "${profileData.dob!.day}-${profileData.dob!.month}-${profileData.dob!.year}"
+              : "N/A",
+          profileData.bio ?? "Not Provided",
+          (profileData.photos != null && profileData.photos!.isNotEmpty)
+              ? profileData.photos!.first
+              : "https://via.placeholder.com/150",
         );
       }),
     );
@@ -72,7 +77,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Banner with gradient + 2 lotties + profile image
+          // Banner with gradient + lotties
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -108,7 +113,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
               ),
 
-              // Profile image overlapping banner bottom
+              // Profile image overlapping banner
               Positioned(
                 bottom: -50,
                 left: 40,
@@ -117,12 +122,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   backgroundColor: Colors.white,
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: imageUrl.isNotEmpty
-                        ? NetworkImage(imageUrl)
-                        : const NetworkImage("https://via.placeholder.com/150"),
-                    onBackgroundImageError: (_, __) {
-                      // fallback if the image URL
-                    },
+                    backgroundImage: NetworkImage(imageUrl),
                   ),
                 ),
               ),
@@ -144,11 +144,31 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 _divider(),
                 _buildDetail("Gender", gender),
                 _divider(),
-                _buildDetail("Location", location),
+                _buildDetail(
+                  "Location",
+                  controller.profile.value!.user!.location != null
+                      ? [
+                          controller.profile.value!.user!.location!.street,
+                          controller.profile.value!.user!.location!.city,
+                          controller.profile.value!.user!.location!.state,
+                          controller.profile.value!.user!.location!.country,
+                          controller.profile.value!.user!.location!.postalCode,
+                        ].where((e) => e != null && e.isNotEmpty).join(", ")
+                      : "Not Provided",
+                ),
+
                 _divider(),
                 _buildDetail("Date of Birth", dob),
                 _divider(),
                 _buildDetail("Bio", about),
+                _divider(),
+                _buildDetail(
+                  "Hobbies",
+                  (controller.profile.value!.user!.hobbies != null &&
+                          controller.profile.value!.user!.hobbies!.isNotEmpty)
+                      ? controller.profile.value!.user!.hobbies!.join(", ")
+                      : "Not Provided",
+                ),
                 _divider(),
               ],
             ),
@@ -163,12 +183,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfilePage(),
-                    ),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //   //  builder: (context) => const EditProfilePage(),
+                  //   ),
+                  // );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
@@ -220,7 +240,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _divider() {
-    return Divider(color: Colors.grey.shade300, height: 0, thickness: 1);
     return Divider(color: Colors.grey.shade300, height: 0, thickness: 1);
   }
 }

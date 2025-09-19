@@ -194,7 +194,7 @@ class _SignUpViewState extends State<SignUpView>
                                       print(
                                         "👉 Form validated, calling signupUser()",
                                       );
-                                      await controller.signupUser();
+                                      await controller.signupUser(context);
                                     } else {
                                       print("❌ Form validation failed");
                                     }

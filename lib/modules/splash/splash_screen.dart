@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/main_scaffold.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _charAnimations = List.generate(_shyEyes.length, (index) {
-      final delay = index * 0.05; // Adjust delay for staggered animation
+      final delay = index * 0.05;
       final end = (delay + 0.3).clamp(0.0, 1.0);
       return CurvedAnimation(
         parent: _textAnimationController,
@@ -52,9 +54,15 @@ class _SplashScreenState extends State<SplashScreen>
 
     _textAnimationController.forward();
 
-    Future.delayed(const Duration(seconds: 6), () {
-      Get.offAll(() => MainScaffold());
-       //Get.offAll(() => LoginView());
+    /// Navigation check with token
+    Future.delayed(const Duration(seconds: 4), () async {
+      String? token = await SharedPrefHelper.getToken();
+
+      if (token != null && token.isNotEmpty) {
+        Get.offAll(() => LoginView()); //  User logged in
+      } else {
+        Get.offAll(() => LoginView()); // User not logged in
+      }
     });
   }
 
@@ -73,37 +81,43 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: theme.colorScheme.secondary,
       body: Stack(
         children: [
-          // Left hearts
+          /// Left hearts
           Positioned(
             bottom: 20,
             left: -30,
-            child: Lottie.asset(
-              'assets/splash/heart.json',
-              height: 400,
-              width: 150,
-              fit: BoxFit.fitHeight,
+            child: RepaintBoundary(
+              child: Lottie.asset(
+                'assets/splash/heart.json',
+                height: 400,
+                width: 150,
+                fit: BoxFit.fitHeight,
+                repeat: true,
+              ),
             ),
           ),
 
-          // Right hearts
+          /// Right hearts
           Positioned(
             bottom: 20,
             right: -30,
-            child: Lottie.asset(
-              'assets/splash/heart.json',
-              height: 400,
-              width: 150,
-              fit: BoxFit.fitHeight,
+            child: RepaintBoundary(
+              child: Lottie.asset(
+                'assets/splash/heart.json',
+                height: 400,
+                width: 150,
+                fit: BoxFit.fitHeight,
+                repeat: true,
+              ),
             ),
           ),
 
-          // Main content
+          /// Main content
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 80),
 
-              // Logo sliding up
+              /// Logo sliding up
               Center(
                 child: SlideTransition(
                   position: _logoOffset,
@@ -113,19 +127,22 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 30),
 
-              // Splash animation and animated text
+              /// Splash animation and animated text
               Center(
                 child: Column(
                   children: [
-                    Lottie.asset(
-                      'assets/splash/splash_screen.json',
-                      height: 320,
-                      width: 320,
-                      fit: BoxFit.contain,
+                    RepaintBoundary(
+                      child: Lottie.asset(
+                        'assets/splash/splash_screen.json',
+                        height: 280,
+                        width: 280,
+                        fit: BoxFit.contain,
+                        repeat: false, // ✅ Play once
+                      ),
                     ),
                     const SizedBox(height: 10),
 
-                    // Animated tagline text
+                    /// Animated tagline text
                     Wrap(
                       alignment: WrapAlignment.center,
                       children: List.generate(_shyEyes.length, (index) {
@@ -135,10 +152,10 @@ class _SplashScreenState extends State<SplashScreen>
                           opacity: _charAnimations[index],
                           child: Text(
                             char,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFDF314D),
+                              color: Color(0xFFDF314D),
                             ),
                           ),
                         );
