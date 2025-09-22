@@ -1,6 +1,8 @@
 class ApiEndpoints {
   static const String baseUrl = "https://shyeyes-b.onrender.com/api/user/";
 
+  static const String baseUrl2 = "https://shyeyes-b.onrender.com/api/friends/";
+
   // Auth
   static const String report = "report";
   static const String activeUsers = "active-users";
@@ -24,4 +26,5 @@ class ApiEndpoints {
   static const String Createpaaword = "reset-password";
   static const String editprofile = "profile";
   static const String forgetotp = "verify-pass-otp";
+  static const String Friendlist = "list";
 }

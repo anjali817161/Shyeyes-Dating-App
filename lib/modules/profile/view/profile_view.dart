@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 
 class UserProfilePage extends StatefulWidget {
@@ -37,27 +37,47 @@ class _UserProfilePageState extends State<UserProfilePage> {
         if (controller.errorMessage.isNotEmpty) {
           return Center(child: Text("Error: ${controller.errorMessage}"));
         }
-        if (controller.profile.value == null ||
-            controller.profile.value!.user == null) {
+        if (controller.profile2.value == null ||
+            controller.profile2.value!.user == null) {
           return const Center(child: Text("No profile data"));
         }
 
-        final profileData = controller.profile.value!.user!;
+        final profileData = controller.profile2.value!.user!;
+
+        // Correct DOB handling
+        String dobText = profileData.dob != null && profileData.dob!.isNotEmpty
+            ? profileData.dob!
+                  .split("T")
+                  .first // Take only the date part
+            : "N/A";
+
+        // Correct profile image handling
+        String imageUrl = "https://via.placeholder.com/150";
+        if (profileData.profilePic != null &&
+            profileData.profilePic is String &&
+            profileData.profilePic!.isNotEmpty) {
+          imageUrl = profileData.profilePic!;
+        } else if (profileData.photos != null &&
+            profileData.photos!.isNotEmpty) {
+          imageUrl = profileData.photos!.first.toString();
+        }
 
         return _buildProfileView(
           theme,
           "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
           profileData.email ?? "No email",
-          (profileData.age != null) ? profileData.age.toString() : "N/A",
+          profileData.phoneNo ?? "N/A",
+          profileData.age != null ? profileData.age.toString() : "N/A",
           profileData.gender ?? "N/A",
-          profileData.location?.street ?? "N/A",
-          profileData.dob != null
-              ? "${profileData.dob!.day}-${profileData.dob!.month}-${profileData.dob!.year}"
-              : "N/A",
+          profileData.location != null
+              ? [
+                  profileData.location!.city,
+                  profileData.location!.country,
+                ].where((e) => e != null && e.isNotEmpty).join(", ")
+              : "Not Provided",
+          dobText, // ✅ Use corrected DOB
           profileData.bio ?? "Not Provided",
-          (profileData.photos != null && profileData.photos!.isNotEmpty)
-              ? profileData.photos!.first
-              : "https://via.placeholder.com/150",
+          imageUrl, // ✅ Use corrected profile image
         );
       }),
     );
@@ -67,7 +87,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     ThemeData theme,
     String name,
     String email,
-    String age,
+    String phoneno, // pehle phone number
+    String age, // fir age
     String gender,
     String location,
     String dob,
@@ -140,19 +161,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 _divider(),
                 _buildDetail("Email", email),
                 _divider(),
+                _buildDetail("PhoneNo", phoneno),
+                _divider(),
                 _buildDetail("Age", age),
                 _divider(),
                 _buildDetail("Gender", gender),
                 _divider(),
                 _buildDetail(
                   "Location",
-                  controller.profile.value!.user!.location != null
+                  controller.profile2.value!.user!.location != null
                       ? [
-                          controller.profile.value!.user!.location!.street,
-                          controller.profile.value!.user!.location!.city,
-                          controller.profile.value!.user!.location!.state,
-                          controller.profile.value!.user!.location!.country,
-                          controller.profile.value!.user!.location!.postalCode,
+                          controller.profile2.value!.user!.location!.city,
+
+                          controller.profile2.value!.user!.location!.country,
                         ].where((e) => e != null && e.isNotEmpty).join(", ")
                       : "Not Provided",
                 ),
@@ -164,9 +185,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 _divider(),
                 _buildDetail(
                   "Hobbies",
-                  (controller.profile.value!.user!.hobbies != null &&
-                          controller.profile.value!.user!.hobbies!.isNotEmpty)
-                      ? controller.profile.value!.user!.hobbies!.join(", ")
+                  (controller.profile2.value!.user!.hobbies != null &&
+                          controller.profile2.value!.user!.hobbies!.isNotEmpty)
+                      ? controller.profile2.value!.user!.hobbies!.join(", ")
                       : "Not Provided",
                 ),
                 _divider(),
@@ -182,14 +203,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //   //  builder: (context) => const EditProfilePage(),
-                  //   ),
-                  // );
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfilePage(),
+                    ),
+                  );
+
+                  if (result == true) {
+                    controller.fetchProfile(); // ✅ refresh karwa lo
+                  }
                 },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),

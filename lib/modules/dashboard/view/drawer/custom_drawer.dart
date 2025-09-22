@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/Friendlist/friendlist.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/invitation/view/invitation_view.dart';
@@ -11,6 +12,7 @@ import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -22,6 +24,13 @@ class CustomDrawer extends StatelessWidget {
         label: 'My Profile',
         ontap: () {
           Get.to(() => UserProfilePage());
+        },
+      ),
+      _DrawerItem(
+        icon: Icons.handshake_rounded,
+        label: 'Friend list',
+        ontap: () {
+          Get.to(() => FriendListScreen());
         },
       ),
       _DrawerItem(
@@ -58,51 +67,65 @@ class CustomDrawer extends StatelessWidget {
       backgroundColor: const Color(0xFFF9F9F9),
       child: Column(
         children: [
-          /// 🔹 DrawerHeader linked with Profile Data
+          /// DrawerHeader linked with Profile Data
           Obx(() {
-            final user = controller.profile.value?.user;
+            final user = controller.profile2.value?.user;
+
+            final displayName =
+                (user?.name?.firstName ?? '') +
+                (user?.name?.lastName != null
+                    ? ' ${user!.name!.lastName}'
+                    : '');
+
+            final profileImage =
+                (user?.profilePic != null &&
+                    user!.profilePic!.toString().isNotEmpty)
+                ? NetworkImage(user.profilePic.toString())
+                : const NetworkImage("https://via.placeholder.com/150");
+
             return DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFFDF314D)),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage:
-                        (user?.photos != null && user!.photos!.isNotEmpty)
-                        ? NetworkImage("")
-                        : const NetworkImage("https://via.placeholder.com/150"),
+                    backgroundImage: profileImage as ImageProvider,
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Text(
-                      //   // user?.name ?? "No Name",
-                      //   style: const TextStyle(
-                      //     fontSize: 20,
-                      //     fontWeight: FontWeight.bold,
-                      //     color: Colors.white,
-                      //   ),
-                      // ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.bio ?? "No about info",
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.white70,
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName.isNotEmpty ? displayName : "No Name",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.bio ?? "No about info",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.white70,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             );
           }),
 
-          /// 🔹 Drawer Menu Items
+          /// Drawer Menu Items
           Expanded(
             child: ListView.separated(
               itemCount: items.length,

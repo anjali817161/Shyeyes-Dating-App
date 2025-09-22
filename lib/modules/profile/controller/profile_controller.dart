@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/edit_profile/edit_model.dart';
 import 'package:shyeyes/modules/profile/model/profile_model.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 // adjust path if needed
@@ -8,7 +9,8 @@ import 'package:shyeyes/modules/widgets/auth_repository.dart';
 class ProfileController extends GetxController {
   final AuthRepository _authRepository = AuthRepository();
   // Reactive variable to hold ProfileModel
-  var profile = Rxn<UserProfileModel>();
+  
+  var profile2 = Rxn<EditProfileModel>();
 
   // To track loading state
   var isLoading = false.obs;
@@ -31,7 +33,7 @@ class ProfileController extends GetxController {
       final result = await _authRepository.getProfile();
 
       // Store it in reactive variable
-      profile.value = result;
+      profile2.value = result;
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {
@@ -40,18 +42,20 @@ class ProfileController extends GetxController {
   }
 
   /// Update profile using API
-  void setProfile(UserProfileModel profileData) {
-    profile.value = profileData;
+  void setProfile(EditProfileModel profileData) {
+    profile2.value = profileData;
   }
 
   Future<void> updateProfile({
     required String fullName,
+    required String email,
     required String phone,
     required String age,
-    required String dob,
     required String gender,
     required String location,
-    required String about,
+    required String dob,
+    required String bio,
+    String? hobbies,
     File? img,
   }) async {
     try {
@@ -63,20 +67,21 @@ class ProfileController extends GetxController {
       final response = await _authRepository.editProfile(
         fName: fName,
         lName: lName,
+        email: email,
         phone: phone,
         age: age,
-        dob: dob,
         gender: gender,
         location: location,
-        about: about,
+        dob: dob,
+        bio: bio, // ✅ fixed mismatch (bio vs about)
+        hobbies: hobbies,
         img: img,
       );
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         if (json['status'] == true) {
-          // refresh profile
-          await fetchProfile();
+          await fetchProfile(); // refresh
           Get.snackbar("Success", json['message'] ?? "Profile updated");
         } else {
           Get.snackbar("Error", json['message'] ?? "Something went wrong");
