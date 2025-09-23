@@ -145,12 +145,11 @@ class _HomeViewState extends State<HomeView> {
                   children: [
                     GestureDetector(
                       onDoubleTap: () async {
-                        await usersController.handleDoubleTap(
-                          userId.toString(),
-                        );
+                        await usersController.toggleFavorite(userId);
                       },
                       child: Image.network(imageUrl, fit: BoxFit.cover),
                     ),
+
                     Obx(() {
                       if (usersController.recentlyLikedUsers.contains(userId)) {
                         return Center(
@@ -283,6 +282,7 @@ class _HomeViewState extends State<HomeView> {
                               },
                             );
                           }),
+
                           buildActionButton(
                             Icons.call,
                             Colors.teal[400]!,

@@ -17,13 +17,13 @@ class SharedPrefHelper {
     await prefs.setBool(_dialogueShown, false);
   }
 
-  /// ✅ Get token
+  /// Get token
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tokenKey);
   }
 
-  /// ✅ Remove token + user data (logout)
+  ///  Remove token + user data (logout)
   static Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
@@ -49,7 +49,7 @@ class SharedPrefHelper {
     await prefs.setString(_userPicKey, picUrl);
   }
 
-  /// ✅ Get user details
+  /// Get user details
   static Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userIdKey);
@@ -65,7 +65,7 @@ class SharedPrefHelper {
     return prefs.getString(_userPicKey);
   }
 
-  /// ✅ Dialog flag
+  ///  Dialog flag
   static Future<void> setDialogShown(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_dialogueShown, value);
