@@ -57,10 +57,10 @@ class InvitationPage extends StatelessWidget {
                       icon: const Icon(Icons.check_circle, color: Colors.green),
                       onPressed: () => controller.acceptInvitation(invite.id),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.cancel, color: Colors.red),
-                      onPressed: () => controller.rejectInvitation(invite.id),
-                    ),
+                    // IconButton(
+                    //   icon: const Icon(Icons.cancel, color: Colors.red),
+                    //   onPressed: () => controller.rejectInvitation(invite.id),
+                    // ),
                   ],
                 ),
               ),

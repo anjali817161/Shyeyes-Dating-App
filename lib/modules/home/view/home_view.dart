@@ -10,7 +10,9 @@ import 'package:shyeyes/modules/about/view/about_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
+import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
+import 'package:shyeyes/modules/profile/model/profile_model.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
 
@@ -75,10 +77,9 @@ class _HomeViewState extends State<HomeView> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Select the list based on viewType
         final users = widget.viewType == HomeViewType.activeUsers
-            ? usersController.activeUsers
-            : usersController.bestMatches;
+            ? usersController.users
+            : usersController.matches;
 
         if (users.isEmpty) {
           return Center(
@@ -86,6 +87,7 @@ class _HomeViewState extends State<HomeView> {
               widget.viewType == HomeViewType.activeUsers
                   ? "No active users found"
                   : "No best matches found",
+              style: const TextStyle(fontSize: 16),
             ),
           );
         }
@@ -98,92 +100,70 @@ class _HomeViewState extends State<HomeView> {
               slideBuilder: (index) {
                 final user = users[index];
 
-                // For bestMatches, user model is BestMatchModel, for activeUsers it's ActiveUser  Model
-                // So we need to handle both types safely
-                final String? imageUrl;
+                final String imageUrl;
                 final String name;
                 final int age;
                 final String location;
                 final String about;
+                final String userId;
 
                 if (widget.viewType == HomeViewType.activeUsers) {
-                  // ActiveUser  Model assumed to have these fields
-                  imageUrl = (user as dynamic).image;
-                  name = (user as dynamic).name ?? 'Unknown';
-                  age = (user as dynamic).age ?? 0;
-                  location = (user as dynamic).location ?? 'N/A';
-                  about = (user as dynamic).about ?? '';
+                  final Users userData = user as Users;
+                  userId = userData.sId!;
+                  imageUrl = userData.profilePic != null
+                      ? "https://shyeyes-b.onrender.com/uploads/${userData.profilePic}"
+                      : "https://i.pravatar.cc/600?img=$index";
+                  name = userData.name != null ? userData.name! : 'No Name';
+
+                  age = userData.age ?? 0;
+                  if (userData.location != null) {
+                    location =
+                        '${userData.location!.street ?? ''},${userData.location!.city ?? ''},${userData.location!.state ?? ''}, ${userData.location!.country ?? ''}';
+                    if (location.trim() == ',') 'N/A';
+                  } else {
+                    location = 'N/A';
+                  }
                 } else {
-                  // BestMatchModel
-                  imageUrl = (user as BestMatchModel).img;
-                  name = user.name ?? 'Unknown';
-                  age = user.age ?? 0;
-                  location = 'N/A'; // No location info in BestMatchModel
-                  about = '';
+                  final BestmatchModel match = user as BestmatchModel;
+                  userId = match.id!;
+                  name = match.name ?? '';
+
+                  imageUrl = match.profilePic != null
+                      ? "https://shyeyes-b.onrender.com/uploads/${match.profilePic}"
+                      : (match.photos?.isNotEmpty == true
+                            ? "https://shyeyes-b.onrender.com/uploads/${match.photos!.first}"
+                            : "https://i.pravatar.cc/600?img=$index");
+                  age = match.age ?? 0;
+                  location = match.location != null
+                      ? "${match.location!.city ?? ''}, ${match.location!.country ?? ''}"
+                      : 'N/A';
+                  about = match.bio ?? '';
                 }
 
                 return Stack(
                   fit: StackFit.expand,
                   children: [
-                    /// Image with double-tap ❤️
                     GestureDetector(
                       onDoubleTap: () async {
-                        final id = widget.viewType == HomeViewType.activeUsers
-                            ? (user as dynamic).id
-                            : (user as BestMatchModel).userId;
-
-                        if (id != null) {
-                          // API call karega aur likedUsers update karega
-                          final success = await usersController.toggleFavorite(
-                            id,
-                          );
-
-                          if (success) {
-                            // Show heart beating animation on image
-                            usersController.recentlyLikedUsers.add(id);
-                            Future.delayed(const Duration(seconds: 2), () {
-                              usersController.recentlyLikedUsers.remove(id);
-                            });
-                          }
-                        }
+                        await usersController.handleDoubleTap(
+                          userId.toString(),
+                        );
                       },
-                      child: imageUrl != null && imageUrl.isNotEmpty
-                          ? Image.network(imageUrl, fit: BoxFit.cover)
-                          : Image.network(
-                              "https://i.pravatar.cc/600?img=$index",
-                              fit: BoxFit.cover,
-                            ),
+                      child: Image.network(imageUrl, fit: BoxFit.cover),
                     ),
-
-                    ///  Animation
                     Obx(() {
-                      final int? id;
-                      if (widget.viewType == HomeViewType.activeUsers) {
-                        id = (user as dynamic).id;
-                      } else {
-                        id = (user as BestMatchModel).userId;
-                      }
-
-                      if (id != null &&
-                          usersController.recentlyLikedUsers.contains(id)) {
+                      if (usersController.recentlyLikedUsers.contains(userId)) {
                         return Center(
                           child: Lottie.asset(
                             'assets/lotties/Heartbeating.json',
                             width: 600,
                             height: 600,
                             repeat: false,
-                            onLoaded: (composition) {
-                              Future.delayed(composition.duration, () {
-                                usersController.recentlyLikedUsers.remove(id);
-                              });
-                            },
                           ),
                         );
                       }
                       return const SizedBox.shrink();
                     }),
-
-                    /// User Info + Profile Buttons
                     Positioned(
                       left: 16,
                       right: 16,
@@ -204,25 +184,25 @@ class _HomeViewState extends State<HomeView> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.location_on,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        location,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                // Row(
+                                //   children: [
+                                //     const Icon(
+                                //       Icons.location_on,
+                                //       color: Colors.white,
+                                //       size: 18,
+                                //     ),
+                                //     const SizedBox(width: 6),
+                                //     Flexible(
+                                //       child: Text(
+                                //         location,
+                                //         style: const TextStyle(
+                                //           color: Colors.white,
+                                //           fontSize: 14,
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ],
+                                // ),
                                 const SizedBox(height: 8),
                                 Row(
                                   mainAxisAlignment:
@@ -285,8 +265,6 @@ class _HomeViewState extends State<HomeView> {
                         ],
                       ),
                     ),
-
-                    /// Bottom Action Buttons
                     Positioned(
                       bottom: 50,
                       left: 0,
@@ -294,33 +272,17 @@ class _HomeViewState extends State<HomeView> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          /// ❤️ Favorite Button
-                          /// ❤️ Favorite Button
                           Obx(() {
-                            final id =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? (user as dynamic).id ?? -1
-                                : (user as BestMatchModel).userId ?? -1;
-
-                            final isLiked = usersController.isLiked(id);
-
+                            final isLiked = usersController.isLiked(userId);
                             return buildActionButton(
                               isLiked ? Icons.favorite : Icons.favorite_border,
-                              isLiked
-                                  ? Colors.red
-                                  : Colors.grey, // 🔴 red if liked, grey if not
+                              isLiked ? Colors.red : Colors.grey,
                               30,
                               () async {
-                                if (id != null) {
-                                  await usersController.toggleFavorite(
-                                    id,
-                                  ); // API + state update
-                                }
+                                await usersController.toggleFavorite(userId);
                               },
                             );
                           }),
-
-                          /// 📞 Call
                           buildActionButton(
                             Icons.call,
                             Colors.teal[400]!,
@@ -329,8 +291,6 @@ class _HomeViewState extends State<HomeView> {
                               _showSubscriptionDialog(context, theme, true);
                             },
                           ),
-
-                          /// Video Call
                           buildActionButton(
                             Icons.video_call,
                             Colors.lightBlueAccent,
@@ -339,14 +299,12 @@ class _HomeViewState extends State<HomeView> {
                               _showSubscriptionDialog(context, theme, false);
                             },
                           ),
-
-                          /// Chat
                           buildActionButton(
                             Icons.chat,
                             Colors.blueAccent,
                             26,
                             () {
-                              // You can implement chat navigation here
+                              // Navigate to chat
                             },
                           ),
                         ],
@@ -361,22 +319,8 @@ class _HomeViewState extends State<HomeView> {
               initialPage: 0,
               onSlideChanged: (index) {
                 setState(() => _currentIndex = index);
-
-                if (widget.viewType == HomeViewType.activeUsers) {
-                  final user = users[index];
-                  final id = (user as dynamic).id;
-                  if (id != null && usersController.isLiked(id)) {
-                    usersController.recentlyLikedUsers.add(id);
-
-                    Future.delayed(const Duration(seconds: 2), () {
-                      usersController.recentlyLikedUsers.remove(id);
-                    });
-                  }
-                }
               },
             ),
-
-            /// Top Bar
             Positioned(
               top: MediaQuery.of(context).padding.top + 10,
               left: 16,
@@ -398,8 +342,9 @@ class _HomeViewState extends State<HomeView> {
                           final currentUser = users[_currentIndex];
                           final String shareText =
                               widget.viewType == HomeViewType.activeUsers
-                              ? "${(currentUser as dynamic).name}, ${(currentUser as dynamic).age}\n${(currentUser as dynamic).location}\nAbout: ${(currentUser as dynamic).about}\n\nCheck out this profile on ShyEyes App!"
-                              : "${(currentUser as BestMatchModel).name}, ${(currentUser as BestMatchModel).age}\n\nCheck out this profile on ShyEyes App!";
+                              ? "${(currentUser as User).name ?? ''}, ${(currentUser).age}\n${(currentUser).location != null ? "${(currentUser).location!.city ?? ''}, ${(currentUser).location!.country ?? ''}" : ''}\nAbout: ${(currentUser).bio ?? ''}\n\nCheck out this profile on ShyEyes App!"
+                              : "${(currentUser as BestmatchModel).name ?? ''}, ${(currentUser).age}\n\nCheck out this profile on ShyEyes App!";
+
                           Share.share(shareText);
                         },
                       ),
@@ -416,7 +361,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  /// Subscription Dialog
   void _showSubscriptionDialog(
     BuildContext context,
     ThemeData theme,
@@ -451,8 +395,8 @@ class _HomeViewState extends State<HomeView> {
               const SizedBox(height: 10),
               Text(
                 isAudio
-                    ? 'To Proceed with Audio call, You have to Subscribe your Plan.'
-                    : 'To Proceed with Video call, You have to Subscribe your Plan.',
+                    ? 'To proceed with Audio call, you have to subscribe.'
+                    : 'To proceed with Video call, you have to subscribe.',
                 style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
@@ -492,7 +436,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  /// Reusable Action Button
   Widget buildActionButton(
     IconData icon,
     Color color,

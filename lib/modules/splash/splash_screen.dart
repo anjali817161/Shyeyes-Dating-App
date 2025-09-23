@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
       String? token = await SharedPrefHelper.getToken();
 
       if (token != null && token.isNotEmpty) {
-        Get.offAll(() => LoginView()); //  User logged in
+        Get.offAll(() => MainScaffold()); //  User logged in
       } else {
         Get.offAll(() => LoginView()); // User not logged in
       }

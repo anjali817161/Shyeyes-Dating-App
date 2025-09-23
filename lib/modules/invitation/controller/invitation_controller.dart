@@ -40,16 +40,16 @@ class InvitationController extends GetxController {
     }
   }
 
-  /// Reject invitation
-  Future<void> rejectInvitation(int requestId) async {
-    try {
-      final response = await AuthRepository.cancelRequest(requestId);
-      if (response != null) {
-        invitations.removeWhere((inv) => inv.id == requestId);
-        Get.snackbar("Success", "Invitation Rejected ❌");
-      }
-    } catch (e) {
-      print("❌ Error rejecting invitation: $e");
-    }
-  }
+  // /// Reject invitation
+  // Future<void> rejectInvitation(int requestId) async {
+  //   try {
+  //     final response = await AuthRepository.cancelRequest(requestId);
+  //     if (response != null) {
+  //       invitations.removeWhere((inv) => inv.id == requestId);
+  //       Get.snackbar("Success", "Invitation Rejected ❌");
+  //     }
+  //   } catch (e) {
+  //     print("❌ Error rejecting invitation: $e");
+  //   }
+  // }
 }

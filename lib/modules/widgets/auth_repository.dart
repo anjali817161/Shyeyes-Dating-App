@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/profile/model/profile_model.dart';
@@ -146,38 +147,34 @@ class AuthRepository {
     return UserProfileModel.fromJson(jsonDecode(response.body));
   }
 
-  Future<List<ActiveUserModel>> getActiveUsers() async {
+  Future<Activeusermodel> getActiveUsers() async {
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.activeUsers);
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
     print("Fetching active users from: $url with token: $token");
 
     final response = await http.get(
       url,
       headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
     );
+
     print("response body:------ ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      if (data['data'] is List) {
-        // Case 1: API returns a list of users
-        return (data['data'] as List)
-            .map((e) => ActiveUserModel.fromJson(e))
-            .toList();
-      } else if (data['data'] is Map) {
-        // Case 2: API returns a single user
-        return [ActiveUserModel.fromJson(data['data'])];
-      } else {
-        throw Exception("Invalid API response format");
-      }
+      /// API response directly map karenge Activeusermodel pe
+      return Activeusermodel.fromJson(data);
     } else {
       throw Exception("Failed to fetch active users: ${response.statusCode}");
     }
   }
 
-  Future<List<BestMatchModel>> fetchBestMatches() async {
+  Future<List<BestmatchModel>> fetchBestMatches() async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+    print("print token===== $token");
+    print("print url===== ${ApiEndpoints.baseUrl + ApiEndpoints.bestMatches}");
+
     try {
       final response = await http.get(
         Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.bestMatches),
@@ -188,18 +185,41 @@ class AuthRepository {
         },
       );
 
+      print("Best Matches Status Code: ${response.statusCode}");
+      print("Best Matches Response Body: ${response.body}");
+
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-        if (decoded["status"] == true && decoded["data"] != null) {
-          List data = decoded["data"];
-          return data.map((e) => BestMatchModel.fromJson(e)).toList();
+        print("Best Matches Decoded: $decoded");
+
+        // Check different possible response structures
+        if (decoded["status"] == true) {
+          // Option 1: Data is in "data" field
+          if (decoded["data"] != null) {
+            List data = decoded["data"];
+            return data.map((e) => BestmatchModel.fromJson(e)).toList();
+          }
+          // Option 2: Data is in "matches" field
+          else if (decoded["matches"] != null) {
+            List data = decoded["matches"];
+            return data.map((e) => BestmatchModel.fromJson(e)).toList();
+          }
+          // Option 3: Direct array response
+          else if (decoded is List) {
+            return decoded.map((e) => BestmatchModel.fromJson(e)).toList();
+          } else {
+            return [];
+          }
         } else {
+          print("API returned status false: ${decoded["message"]}");
           return [];
         }
       } else {
-        throw Exception("Failed to fetch best matches");
+        print("Failed with status code: ${response.statusCode}");
+        throw Exception("Failed to fetch best matches: ${response.statusCode}");
       }
     } catch (e) {
+      print("Error in fetchBestMatches: $e");
       rethrow;
     }
   }
@@ -303,68 +323,85 @@ class AuthRepository {
     return http.Response.fromStream(streamedResponse);
   }
 
-  static Future<Map<String, dynamic>?> sendRequest(int receiverId) async {
-    try {
-      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-      final response = await http.post(
-        Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.sentRequest),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({"receiver_id": receiverId}),
-      );
 
-      print(" Response: ${response.body}");
+// send request api
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        print(" Failed with status: ${response.statusCode}");
-        return {"message": "Failed", "status_code": response.statusCode};
-      }
-    } catch (e) {
-      print(" Error sending request: $e");
-      return null;
+static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
+  try {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+    // Using your API constants
+    final Uri uri = Uri.parse("${ApiEndpoints.baseUrl2}${ApiEndpoints.sentRequest}/$receiverId");
+
+    final response = await http.post(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    print("Send Request Response: ${response.body}");
+    print("Receiver ID: $receiverId");
+    print("Status Code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {
+        "message": "Failed",
+        "status_code": response.statusCode,
+        "body": response.body
+      };
     }
+  } catch (e) {
+    print("Error sending request: $e");
+    return null;
   }
+}
 
-  static Future<Map<String, dynamic>?> cancelRequest(int requestId) async {
-    try {
-      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+  static Future<Map<String, dynamic>?> cancelRequest(String requestId) async {
+  try {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
-      final response = await http.delete(
-        Uri.parse("${ApiEndpoints.baseUrl}/message-requests/$requestId/reject"),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      );
+    // Using your API constants
+    final Uri uri = Uri.parse("${ApiEndpoints.baseUrl2}${ApiEndpoints.deleteRequest}/$requestId");
 
-      print(" Cancel Request Response: ${response.body}");
-      print(" Request ID: $requestId");
-      print(" Status Code: ${response.statusCode}");
+    final response = await http.delete(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        print(" Failed with status: ${response.statusCode}");
-        return {"message": "Failed", "status_code": response.statusCode};
-      }
-    } catch (e) {
-      print(" Error canceling request: $e");
-      return null;
+    print("Cancel Request Response: ${response.body}");
+    print("Request ID: $requestId");
+    print("Status Code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {
+        "message": "Failed",
+        "status_code": response.statusCode,
+        "body": response.body
+      };
     }
+  } catch (e) {
+    print("Error canceling request: $e");
+    return null;
   }
+}
 
   static Future<Map<String, dynamic>?> getInvitations() async {
     try {
       final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
       final response = await http.get(
-        Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.requestRecieved),
+        Uri.parse(ApiEndpoints.baseUrl2 + ApiEndpoints.requests),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -375,7 +412,7 @@ class AuthRepository {
       print(" Invitations Response: ${response.body}");
       print(" Status Code: ${response.statusCode}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         return {"message": "Failed", "status_code": response.statusCode};

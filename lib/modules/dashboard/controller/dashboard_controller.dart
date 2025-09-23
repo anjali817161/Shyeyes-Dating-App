@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
+import 'package:shyeyes/modules/profile/model/profile_model.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
@@ -10,34 +12,36 @@ class ActiveUsersController extends GetxController {
 
   /// Observables
   var isLoading = false.obs;
-  var activeUsers = <ActiveUserModel>[].obs;
+  var activeUserModel = Activeusermodel().obs;
   var errorMessage = "".obs;
 
-  var bestMatches = <BestMatchModel>[].obs;
+  /// Users list
+  var users = <Users>[].obs;
+  var matches = <BestmatchModel>[].obs;
   var successMessage = "".obs;
 
-  /// request tracking
-  var requestStatus = <int, String>{}.obs;
-  var sentRequests = <int, int>{}.obs;
+  /// Request tracking
+  var requestStatus = <String, String>{}.obs; // userId -> status
+  var sentRequests = <String, String>{}.obs; // userId -> requestId
+  var requestLoading = <String, bool>{}.obs;
 
-  /// request loading
-  var requestLoading = <int, bool>{}.obs;
-  var recentlyLikedUsers = <int>{}.obs;
+  /// Liked users tracking
+  var likedUsers = <String>{}.obs; // store liked userIds as String
+  var recentlyLikedUsers = <String>{}.obs; // for double-tap animation
 
-  /// like tracking
-  var likedUsers = <int>{}.obs; // store liked userIds
+  // -----------------------
+  // FETCH USERS & MATCHES
+  // -----------------------
 
   /// Fetch Active Users
   Future<void> fetchActiveUsers() async {
     try {
       isLoading.value = true;
-      final users = await _userRepository.getActiveUsers();
-      activeUsers.assignAll(users);
-      errorMessage.value = "";
-      likedUsers.clear(); // reset likes on refresh
+      final response = await _userRepository.getActiveUsers();
+      activeUserModel.value = response;
+      users.value = response.users ?? [];
     } catch (e) {
-      errorMessage.value = e.toString();
-      print(" Error fetching active users: $e");
+      Get.snackbar("Error", e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -45,25 +49,48 @@ class ActiveUsersController extends GetxController {
 
   /// Fetch Best Matches
   Future<void> fetchBestMatches() async {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
     try {
       isLoading.value = true;
-      final matches = await _userRepository.fetchBestMatches();
-      bestMatches.assignAll(matches);
+      final response = await http.get(
+        Uri.parse("https://shyeyes-b.onrender.com/api/user/matches"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded['matches'] != null && decoded['matches'] is List) {
+          matches.value = (decoded['matches'] as List)
+              .map((e) => BestmatchModel.fromJson(e))
+              .toList();
+        } else {
+          matches.clear();
+        }
+      } else {
+        matches.clear();
+      }
     } catch (e) {
-      print(" Error fetching matches: $e");
+      matches.clear();
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Send Request
-  Future<void> sendRequest(int receiverId) async {
+  // -----------------------
+  // REQUEST HANDLING
+  // -----------------------
+
+  Future<void> sendRequest(String receiverId) async {
     try {
       requestLoading[receiverId] = true;
 
       final response = await AuthRepository.sendRequest(receiverId);
+
       if (response != null && response['request'] != null) {
-        int requestId = response['request']['id'];
+        final requestId = response['request']['_id'];
         sentRequests[receiverId] = requestId;
         requestStatus[receiverId] = "pending";
         Get.snackbar("Success", "Request sent successfully!");
@@ -75,7 +102,7 @@ class ActiveUsersController extends GetxController {
     }
   }
 
-  Future<void> cancelRequest(int receiverId) async {
+  Future<void> cancelRequest(String receiverId) async {
     try {
       requestLoading[receiverId] = true;
 
@@ -87,8 +114,8 @@ class ActiveUsersController extends GetxController {
 
       final response = await AuthRepository.cancelRequest(requestId);
       if (response != null && response['message'] != null) {
-        final message = response['message'] ?? '';
-        if (message.contains("cancelled") || message.contains("deleted")) {
+        final message = response['message']!;
+        if (message.toLowerCase().contains("cancelled")) {
           requestStatus[receiverId] = "none";
           sentRequests.remove(receiverId);
           Get.snackbar("Success", "Request cancelled");
@@ -101,156 +128,91 @@ class ActiveUsersController extends GetxController {
     }
   }
 
-  bool isRequestSent(int receiverId) => requestStatus[receiverId] == "pending";
+  bool isRequestSent(String receiverId) => requestStatus[receiverId] == "pending";
 
-  /// Add liked user locally (optimistic update)
-  void addLiked(int userId) {
-    if (!likedUsers.contains(userId)) {
-      likedUsers.add(userId);
-    }
-  }
+  // -----------------------
+  // LIKE / UNLIKE HANDLING
+  // -----------------------
 
-  /// Remove liked user locally (optimistic update)
-  void removeLiked(int userId) {
-    likedUsers.remove(userId);
-  }
+  void addLiked(String userId) => likedUsers.add(userId);
+  void removeLiked(String userId) => likedUsers.remove(userId);
+  bool isLiked(String userId) => likedUsers.contains(userId);
 
-  /// Like / Unlike toggle with optimistic UI update
-  Future<bool> toggleFavorite(int likedId) async {
-    // Optimistically toggle liked state locally
-    final currentlyLiked = isLiked(likedId);
-    if (currentlyLiked) {
-      removeLiked(likedId);
-    } else {
-      addLiked(likedId);
-    }
+  Future<bool> toggleFavorite(String userId) async {
+    final currentlyLiked = isLiked(userId);
+    if (currentlyLiked) removeLiked(userId);
+    else addLiked(userId);
 
     try {
       final token = await SharedPrefHelper.getToken();
       if (token == null || token.isEmpty) {
-        Get.snackbar("Error", "Token not found!");
-        // Revert optimistic update
-        if (currentlyLiked) {
-          addLiked(likedId);
-        } else {
-          removeLiked(likedId);
-        }
+        if (currentlyLiked) addLiked(userId);
+        else removeLiked(userId);
         return false;
       }
 
-      final url = Uri.parse(
-        "https://chat.bitmaxtest.com/admin/api/users/$likedId/like",
-      );
+      final url = Uri.parse("https://chat.bitmaxtest.com/admin/api/users/$userId/like");
+      final response = await http.post(url, headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+      });
 
-      final response = await http.post(
-        url,
-        headers: {
-          "Authorization": "Bearer $token",
-          "Accept": "application/json",
-        },
-      );
+      if (response.statusCode == 200 || response.statusCode == 201) return true;
 
-      print(
-        "❤️ Favorite API Response: ${response.statusCode} - ${response.body}",
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        if (data["success"] == true) {
-          return true;
-        }
-      }
-
-      // If already liked, call unlike API
+      // Already liked → unlike
       if (response.statusCode == 400) {
         final data = jsonDecode(response.body);
         if (data["message"] != null &&
             data["message"].toString().contains("already liked")) {
-          print(" User already liked, calling unlike API...");
-          final unlikeSuccess = await unlikeUser(likedId);
-          if (!unlikeSuccess) {
-            // revert optimistic update
-            if (currentlyLiked) {
-              addLiked(likedId);
-            } else {
-              removeLiked(likedId);
-            }
+          final success = await unlikeUser(userId);
+          if (!success) {
+            if (currentlyLiked) addLiked(userId);
+            else removeLiked(userId);
           }
-          return unlikeSuccess;
+          return success;
         }
       }
 
-      // On failure revert optimistic update
-      if (currentlyLiked) {
-        addLiked(likedId);
-      } else {
-        removeLiked(likedId);
-      }
+      if (currentlyLiked) addLiked(userId);
+      else removeLiked(userId);
       return false;
     } catch (e) {
-      print(" Favorite API Error: $e");
-      // Revert optimistic update on error
-      if (currentlyLiked) {
-        addLiked(likedId);
-      } else {
-        removeLiked(likedId);
-      }
+      if (currentlyLiked) addLiked(userId);
+      else removeLiked(userId);
       return false;
     }
   }
 
-  bool isLiked(int userId) => likedUsers.contains(userId);
-
-  /// Unlike API
-  Future<bool> unlikeUser(int likedId) async {
+  Future<bool> unlikeUser(String userId) async {
     try {
       final token = await SharedPrefHelper.getToken();
-      if (token == null || token.isEmpty) {
-        Get.snackbar("Error", "Token not found!");
-        return false;
-      }
+      if (token == null || token.isEmpty) return false;
 
-      final url = Uri.parse(
-        "https://chat.bitmaxtest.com/admin/api/users/$likedId/unlike",
-      );
-
-      final response = await http.delete(
-        url,
-        headers: {
-          "Authorization": "Bearer $token",
-          "Accept": "application/json",
-        },
-      );
-
-      print(
-        "💔 Unlike API Response: ${response.statusCode} - ${response.body}",
-      );
+      final url = Uri.parse("https://chat.bitmaxtest.com/admin/api/users/$userId/unlike");
+      final response = await http.delete(url, headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        likedUsers.remove(likedId); //  remove from set
+        likedUsers.remove(userId);
         return true;
       }
       return false;
     } catch (e) {
-      print(" Unlike API Error: $e");
       return false;
     }
   }
 
-  /// Handle double tap like/unlike with animation
-  Future<void> handleDoubleTap(int userId) async {
+  /// Handle double-tap like/unlike with animation
+  Future<void> handleDoubleTap(String userId) async {
     if (isLiked(userId)) {
       bool success = await unlikeUser(userId);
-      if (success) {
-        likedUsers.remove(userId);
-        recentlyLikedUsers.remove(userId);
-      }
+      if (success) recentlyLikedUsers.remove(userId);
     } else {
       bool success = await toggleFavorite(userId);
       if (success) {
-        likedUsers.add(userId);
         recentlyLikedUsers.add(userId);
-
         Future.delayed(const Duration(seconds: 2), () {
           recentlyLikedUsers.remove(userId);
         });
