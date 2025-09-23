@@ -342,7 +342,7 @@ class _HomeViewState extends State<HomeView> {
                           final currentUser = users[_currentIndex];
                           final String shareText =
                               widget.viewType == HomeViewType.activeUsers
-                              ? "${(currentUser as Users).name ?? ''}, ${(currentUser).age}\n${(currentUser).location != null ? "${(currentUser).location!.city ?? ''}, ${(currentUser).location!.country ?? ''}" : ''}\nAbout: ${(currentUser).bio ?? ''}\n\nCheck out this profile on ShyEyes App!"
+                              ? "${(currentUser as Users).name ?? ''}, ${(currentUser).age}\n${(currentUser).location != null ? "${(currentUser).location!.city ?? ''}, ${(currentUser).location!.country ?? ''}" : ''}\n\nCheck out this profile on ShyEyes App!"
                               : "${(currentUser as BestmatchModel).name ?? ''}, ${(currentUser).age}\n\nCheck out this profile on ShyEyes App!";
 
                           Share.share(shareText);

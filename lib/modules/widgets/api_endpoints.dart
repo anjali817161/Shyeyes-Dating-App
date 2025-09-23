@@ -8,9 +8,6 @@ class ApiEndpoints {
   static const String activeUsers = "active-users";
   static const String updateProfile = "profile/update";
   static const String bestMatches = "best-matches";
-  static const String sentRequest = "message-requests";
-  static const String requestRecieved = "message-requests/received";
-
 
   // register
 
@@ -27,4 +24,7 @@ class ApiEndpoints {
   static const String editprofile = "profile";
   static const String forgetotp = "verify-pass-otp";
   static const String Friendlist = "list";
+  static const String deleteRequest = "cancel";
+  static const String sentRequest = "request";
+  static const String requests = "requests";
 }

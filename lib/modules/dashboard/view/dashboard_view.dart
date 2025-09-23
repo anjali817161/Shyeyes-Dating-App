@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
@@ -30,34 +31,6 @@ class _DashboardPageState extends State<DashboardPage> {
   final ActiveUsersController usersController = Get.put(
     ActiveUsersController(),
   );
-
-  final List<Map<String, String>> profiles = [
-    {
-      'name': 'Aarav Sharma',
-      'active': '1 Day',
-      'image': 'assets/images/profile_image1.png',
-    },
-    {
-      'name': 'Priya Singh',
-      'active': '2 Days',
-      'image': 'assets/images/profile_image2.png',
-    },
-    {
-      'name': 'Rahul Verma',
-      'active': '3 Days',
-      'image': 'assets/images/profile_image3.png',
-    },
-    {
-      'name': 'Ananya Desai',
-      'active': '5 Days',
-      'image': 'assets/images/profile_image4.png',
-    },
-    {
-      'name': 'Simran Kaur',
-      'active': '1 Day',
-      'image': 'assets/images/profile_image5.png',
-    },
-  ];
 
   @override
   void initState() {
@@ -234,7 +207,7 @@ class _DashboardPageState extends State<DashboardPage> {
         return const Center(child: CircularProgressIndicator());
       }
 
-      if (usersController.bestMatches.isEmpty) {
+      if (usersController.matches.isEmpty) {
         return const Center(child: Text("No matches found"));
       }
 
@@ -243,12 +216,12 @@ class _DashboardPageState extends State<DashboardPage> {
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           scrollDirection: Axis.horizontal,
-          itemCount: usersController.bestMatches.length > 10
+          itemCount: usersController.matches.length > 10
               ? 5
-              : usersController.bestMatches.length,
+              : usersController.matches.length,
           separatorBuilder: (context, index) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
-            final profile = usersController.bestMatches[index];
+            final profile = usersController.matches[index];
 
             return GestureDetector(
               onTap: () {
@@ -275,12 +248,19 @@ class _DashboardPageState extends State<DashboardPage> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
                       ),
-                      child: profile.img != null
+                      child: profile.profilePic != null
                           ? Image.network(
-                              profile.img!,
+                              "https://shyeyes-b.onrender.com/uploads/${profile.profilePic!}",
                               height: 140,
                               width: double.infinity,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    "assets/images/profile_image3.png",
+                                    height: 140,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
                             )
                           : Image.asset(
                               "assets/images/profile_image3.png",
@@ -292,64 +272,80 @@ class _DashboardPageState extends State<DashboardPage> {
 
                     const SizedBox(height: 8),
 
-                    // Send Request button
                     Obx(() {
-                      final receiverId = profile.userId ?? 0;
+                      final receiverId = profile.id ?? "";
                       final status =
                           usersController.requestStatus[receiverId] ?? "none";
                       final loading =
                           usersController.requestLoading[receiverId] ?? false;
 
-                      return ElevatedButton(
-                        onPressed: loading
-                            ? null
-                            : () {
-                                if (status == "pending") {
-                                  usersController.cancelRequest(receiverId);
-                                } else {
-                                  usersController.sendRequest(receiverId);
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: status == "pending"
-                              ? Colors.red
-                              : theme.colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
+                      return SizedBox(
+                        width: 140,
+                        height: 36,
+                        child: ElevatedButton(
+                          onPressed: loading
+                              ? null
+                              : () async {
+                                  usersController.requestLoading[receiverId] =
+                                      true;
+
+                                  try {
+                                    if (status == "pending") {
+                                      await usersController.cancelRequest(
+                                        receiverId,
+                                      );
+                                    } else {
+                                      await usersController.sendRequest(
+                                        receiverId,
+                                      );
+                                    }
+                                  } finally {
+                                    usersController.requestLoading[receiverId] =
+                                        false;
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: status == "pending"
+                                ? Colors.red
+                                : Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: const StadiumBorder(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                           ),
-                          minimumSize: const Size(120, 30),
-                        ),
-                        child: loading
-                            ? const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    status == "pending"
-                                        ? Icons.cancel
-                                        : Icons.send,
-                                    size: 16,
+                          child: loading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
                                     color: Colors.white,
                                   ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    status == "pending"
-                                        ? "Cancel Request"
-                                        : "Send Request",
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ],
-                              ),
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      status == "pending"
+                                          ? Icons.cancel
+                                          : Icons.send,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      status == "pending" ? "Cancel" : "Send",
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
                       );
                     }),
 
@@ -363,7 +359,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         children: [
                           Flexible(
                             child: Text(
-                              profile.name ?? 'Unknown',
+                              profile.name?.trim().isEmpty ?? true
+                                  ? "No Name"
+                                  : profile.name!,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -595,10 +593,50 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        // 👇 shimmer placeholder while loading
+        return SizedBox(
+          height: 130,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            scrollDirection: Axis.horizontal,
+            itemCount: 8, // fixed placeholders count
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(
+                      width: 85,
+                      height: 85,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(
+                      width: 60,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
       }
 
-      if (controller.activeUsers.isEmpty) {
+      if (controller.users.isEmpty) {
         return const Center(child: Text("No active users"));
       }
 
@@ -609,12 +647,12 @@ class _DashboardPageState extends State<DashboardPage> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             scrollDirection: Axis.horizontal,
-            itemCount: controller.activeUsers.length > 8
+            itemCount: controller.users.length > 8
                 ? 8
-                : controller.activeUsers.length,
+                : controller.users.length,
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final profile = controller.activeUsers[index];
+              final profile = controller.users[index];
               return GestureDetector(
                 onTap: () {
                   // Get.to(() => AboutView(profileData: profile));
@@ -644,10 +682,10 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                           child: ClipOval(
                             child:
-                                profile.image != null &&
-                                    profile.image!.isNotEmpty
+                                profile.profilePic != null &&
+                                    profile.profilePic!.isNotEmpty
                                 ? Image.network(
-                                    profile.image!,
+                                    "https://shyeyes-b.onrender.com/uploads/${profile.profilePic!}",
                                     fit: BoxFit.cover,
                                     errorBuilder:
                                         (
@@ -665,7 +703,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                           ),
                         ),
-
                         Positioned(bottom: 4, right: 4, child: BlinkingDot()),
                       ],
                     ),
@@ -673,7 +710,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     SizedBox(
                       width: 72,
                       child: Text(
-                        profile.name ?? "Unknown",
+                        profile.name?? "",
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -735,7 +772,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(width: 1),
           Obx(() {
             final user = controller.profile2.value?.user;
-          //  print("Profile updated: ${user?.imageUrl}");
+            //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
               //  If profile data is not yet available, return a placeholder avatar
@@ -759,7 +796,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   radius: 28,
                   backgroundImage:
                       (user?.photos != null && user!.photos!.isNotEmpty)
-                       ? NetworkImage("")
+                      ? NetworkImage("")
                       : const NetworkImage("https://via.placeholder.com/150"),
                 ),
               ),
