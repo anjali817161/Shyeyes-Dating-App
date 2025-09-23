@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
+import 'package:shyeyes/modules/edit_profile/edit_model.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/profile/model/profile_model.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
@@ -122,7 +123,7 @@ class AuthRepository {
 
   // your profile api
 
-  Future<UserProfileModel> getProfile() async {
+  Future<EditProfileModel> getProfile() async {
     final String? token = await SharedPrefHelper.getToken();
     print("Token from SharedPref: $token");
     print(ApiEndpoints.baseUrl + ApiEndpoints.profile);
@@ -144,7 +145,7 @@ class AuthRepository {
     } else {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
     }
-    return UserProfileModel.fromJson(jsonDecode(response.body));
+    return EditProfileModel.fromJson(jsonDecode(response.body));
   }
 
   Future<Activeusermodel> getActiveUsers() async {
@@ -279,34 +280,41 @@ class AuthRepository {
   Future<http.Response> editProfile({
     String? fName,
     String? lName,
+    String? email,
     String? phone,
     String? age,
-    String? dob,
     String? gender,
     String? location,
-    String? about,
+    String? dob,
+    String? bio,
+    String? hobbies,
     File? img,
   }) async {
     final String? token = await SharedPrefHelper.getToken();
-    final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.updateProfile);
+    final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.editprofile);
     print("Edit Profile URL => $url");
 
-    var request = http.MultipartRequest('POST', url);
+    var request = http.MultipartRequest('PUT', url);
 
     // fields (only add if not null/empty)
-    if (fName != null && fName.isNotEmpty) request.fields['f_name'] = fName;
-    if (lName != null && lName.isNotEmpty) request.fields['l_name'] = lName;
-    if (phone != null && phone.isNotEmpty) request.fields['phone'] = phone;
+    if (fName != null && fName.isNotEmpty) request.fields['firstName'] = fName;
+    if (lName != null && lName.isNotEmpty) request.fields['lastName'] = lName;
+    if (email != null && email.isNotEmpty) request.fields['email'] = email;
+    if (phone != null && phone.isNotEmpty) request.fields['phoneNo'] = phone;
     if (age != null && age.isNotEmpty) request.fields['age'] = age;
-    if (dob != null && dob.isNotEmpty) request.fields['dob'] = dob;
     if (gender != null && gender.isNotEmpty) request.fields['gender'] = gender;
     if (location != null && location.isNotEmpty)
       request.fields['location'] = location;
-    if (about != null && about.isNotEmpty) request.fields['about'] = about;
+    if (dob != null && dob.isNotEmpty) request.fields['dob'] = dob;
+    if (bio != null && bio.isNotEmpty) request.fields['bio'] = bio;
+    if (hobbies != null && hobbies.isNotEmpty)
+      request.fields['hobbies'] = hobbies;
 
     // file (optional)
     if (img != null) {
-      request.files.add(await http.MultipartFile.fromPath('img', img.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('profilePic', img.path),
+      );
     }
 
     request.headers.addAll({
@@ -316,10 +324,10 @@ class AuthRepository {
 
     var streamedResponse = await request.send();
 
-    print("Streamed Response: ${streamedResponse}");
-    print("Streamed Response: ${streamedResponse.statusCode}");
+    print("Status Code: ${streamedResponse.statusCode}");
     print("Fields => ${request.fields}");
     print("Files => ${request.files.map((f) => f.filename).toList()}");
+
     return http.Response.fromStream(streamedResponse);
   }
 
@@ -506,4 +514,20 @@ static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
       }),
     );
   }
+
+  // Friend list api
+
+  // Future<http.Response> Friendlist() {
+  //   print("URL===== ${ApiEndpoints.baseUrl2 + ApiEndpoints.Friendlist}");
+  //   // print("Email: $email);
+
+  //   return http.get(
+  //     Uri.parse(ApiEndpoints.baseUrl2 + ApiEndpoints.Friendlist),
+  //     headers: {
+  //       "Accept": "application/json",
+
+  //       "Content-Type": "application/json",
+  //     },
+  //   );
+  // }
 }

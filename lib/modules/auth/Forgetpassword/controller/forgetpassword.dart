@@ -101,8 +101,7 @@ class ForgetPasswordController extends GetxController {
 
     isLoading.value = true;
     try {
-      final token =
-          await SharedPrefHelper.getToken(); // Token from SharedPref
+      final token = await SharedPrefHelper.getToken(); // Token from SharedPref
       final response = await AuthRepository().forgetOtpVerify(otp, token ?? "");
 
       print("Status Code: ${response.statusCode}");
@@ -130,50 +129,55 @@ class ForgetPasswordController extends GetxController {
     }
   }
 
-  // create new password 
+  // create new password
 
   // ForgetPasswordController.dart
 
-Future<void> createNewPassword(
-    String newPass, String confirmPass, BuildContext context) async {
-  if (newPass.isEmpty || confirmPass.isEmpty) {
-    Get.snackbar("Error", "Please fill all fields");
-    return;
-  }
-  if (newPass.length < 6) {
-    Get.snackbar("Error", "Password must be at least 6 characters");
-    return;
-  }
-  if (newPass != confirmPass) {
-    Get.snackbar("Error", "Passwords do not match");
-    return;
-  }
-
-  isLoading.value = true;
-  try {
-    final token = await SharedPrefHelper.getToken();
-    final response = await AuthRepository()
-        .CreateNewPass(newPass, confirmPass, token ?? "");
-
-    print("Status Code: ${response.statusCode}");
-    print("Response Body: ${response.body}");
-
-    if (response.statusCode == 200) { 
-      final data = jsonDecode(response.body);
-      Get.snackbar("Success", data['message'] ?? "Password reset successful");
-
-      // ✅ BottomSheet close + Login Page open
-      Navigator.pop(context);
-      Get.offAll(() => LoginView());
-    } else {
-      final data = jsonDecode(response.body);
-      Get.snackbar("Error", data['message'] ?? "Failed to reset password");
+  Future<void> createNewPassword(
+    String newPass,
+    String confirmPass,
+    BuildContext context,
+  ) async {
+    if (newPass.isEmpty || confirmPass.isEmpty) {
+      Get.snackbar("Error", "Please fill all fields");
+      return;
     }
-  } catch (e) {
-    Get.snackbar("Error", e.toString());
-  } finally {
-    isLoading.value = false;
-  }
-}
+    if (newPass.length < 6) {
+      Get.snackbar("Error", "Password must be at least 6 characters");
+      return;
+    }
+    if (newPass != confirmPass) {
+      Get.snackbar("Error", "Passwords do not match");
+      return;
+    }
 
+    isLoading.value = true;
+    try {
+      final token = await SharedPrefHelper.getToken();
+      final response = await AuthRepository().CreateNewPass(
+        newPass,
+        confirmPass,
+        token ?? "",
+      );
+
+      print("Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        Get.snackbar("Success", data['message'] ?? "Password reset successful");
+
+        // BottomSheet close + Login Page open
+        Navigator.pop(context);
+        Get.offAll(() => LoginView());
+      } else {
+        final data = jsonDecode(response.body);
+        Get.snackbar("Error", data['message'] ?? "Failed to reset password");
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }
