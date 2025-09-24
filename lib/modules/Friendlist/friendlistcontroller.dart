@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/Friendlist/friendlistmodel.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class FriendController extends GetxController {
   var friends = <Friend>[].obs;
@@ -16,36 +17,40 @@ class FriendController extends GetxController {
     super.onInit();
     fetchFriends();
 
-    /// searchController listener
+    // Search listener
     ever(searchController, (_) {
       filterFriends();
     });
   }
 
-  Future<void> fetchFriends() async {
-    try {
-      isLoading(true);
+  final String apiUrl = ApiEndpoints.baseUrl2 + ApiEndpoints.Friendlist;
 
+  Future<void> fetchFriends() async {
+    final String token = await SharedPrefHelper.getToken() ?? "NULL";
+    try {
+      isLoading.value = true;
       final response = await http.get(
-        Uri.parse(ApiEndpoints.baseUrl2 + ApiEndpoints.Friendlist),
+        Uri.parse(apiUrl),
         headers: {
-          "Accept": "application/json",
           "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
         },
       );
+      print(apiUrl);
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-
-        friends.value = data.map((e) => Friend.fromJson(e)).toList();
-        filteredFriends.value = friends;
+        final data = jsonDecode(response.body);
+        final model = FriendListModel.fromJson(data);
+        friends.value = model.friends ?? [];
+        filteredFriends.value = friends; // 👈 populate filtered list
       } else {
-        print("Error: ${response.statusCode}");
+        Get.snackbar("Error", "Failed to fetch friends");
       }
     } catch (e) {
-      print("Exception: $e");
+      Get.snackbar("Error", e.toString());
     } finally {
-      isLoading(false);
+      isLoading.value = false;
     }
   }
 
@@ -55,13 +60,48 @@ class FriendController extends GetxController {
       filteredFriends.value = friends;
     } else {
       filteredFriends.value = friends
-          .where((f) => f.name.toLowerCase().contains(query))
+          .where(
+            (f) => (f.name ?? "").toLowerCase().contains(query),
+          ) // 👈 null-safe
           .toList();
     }
   }
 
-  void deleteFriend(Friend friend) {
-    friends.remove(friend);
-    filteredFriends.remove(friend);
+  Future<void> unfriendFriend(String friendId) async {
+    final String token = await SharedPrefHelper.getToken() ?? "NULL";
+
+    try {
+      isLoading.value = true;
+      print("${ApiEndpoints.baseUrl2}${ApiEndpoints.unfriend}/$friendId");
+      print(token);
+
+      final response = await http.delete(
+        Uri.parse("${ApiEndpoints.baseUrl2}${ApiEndpoints.unfriend}/$friendId"),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+      print("body:----------${response.body}");
+      print("status code:--------${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Snackbar message from API
+        Get.snackbar("Success", data["message"] ?? "Unfriended successfully");
+
+        // Local list se bhi remove karo
+        friends.removeWhere((f) => f.id == friendId);
+        filteredFriends.removeWhere((f) => f.id == friendId);
+      } else {
+        Get.snackbar("Error", "Failed to unfriend");
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

@@ -587,6 +587,13 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget _buildPlaceholderAvatar() {
+    return Container(
+      color: Colors.grey[200],
+      child: Icon(Icons.person, color: Colors.grey[400], size: 30),
+    );
+  }
+
   Widget circularProfileList(BuildContext context) {
     final theme = Theme.of(context);
     final controller = Get.put(ActiveUsersController()); // inject controller
@@ -710,7 +717,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     SizedBox(
                       width: 72,
                       child: Text(
-                        profile.name?? "",
+                        profile.name ?? "",
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -772,10 +779,9 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(width: 1),
           Obx(() {
             final user = controller.profile2.value?.user;
-            //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
-              //  If profile data is not yet available, return a placeholder avatar
+              // Profile load nahi hua → placeholder
               return const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
@@ -786,6 +792,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               );
             }
+
+            final hasPhoto =
+                user.photos != null &&
+                user.photos!.isNotEmpty &&
+                user.photos!.first.isNotEmpty;
+
             return GestureDetector(
               onTap: () {
                 _scaffoldKey.currentState?.openEndDrawer();
@@ -793,11 +805,18 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
-                  radius: 28,
-                  backgroundImage:
-                      (user?.photos != null && user!.photos!.isNotEmpty)
-                      ? NetworkImage("")
-                      : const NetworkImage("https://via.placeholder.com/150"),
+                  radius: 29,
+                  backgroundImage: hasPhoto
+                      ? NetworkImage(user.photos!.first)
+                      : null,
+                  child: !hasPhoto
+                      ? Icon(
+                          Icons.person,
+                          size: 28,
+                          color: Colors.grey.shade400,
+                        )
+                      : null,
+                  backgroundColor: Colors.grey.shade200, // fallback bg
                 ),
               ),
             );

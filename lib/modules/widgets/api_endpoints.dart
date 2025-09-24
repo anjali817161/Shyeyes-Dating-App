@@ -3,6 +3,8 @@ class ApiEndpoints {
 
   static const String baseUrl2 = "https://shyeyes-b.onrender.com/api/friends/";
 
+  static const String imgUrl = "https://shyeyes-b.onrender.com/uploads/";
+
   // Auth
   static const String report = "report";
   static const String activeUsers = "active-users";
@@ -27,4 +29,8 @@ class ApiEndpoints {
   static const String deleteRequest = "cancel";
   static const String sentRequest = "request";
   static const String requests = "requests";
+  static const String cancelInvite = "reject";
+  static const String acceptInvite = "accept";
+  static const String acceptedRequests = "sent";
+  static const String unfriend = "unfriend";
 }

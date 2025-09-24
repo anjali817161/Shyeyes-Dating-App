@@ -331,78 +331,81 @@ class AuthRepository {
     return http.Response.fromStream(streamedResponse);
   }
 
+  // send request api
 
-// send request api
+  static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
-static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
-  try {
-    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+      // Using your API constants
+      final Uri uri = Uri.parse(
+        "${ApiEndpoints.baseUrl2}${ApiEndpoints.sentRequest}/$receiverId",
+      );
 
-    // Using your API constants
-    final Uri uri = Uri.parse("${ApiEndpoints.baseUrl2}${ApiEndpoints.sentRequest}/$receiverId");
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
 
-    final response = await http.post(
-      uri,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
+      print("Send Request Response: ${response.body}");
+      print("Receiver ID: $receiverId");
+      print("Status Code: ${response.statusCode}");
 
-    print("Send Request Response: ${response.body}");
-    print("Receiver ID: $receiverId");
-    print("Status Code: ${response.statusCode}");
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      return {
-        "message": "Failed",
-        "status_code": response.statusCode,
-        "body": response.body
-      };
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          "message": "Failed",
+          "status_code": response.statusCode,
+          "body": response.body,
+        };
+      }
+    } catch (e) {
+      print("Error sending request: $e");
+      return null;
     }
-  } catch (e) {
-    print("Error sending request: $e");
-    return null;
   }
-}
 
   static Future<Map<String, dynamic>?> cancelRequest(String requestId) async {
-  try {
-    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
-    // Using your API constants
-    final Uri uri = Uri.parse("${ApiEndpoints.baseUrl2}${ApiEndpoints.deleteRequest}/$requestId");
+      // Using your API constants
+      final Uri uri = Uri.parse(
+        "${ApiEndpoints.baseUrl2}${ApiEndpoints.deleteRequest}/$requestId",
+      );
 
-    final response = await http.delete(
-      uri,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
+      final response = await http.delete(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
 
-    print("Cancel Request Response: ${response.body}");
-    print("Request ID: $requestId");
-    print("Status Code: ${response.statusCode}");
+      print("Cancel Request Response: ${response.body}");
+      print("Request ID: $requestId");
+      print("Status Code: ${response.statusCode}");
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      return {
-        "message": "Failed",
-        "status_code": response.statusCode,
-        "body": response.body
-      };
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          "message": "Failed",
+          "status_code": response.statusCode,
+          "body": response.body,
+        };
+      }
+    } catch (e) {
+      print("Error canceling request: $e");
+      return null;
     }
-  } catch (e) {
-    print("Error canceling request: $e");
-    return null;
   }
-}
 
   static Future<Map<String, dynamic>?> getInvitations() async {
     try {
@@ -431,30 +434,100 @@ static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
     }
   }
 
-  static Future<Map<String, dynamic>?> acceptRequest(int requestId) async {
+  /// Accept invitation
+  static Future<Map<String, dynamic>?> acceptInvite(String invitationId) async {
     try {
       final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-
+      print("token======$token");
+      print(
+        "${ApiEndpoints.baseUrl2 + ApiEndpoints.acceptInvite}/$invitationId",
+      );
+      final url = Uri.parse(
+        "${ApiEndpoints.baseUrl2 + ApiEndpoints.acceptInvite}/$invitationId",
+      );
       final response = await http.post(
-        Uri.parse("${ApiEndpoints.baseUrl}/message-requests/$requestId/accept"),
+        url,
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": "Bearer $token",
         },
       );
-
-      print(" Accept Request Response: ${response.body}");
-      print(" Request ID: $requestId");
+      print(" Accept Invitation Response: ${response.body}");
       print(" Status Code: ${response.statusCode}");
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body);
       } else {
-        return {"message": "Failed", "status_code": response.statusCode};
+        throw Exception("Failed to accept request: ${response.body}");
       }
     } catch (e) {
-      print(" Error accepting request: $e");
+      print(" Error accepting invitation: $e");
+      return null;
+    }
+  }
+
+  /// Reject invitation
+  static Future<Map<String, dynamic>?> cancelInvite(String invitationId) async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+      print("token======$token");
+      print(
+        "${ApiEndpoints.baseUrl2 + ApiEndpoints.cancelInvite}/$invitationId",
+      );
+      final url = Uri.parse(
+        "${ApiEndpoints.baseUrl2 + ApiEndpoints.cancelInvite}/$invitationId",
+      );
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"status": "rejected"}),
+      );
+      print(" Accept Invitation Response: ${response.body}");
+      print(" Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body);
+      } else {
+        throw Exception("Failed to reject request: ${response.body}");
+      }
+    } catch (e) {
+      print(" Error rejecting invitation: $e");
+      return null;
+    }
+  }
+
+  /// Get Accepted Requests
+  static Future<Map<String, dynamic>?> getAcceptedRequests() async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+      final url = Uri.parse(
+        ApiEndpoints.baseUrl2 + ApiEndpoints.acceptedRequests,
+      );
+      print("👉 Fetching accepted requests:---- $url");
+
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+      print("response body: ${response.body}");
+      print("status code----------${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception("Failed to load accepted requests: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Error fetching accepted requests: $e");
       return null;
     }
   }

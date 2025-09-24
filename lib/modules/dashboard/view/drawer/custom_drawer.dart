@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/Friendlist/friendlist.dart';
+import 'package:shyeyes/modules/accepted_requests/view/accepted_request_view.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/invitation/view/invitation_view.dart';
@@ -48,6 +49,13 @@ class CustomDrawer extends StatelessWidget {
         },
       ),
       _DrawerItem(
+        icon: Icons.done_all,
+        label: 'Accepted Requests',
+        ontap: () {
+          Get.to(() => AcceptedRequestsView());
+        },
+      ),
+      _DrawerItem(
         icon: Icons.description,
         label: 'Terms & Conditions',
         ontap: () {
@@ -81,7 +89,7 @@ class CustomDrawer extends StatelessWidget {
                 (user?.profilePic != null &&
                     user!.profilePic!.toString().isNotEmpty)
                 ? NetworkImage(user.profilePic.toString())
-                : const NetworkImage("https://via.placeholder.com/150");
+                : _buildPlaceholderAvatar();
 
             return DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFFDF314D)),
@@ -89,7 +97,19 @@ class CustomDrawer extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage: profileImage as ImageProvider,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage:
+                        (user?.profilePic != null &&
+                            user!.profilePic!.toString().isNotEmpty)
+                        ? NetworkImage(
+                            "https://shyeyes-b.onrender.com/uploads/${user.profilePic}",
+                          )
+                        : null, // if null → fallback to child
+                    child:
+                        (user?.profilePic == null ||
+                            user!.profilePic!.toString().isEmpty)
+                        ? _buildPlaceholderAvatar()
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -170,6 +190,13 @@ class CustomDrawer extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPlaceholderAvatar() {
+    return Container(
+      color: Colors.grey[200],
+      child: Icon(Icons.person, color: Colors.grey[400], size: 30),
     );
   }
 

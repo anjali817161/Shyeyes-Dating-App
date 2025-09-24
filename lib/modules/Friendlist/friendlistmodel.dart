@@ -1,19 +1,31 @@
-class Friend {
-  final String name;
-  final int age;
-  final String imageUrl;
+class FriendListModel {
+  final List<Friend>? friends;
 
-  Friend({
-    required this.name,
-    required this.age,
-    required this.imageUrl,
-  });
+  FriendListModel({this.friends});
+
+  factory FriendListModel.fromJson(Map<String, dynamic> json) {
+    return FriendListModel(
+      friends: json['friends'] != null
+          ? List<Friend>.from(json['friends'].map((x) => Friend.fromJson(x)))
+          : [],
+    );
+  }
+}
+
+class Friend {
+  final String? id;
+  final String? name;
+  final int? age;
+  final String? profilePic;
+
+  Friend({this.id, this.name, this.age, this.profilePic});
 
   factory Friend.fromJson(Map<String, dynamic> json) {
     return Friend(
-      name: json['name'] ?? "Unknown",
-      age: json['age'] ?? 0,
-      imageUrl: json['image'] ?? "https://i.pravatar.cc/150?img=1",
+      id: json['userId'],
+      name: json['name'],
+      age: int.tryParse(json['age'].toString()),
+      profilePic: json['profilePic'],
     );
   }
 }
