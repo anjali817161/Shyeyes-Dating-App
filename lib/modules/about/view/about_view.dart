@@ -2,22 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shyeyes/modules/about/model/about_model.dart';
+import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
 import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
 
 class AboutView extends StatefulWidget {
-  final AboutModel profileData;
+  final String userId;
 
-  AboutView({super.key, required this.profileData});
+  const AboutView({super.key, required this.userId});
 
   @override
   State<AboutView> createState() => _AboutViewState();
 }
 
 class _AboutViewState extends State<AboutView> {
+  final AboutController controller = Get.put(AboutController());
+
   bool isLiked = false;
   bool playHeartAnimation = false;
+
+  @override
+  void initState() {
+    super.initState();
+    controller.fetchUserProfile(widget.userId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -26,158 +35,198 @@ class _AboutViewState extends State<AboutView> {
     final secondaryColor = theme.colorScheme.secondary;
     final onSecondaryColor = theme.colorScheme.onSecondary;
 
-    AboutModel dummyUser = AboutModel(
-      image: 'assets/images/profile_image1.png',
-      name: 'Shaan',
-      age: 25,
-      distance: '2 km away',
-      job: 'Software Engineer',
-      college: 'IIT Delhi',
-      location: 'New Delhi',
-      about: 'Loves traveling and coffee.',
-      interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-      pets: 'Dog',
-      drinking: 'Socially',
-      smoking: 'No',
-      workout: 'Daily',
-      zodiac: 'Leo',
-      education: 'Masters',
-      vaccine: 'Yes',
-      communication: 'English, Hindi',
-      height: '',
-      active: '',
-    );
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
 
-    return Scaffold(
-      backgroundColor: secondaryColor,
-      appBar: AppBar(
-        title: Text(
-          widget.profileData.name ?? '',
-          style: TextStyle(color: onPrimaryColor),
+      final profileData = controller.aboutModel.value?.user;
+
+      if (profileData == null) {
+        return const Scaffold(
+          body: Center(child: Text("No profile data found")),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: secondaryColor,
+        appBar: AppBar(
+          title: Text(
+            profileData.name?.firstName ?? "",
+            style: TextStyle(color: onPrimaryColor),
+          ),
+          backgroundColor: primaryColor,
+          elevation: 0,
+          iconTheme: IconThemeData(color: onPrimaryColor),
         ),
-        backgroundColor: primaryColor,
-        elevation: 0,
-        iconTheme: IconThemeData(color: onPrimaryColor),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Image + Bottom Actions in Stack
-            GestureDetector(
-              onTap: () {
-                Get.to(() => AboutView(profileData: dummyUser));
-              },
-              child: Stack(
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Image + Bottom Actions in Stack
+              Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.bottomCenter,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      widget.profileData.image!,
-                      height: 320,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+                    borderRadius: BorderRadius.circular(15),
+                    child:
+                        profileData.profilePic != null &&
+                            profileData.profilePic!.isNotEmpty
+                        ? Image.network(
+                            profileData.profilePic!,
+                            height: 320,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            "assets/images/profile_image1.png",
+                            height: 320,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                   ),
+
                   Positioned(bottom: -28, child: _bottomActions(theme)),
                 ],
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 30),
 
-            Text(
-              widget.profileData.name ?? '',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: onSecondaryColor,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: onSecondaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        ", ${profileData.age ?? ""} ",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: onSecondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
+                    // Navigate to chat
+                  }),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Active ${widget.profileData.active} ago',
-              style: TextStyle(color: onSecondaryColor.withOpacity(0.6)),
-            ),
 
-            const SizedBox(height: 24),
-
-            _infoTile(theme, Icons.work, "Job", "Software Engineer"),
-            _infoTile(theme, Icons.school, "College", "IIT Bombay"),
-            _infoTile(theme, Icons.location_on, "Location", "Mumbai"),
-            _infoTile(
-              theme,
-              Icons.info_outline,
-              "About",
-              "I love building cool apps and exploring new places.",
-            ),
-            _infoTile(
-              theme,
-              Icons.favorite,
-              "Interests",
-              "Music, Coding, Movies",
-            ),
-
-            const SizedBox(height: 24),
-
-            _sectionTitle(theme, Icons.chat, "Send a First Impression"),
-            const SizedBox(height: 10),
-            _firstImpressionBox(theme),
-
-            const SizedBox(height: 30),
-
-            // Share Button
-            GestureDetector(
-              onTap: () {
-                Share.share(
-                  'Check out ${widget.profileData.name}\'s profile!',
-                  subject: 'Profile from ShyEyes',
-                );
-              },
-              child: _actionButton(theme, "Share Profile"),
-            ),
-
-            // Block Button
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => BlockReasonBottomSheet(
-                    onReasonSelected: (reason) {
-                      Navigator.pop(context);
-                      // Handle block logic
-                    },
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  if ((profileData.status ?? "").isNotEmpty) ...[
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    profileData.status ?? "",
+                    style: TextStyle(color: onSecondaryColor.withOpacity(0.6)),
                   ),
-                );
-              },
-              child: _actionButton(theme, "Block User"),
-            ),
+                ],
+              ),
 
-            // Report Button
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => ReportReasonBottomSheet(
-                    onReasonSelected: (reason) {
-                      Navigator.pop(context);
-                      // Handle report logic
-                    },
-                  ),
-                );
-              },
-              child: _actionButton(theme, "Report", isDestructive: true),
-            ),
-            SizedBox(height: 40),
-          ],
+              const SizedBox(height: 24),
+
+              _infoTile(theme, Icons.work, "Job", profileData.bio ?? ""),
+              _infoTile(
+                theme,
+                (profileData.gender?.toLowerCase() == "male")
+                    ? Icons.man
+                    : (profileData.gender?.toLowerCase() == "female")
+                    ? Icons.woman
+                    : Icons
+                          .help_outline, // fallback agar gender null/unknown ho
+                "Gender",
+                profileData.gender ?? "N/A",
+              ),
+
+              _infoTile(
+                theme,
+                Icons.location_on,
+                "Location",
+                "${profileData.location?.street ?? ""}, ${profileData.location?.city ?? ""}, ${profileData.location?.state ?? ""}, ${profileData.location?.country ?? ""}",
+              ),
+              _infoTile(
+                theme,
+                Icons.favorite,
+                "Hobbies",
+                profileData.hobbies?.join(", ") ?? "",
+              ),
+
+              const SizedBox(height: 20),
+
+              // _sectionTitle(theme, Icons.chat, "Send a First Impression"),
+              // const SizedBox(height: 10),
+              // _firstImpressionBox(theme),
+
+              // Share Button
+              GestureDetector(
+                onTap: () {
+                  Share.share(
+                    'Check out ${profileData.name?.firstName ?? ""}\'s profile!',
+                    subject: 'Profile from ShyEyes',
+                  );
+                },
+                child: _actionButton(theme, "Share Profile"),
+              ),
+
+              // Block Button
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => BlockReasonBottomSheet(
+                      onReasonSelected: (reason) {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  );
+                },
+                child: _actionButton(theme, "Block User"),
+              ),
+
+              // Report Button
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => ReportReasonBottomSheet(
+                      onReasonSelected: (reason) {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  );
+                },
+                child: _actionButton(theme, "Report", isDestructive: true),
+              ),
+              SizedBox(height: 40),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _infoTile(ThemeData theme, IconData icon, String title, String value) {
@@ -236,57 +285,57 @@ class _AboutViewState extends State<AboutView> {
     );
   }
 
-  Widget _firstImpressionBox(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Say something to break the ice!",
-            style: TextStyle(color: theme.colorScheme.onSurface),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  style: TextStyle(color: theme.colorScheme.onSurface),
-                  decoration: InputDecoration(
-                    hintText: "Write a message...",
-                    hintStyle: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                    filled: true,
-                    fillColor: theme.colorScheme.background,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.send, color: theme.colorScheme.primary),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _firstImpressionBox(ThemeData theme) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(14),
+  //     decoration: BoxDecoration(
+  //       color: theme.colorScheme.surfaceVariant,
+  //       borderRadius: BorderRadius.circular(14),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           "Say something to break the ice!",
+  //           style: TextStyle(color: theme.colorScheme.onSurface),
+  //         ),
+  //         const SizedBox(height: 10),
+  //         Row(
+  //           children: [
+  //             Expanded(
+  //               child: TextField(
+  //                 style: TextStyle(color: theme.colorScheme.onSurface),
+  //                 decoration: InputDecoration(
+  //                   hintText: "Write a message...",
+  //                   hintStyle: TextStyle(
+  //                     color: theme.colorScheme.onSurface.withOpacity(0.6),
+  //                   ),
+  //                   filled: true,
+  //                   fillColor: theme.colorScheme.background,
+  //                   contentPadding: const EdgeInsets.symmetric(
+  //                     horizontal: 14,
+  //                     vertical: 12,
+  //                   ),
+  //                   border: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(30),
+  //                     borderSide: BorderSide(
+  //                       color: theme.colorScheme.outlineVariant,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(width: 8),
+  //             IconButton(
+  //               onPressed: () {},
+  //               icon: Icon(Icons.send, color: theme.colorScheme.primary),
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _actionButton(
     ThemeData theme,
@@ -374,6 +423,49 @@ class _AboutViewState extends State<AboutView> {
           ),
         ),
       ],
+    );
+  }
+
+  final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
+  Widget buildActionButton(
+    IconData icon,
+    Color color,
+    double size,
+    VoidCallback onTap,
+  ) {
+    return ValueListenableBuilder<double>(
+      valueListenable: _buttonScale,
+      builder: (context, scale, child) {
+        return GestureDetector(
+          onTapDown: (_) => _buttonScale.value = 0.9,
+          onTapUp: (_) {
+            _buttonScale.value = 1.0;
+            onTap();
+          },
+          onTapCancel: () => _buttonScale.value = 1.0,
+          child: AnimatedScale(
+            scale: scale,
+            duration: const Duration(milliseconds: 150),
+            child: Container(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.white,
+                child: Icon(icon, color: color, size: size),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

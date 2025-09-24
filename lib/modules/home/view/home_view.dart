@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
@@ -34,27 +36,27 @@ class _HomeViewState extends State<HomeView> {
 
   int _currentIndex = 0;
 
-  final AboutModel dummyUsers = AboutModel(
-    image: 'assets/images/profile_image1.png',
-    name: 'Shaan',
-    age: 25,
-    distance: '2 km away',
-    job: 'Software Engineer',
-    college: 'IIT Delhi',
-    location: 'New Delhi',
-    about: 'Loves traveling and coffee.',
-    interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-    pets: 'Dog',
-    drinking: 'Socially',
-    smoking: 'No',
-    workout: 'Daily',
-    zodiac: 'Leo',
-    education: 'Masters',
-    vaccine: 'Yes',
-    communication: 'English, Hindi',
-    height: '',
-    active: '',
-  );
+  // final AboutModel dummyUsers = AboutModel(
+  //   image: 'assets/images/profile_image1.png',
+  //   name: 'Shaan',
+  //   age: 25,
+  //   distance: '2 km away',
+  //   job: 'Software Engineer',
+  //   college: 'IIT Delhi',
+  //   location: 'New Delhi',
+  //   about: 'Loves traveling and coffee.',
+  //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
+  //   pets: 'Dog',
+  //   drinking: 'Socially',
+  //   smoking: 'No',
+  //   workout: 'Daily',
+  //   zodiac: 'Leo',
+  //   education: 'Masters',
+  //   vaccine: 'Yes',
+  //   communication: 'English, Hindi',
+  //   height: '',
+  //   active: '',
+  // );
 
   @override
   void initState() {
@@ -109,12 +111,14 @@ class _HomeViewState extends State<HomeView> {
 
                 if (widget.viewType == HomeViewType.activeUsers) {
                   final Users userData = user as Users;
-                  userId = userData.sId!;
-                  imageUrl = userData.profilePic != null
+                  userId = userData.sId ?? '';
+                  imageUrl =
+                      (userData.profilePic != null &&
+                          userData.profilePic!.isNotEmpty)
                       ? "https://shyeyes-b.onrender.com/uploads/${userData.profilePic}"
-                      : "https://i.pravatar.cc/600?img=$index";
-                  name = userData.name != null ? userData.name! : 'No Name';
+                      : "https://picsum.photos/seed/$index/600/800"; // stable fallback
 
+                  name = userData.name ?? 'No Name';
                   age = userData.age ?? 0;
                   if (userData.location != null) {
                     location =
@@ -125,17 +129,18 @@ class _HomeViewState extends State<HomeView> {
                   }
                 } else {
                   final BestmatchModel match = user as BestmatchModel;
-                  userId = match.id!;
+                  userId = match.id ?? '';
                   name = match.name ?? '';
-
-                  imageUrl = match.profilePic != null
+                  imageUrl =
+                      (match.profilePic != null && match.profilePic!.isNotEmpty)
                       ? "https://shyeyes-b.onrender.com/uploads/${match.profilePic}"
                       : (match.photos?.isNotEmpty == true
                             ? "https://shyeyes-b.onrender.com/uploads/${match.photos!.first}"
-                            : "https://i.pravatar.cc/600?img=$index");
+                            : "https://picsum.photos/seed/$index/600/800"); // stable fallback
+
                   age = match.age ?? 0;
                   location = match.location != null
-                      ? "${match.location!.city ?? ''}, ${match.location!.country ?? ''}"
+                      ? "${match.location!.street ?? ''},${match.location!.city ?? ''},${match.location!.state ?? ''}, ${match.location!.country ?? ''}"
                       : 'N/A';
                   about = match.bio ?? '';
                 }
@@ -167,103 +172,156 @@ class _HomeViewState extends State<HomeView> {
                       left: 16,
                       right: 16,
                       bottom: 140,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  "$name, $age",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Row(
-                                //   children: [
-                                //     const Icon(
-                                //       Icons.location_on,
-                                //       color: Colors.white,
-                                //       size: 18,
-                                //     ),
-                                //     const SizedBox(width: 6),
-                                //     Flexible(
-                                //       child: Text(
-                                //         location,
-                                //         style: const TextStyle(
-                                //           color: Colors.white,
-                                //           fontSize: 14,
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            theme.colorScheme.primary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            30,
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 24,
-                                          vertical: 12,
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        Get.to(
-                                          AboutView(profileData: dummyUsers),
-                                        );
-                                      },
-                                      child: const Text(
-                                        "View Profile",
-                                        style: TextStyle(
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "$name, $age",
+                                        style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 16,
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.only(
-                                        left: 12,
-                                        top: 8,
-                                      ),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 6,
-                                            offset: Offset(0, 2),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              location,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
-                                      padding: const EdgeInsets.all(10),
-                                      child: Image.asset(
-                                        "assets/images/invite.png",
-                                        scale: 17,
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 24,
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                            onPressed: () {
+                                              Get.to(AboutView(userId: userId));
+                                            },
+                                            child: const Text(
+                                              "View Profile",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                          Obx(() {
+                                            final isRequestPending =
+                                                usersController.isRequestSent(
+                                                  userId,
+                                                );
+                                            final isLoading =
+                                                usersController
+                                                    .requestLoading[userId] ??
+                                                false;
+
+                                            return GestureDetector(
+                                              onTap: () async {
+                                                if (isLoading) return;
+                                                if (isRequestPending) {
+                                                  await usersController
+                                                      .cancelRequest(userId);
+                                                } else {
+                                                  await usersController
+                                                      .sendRequest(userId);
+                                                }
+                                              },
+                                              child: Container(
+                                                margin: const EdgeInsets.only(
+                                                  left: 12,
+                                                  top: 8,
+                                                ),
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: 6,
+                                                      offset: Offset(0, 2),
+                                                    ),
+                                                  ],
+                                                ),
+                                                padding: const EdgeInsets.all(
+                                                  12,
+                                                ),
+                                                child: isLoading
+                                                    ? const SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            ),
+                                                      )
+                                                    : (isRequestPending
+                                                          ? Image.asset(
+                                                              "assets/images/png_cancelr.png",
+                                                              scale: 17,
+                                                            )
+                                                          : Image.asset(
+                                                              "assets/images/invite.png",
+                                                              scale: 17,
+                                                            )),
+                                              ),
+                                            );
+                                          }),
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
+
                     Positioned(
                       bottom: 50,
                       left: 0,
