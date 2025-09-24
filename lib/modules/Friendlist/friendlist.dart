@@ -279,31 +279,31 @@ class FriendListScreen extends StatelessWidget {
                         return _FriendListItem(
                           friend: friend,
                           onTap: () {
-                            Get.to(
-                              () => AboutView(
-                                profileData: AboutModel(
-                                  image: friend.profilePic ?? "",
-                                  name: friend.name ?? "No Name",
-                                  age: friend.age ?? 0,
-                                  distance: "2 km away",
-                                  job: "Not specified",
-                                  college: "Not specified",
-                                  location: "Unknown",
-                                  about: "No about info",
-                                  interests: ["Unknown"],
-                                  pets: "N/A",
-                                  drinking: "N/A",
-                                  smoking: "N/A",
-                                  workout: "N/A",
-                                  zodiac: "N/A",
-                                  education: "N/A",
-                                  vaccine: "N/A",
-                                  communication: "N/A",
-                                  height: "",
-                                  active: "Recently",
-                                ),
-                              ),
-                            );
+                            // Get.to(
+                            //   () => AboutView(
+                            //     profileData: AboutModel(
+                            //       image: friend.profilePic ?? "",
+                            //       name: friend.name ?? "No Name",
+                            //       age: friend.age ?? 0,
+                            //       distance: "2 km away",
+                            //       job: "Not specified",
+                            //       college: "Not specified",
+                            //       location: "Unknown",
+                            //       about: "No about info",
+                            //       interests: ["Unknown"],
+                            //       pets: "N/A",
+                            //       drinking: "N/A",
+                            //       smoking: "N/A",
+                            //       workout: "N/A",
+                            //       zodiac: "N/A",
+                            //       education: "N/A",
+                            //       vaccine: "N/A",
+                            //       communication: "N/A",
+                            //       height: "",
+                            //       active: "Recently",
+                            //     ),
+                            //   ),
+                            // );
                           },
                           onDelete: () => controller.unfriendFriend(friend.id!),
                         );

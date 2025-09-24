@@ -142,12 +142,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (user != null) {
       if (user.profilePic != null) {
         if (user.profilePic is String && user.profilePic!.isNotEmpty) {
-          imageUrl = user.profilePic!;
+          imageUrl =
+              "https://shyeyes-b.onrender.com/uploads/${user.profilePic!}";
         } else if (user.profilePic is List && user.profilePic!.isNotEmpty) {
-          imageUrl = user.profilePic!.first.toString();
+          imageUrl =
+              "https://shyeyes-b.onrender.com/uploads/${user.profilePic!.first}";
         }
       } else if (user.photos != null && user.photos!.isNotEmpty) {
-        imageUrl = user.photos!.first.toString();
+        imageUrl =
+            "https://shyeyes-b.onrender.com/uploads/${user.photos!.first}";
       }
     }
 

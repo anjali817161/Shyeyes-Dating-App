@@ -128,95 +128,86 @@ class ActiveUsersController extends GetxController {
     }
   }
 
-  bool isRequestSent(String receiverId) => requestStatus[receiverId] == "pending";
+  bool isRequestSent(String receiverId) =>
+      requestStatus[receiverId] == "pending";
 
   // -----------------------
   // LIKE / UNLIKE HANDLING
   // -----------------------
 
-  void addLiked(String userId) => likedUsers.add(userId);
-  void removeLiked(String userId) => likedUsers.remove(userId);
-  bool isLiked(String userId) => likedUsers.contains(userId);
-
-  Future<bool> toggleFavorite(String userId) async {
-    final currentlyLiked = isLiked(userId);
-    if (currentlyLiked) removeLiked(userId);
-    else addLiked(userId);
-
+  Future<void> toggleFavorite(String userId) async {
     try {
       final token = await SharedPrefHelper.getToken();
-      if (token == null || token.isEmpty) {
-        if (currentlyLiked) addLiked(userId);
-        else removeLiked(userId);
-        return false;
+
+      // Check if user is already in liked list
+      if (likedUsers.contains(userId)) {
+        // Unlike directly
+        await _unlikeUser(userId, token.toString());
+        return;
       }
 
-      final url = Uri.parse("https://chat.bitmaxtest.com/admin/api/users/$userId/like");
-      final response = await http.post(url, headers: {
-        "Authorization": "Bearer $token",
-        "Accept": "application/json",
-      });
+      // Try Like API
+      final likeUrl = Uri.parse(
+        "https://shyeyes-b.onrender.com/api/likes/$userId/like",
+      );
+      final response = await http.post(
+        likeUrl,
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
 
-      if (response.statusCode == 200 || response.statusCode == 201) return true;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        likedUsers.add(userId);
+        recentlyLikedUsers.add(userId);
+        print(" Like success: ${response.body}");
 
-      // Already liked → unlike
-      if (response.statusCode == 400) {
-        final data = jsonDecode(response.body);
-        if (data["message"] != null &&
-            data["message"].toString().contains("already liked")) {
-          final success = await unlikeUser(userId);
-          if (!success) {
-            if (currentlyLiked) addLiked(userId);
-            else removeLiked(userId);
-          }
-          return success;
+        // Heart animation thodi der ke liye
+        Future.delayed(const Duration(seconds: 1), () {
+          recentlyLikedUsers.remove(userId);
+        });
+      } else {
+        final body = response.body;
+        print(" Like API response: $body");
+
+        // ager  "already liked" ka error aya, toh unlike call karo
+        if (body.contains("Profile already liked")) {
+          await _unlikeUser(userId, token.toString());
+        } else {
+          print(" Like failed: ${response.statusCode} $body");
         }
       }
-
-      if (currentlyLiked) addLiked(userId);
-      else removeLiked(userId);
-      return false;
     } catch (e) {
-      if (currentlyLiked) addLiked(userId);
-      else removeLiked(userId);
-      return false;
+      print(" Error toggleFavorite: $e");
     }
   }
 
-  Future<bool> unlikeUser(String userId) async {
+  Future<void> _unlikeUser(String userId, String token) async {
     try {
-      final token = await SharedPrefHelper.getToken();
-      if (token == null || token.isEmpty) return false;
-
-      final url = Uri.parse("https://chat.bitmaxtest.com/admin/api/users/$userId/unlike");
-      final response = await http.delete(url, headers: {
-        "Authorization": "Bearer $token",
-        "Accept": "application/json",
-      });
+      final unlikeUrl = Uri.parse(
+        "https://shyeyes-b.onrender.com/api/likes/$userId/unlike",
+      );
+      final response = await http.delete(
+        unlikeUrl,
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         likedUsers.remove(userId);
-        return true;
+        print(" Unlike success: ${response.body}");
+      } else {
+        print(" Unlike failed: ${response.statusCode} ${response.body}");
       }
-      return false;
     } catch (e) {
-      return false;
+      print(" Error in unlike: $e");
     }
   }
 
-  /// Handle double-tap like/unlike with animation
-  Future<void> handleDoubleTap(String userId) async {
-    if (isLiked(userId)) {
-      bool success = await unlikeUser(userId);
-      if (success) recentlyLikedUsers.remove(userId);
-    } else {
-      bool success = await toggleFavorite(userId);
-      if (success) {
-        recentlyLikedUsers.add(userId);
-        Future.delayed(const Duration(seconds: 2), () {
-          recentlyLikedUsers.remove(userId);
-        });
-      }
-    }
+  bool isLiked(String userId) {
+    return likedUsers.contains(userId);
   }
 }
