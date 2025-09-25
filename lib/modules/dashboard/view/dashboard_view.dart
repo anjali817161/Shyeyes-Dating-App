@@ -742,7 +742,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final user = controller.profile2.value?.user;
+    final user = controller.profile2.value?.data?.user;
     RxBool isPlaying = false.obs;
 
     return Scaffold(
@@ -778,7 +778,8 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(width: 1),
           Obx(() {
-            final user = controller.profile2.value?.user;
+            final user = controller.profile2.value?.data?.user;
+            //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
               // Profile load nahi hua → placeholder

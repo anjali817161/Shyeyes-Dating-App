@@ -8,7 +8,7 @@ class SharedPrefHelper {
   static const String _userNameKey = "user_name";
   static const String _userPicKey = "user_pic";
 
-  /// ✅ Save token
+  ///  Save token
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
