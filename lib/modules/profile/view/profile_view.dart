@@ -38,25 +38,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
           return Center(child: Text("Error: ${controller.errorMessage}"));
         }
         if (controller.profile2.value == null ||
-            controller.profile2.value!.user == null) {
+            controller.profile2.value!.data!.user == null) {
           return const Center(child: Text("No profile data"));
         }
 
-        final profileData = controller.profile2.value!.user!;
+        final profileData = controller.profile2.value!.data!.user!;
 
-        // Correct DOB handling
-        String dobText = profileData.dob != null && profileData.dob!.isNotEmpty
-            ? profileData.dob!
-                  .split("T")
-                  .first // Take only the date part
+        // ✅ DOB ko safe string me convert karna
+        String dobText = profileData.dob != null
+            ? "${profileData.dob!.year}-${profileData.dob!.month.toString().padLeft(2, '0')}-${profileData.dob!.day.toString().padLeft(2, '0')}"
             : "N/A";
 
-        // Correct profile image handling
+        // ✅ Profile image handling
         String imageUrl = "https://via.placeholder.com/150";
         if (profileData.profilePic != null &&
             profileData.profilePic is String &&
-            profileData.profilePic!.isNotEmpty) {
-          imageUrl = profileData.profilePic!;
+            (profileData.profilePic as String).isNotEmpty) {
+          imageUrl = profileData.profilePic as String;
         } else if (profileData.photos != null &&
             profileData.photos!.isNotEmpty) {
           imageUrl = profileData.photos!.first.toString();
@@ -66,18 +64,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
           theme,
           "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
           profileData.email ?? "No email",
-          profileData.phoneNo ?? "N/A",
-          profileData.age != null ? profileData.age.toString() : "N/A",
+          profileData.phoneNo ?? "N/A", // pehle phone
+          profileData.age != null ? profileData.age.toString() : "N/A", // fir age
           profileData.gender ?? "N/A",
           profileData.location != null
               ? [
-                  profileData.location!.city,
-                  profileData.location!.country,
-                ].where((e) => e != null && e.isNotEmpty).join(", ")
+                  profileData.location!.city ?? "",
+                  profileData.location!.country ?? "",
+                ].where((e) => e.isNotEmpty).join(", ")
               : "Not Provided",
-          dobText, // ✅ Use corrected DOB
+          dobText,
           profileData.bio ?? "Not Provided",
-          imageUrl, // ✅ Use corrected profile image
+          imageUrl,
+          (profileData.hobbies != null && profileData.hobbies!.isNotEmpty)
+              ? profileData.hobbies!.join(", ")
+              : "Not Provided",
         );
       }),
     );
@@ -87,13 +88,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
     ThemeData theme,
     String name,
     String email,
-    String phoneno, // pehle phone number
-    String age, // fir age
+    String phoneno,
+    String age,
     String gender,
     String location,
     String dob,
     String about,
     String imageUrl,
+    String hobbies,
   ) {
     return SingleChildScrollView(
       child: Column(
@@ -167,29 +169,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 _divider(),
                 _buildDetail("Gender", gender),
                 _divider(),
-                _buildDetail(
-                  "Location",
-                  controller.profile2.value!.user!.location != null
-                      ? [
-                          controller.profile2.value!.user!.location!.city,
-
-                          controller.profile2.value!.user!.location!.country,
-                        ].where((e) => e != null && e.isNotEmpty).join(", ")
-                      : "Not Provided",
-                ),
-
+                _buildDetail("Location", location),
                 _divider(),
                 _buildDetail("Date of Birth", dob),
                 _divider(),
                 _buildDetail("Bio", about),
                 _divider(),
-                _buildDetail(
-                  "Hobbies",
-                  (controller.profile2.value!.user!.hobbies != null &&
-                          controller.profile2.value!.user!.hobbies!.isNotEmpty)
-                      ? controller.profile2.value!.user!.hobbies!.join(", ")
-                      : "Not Provided",
-                ),
+                _buildDetail("Hobbies", hobbies),
                 _divider(),
               ],
             ),
@@ -215,7 +201,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     controller.fetchProfile(); // ✅ refresh karwa lo
                   }
                 },
-
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),

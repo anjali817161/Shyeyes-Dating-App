@@ -6,6 +6,7 @@ import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
@@ -15,6 +16,7 @@ import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/profile/model/profile_model.dart';
+import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
 
@@ -346,7 +348,8 @@ class _HomeViewState extends State<HomeView> {
                             Colors.teal[400]!,
                             30,
                             () {
-                              _showSubscriptionDialog(context, theme, true);
+                              Get.to(AudioCallScreen());
+                              // _showSubscriptionDialog(context, theme, true);
                             },
                           ),
                           buildActionButton(
@@ -354,7 +357,8 @@ class _HomeViewState extends State<HomeView> {
                             Colors.lightBlueAccent,
                             32,
                             () {
-                              _showSubscriptionDialog(context, theme, false);
+                              Get.to(VideoCallScreen());
+                              //_showSubscriptionDialog(context, theme, false);
                             },
                           ),
                           buildActionButton(

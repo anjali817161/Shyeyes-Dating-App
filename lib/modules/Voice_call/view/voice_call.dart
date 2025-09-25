@@ -29,10 +29,7 @@ class AudioCallScreen extends StatelessWidget {
                   SizedBox(height: 5),
                   Text(
                     "Calling",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
@@ -41,9 +38,14 @@ class AudioCallScreen extends StatelessWidget {
             // Profile Image
             Align(
               alignment: Alignment.center,
-              child: CircleAvatar(
-                radius: 80,
-                backgroundImage: AssetImage("assets/images/profile.jpg"), // replace with your image
+              child: Container(
+                height: 150,
+                width: 150,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Icon(Icons.person, color: Colors.grey[400], size: 50),
               ),
             ),
 
@@ -51,7 +53,10 @@ class AudioCallScreen extends StatelessWidget {
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 30,
+                  horizontal: 20,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [

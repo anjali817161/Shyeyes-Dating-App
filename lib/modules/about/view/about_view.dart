@@ -95,32 +95,24 @@ class _AboutViewState extends State<AboutView> {
               const SizedBox(height: 30),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: onSecondaryColor,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        ", ${profileData.age ?? ""} ",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: onSecondaryColor,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: onSecondaryColor,
+                    ),
                   ),
-                  buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
-                    // Navigate to chat
-                  }),
+                  const SizedBox(width: 8),
+                  Text(
+                    ", ${profileData.age ?? ""} ",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: onSecondaryColor,
+                    ),
+                  ),
                 ],
               ),
 
@@ -368,14 +360,9 @@ class _AboutViewState extends State<AboutView> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Close button
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: theme.colorScheme.surfaceVariant,
-          child: GestureDetector(
-            onTap: () => Get.back(),
-            child: Icon(Icons.close, color: Colors.blue, size: 28),
-          ),
-        ),
+        buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
+          // Navigate to chat
+        }),
         const SizedBox(width: 16),
 
         // Like button with animation

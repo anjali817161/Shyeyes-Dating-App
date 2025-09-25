@@ -31,7 +31,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     final ProfileController controller = Get.find<ProfileController>();
-    final user = controller.profile2.value?.user;
+    final user = controller.profile2.value?.data?.user;
 
     if (user != null) {
       // Name
@@ -49,15 +49,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
           "${user.location?.city ?? ''}, ${user.location?.country ?? ''}"
               .trim();
 
-      // DOB
-      dobController.text = (user.dob != null && user.dob!.isNotEmpty)
-          ? user.dob!.split("T").first
-          : "";
+      // DOB → DateTime को String में format करो
+      if (user.dob != null) {
+        dobController.text = user.dob!.toIso8601String().split("T").first;
+      }
 
       // Bio & hobbies
       aboutController.text = user.bio ?? "";
-      hobbiesController.text =
-          (user.hobbies != null && user.hobbies!.isNotEmpty)
+      hobbiesController.text = (user.hobbies != null && user.hobbies!.isNotEmpty)
           ? user.hobbies!.join(", ")
           : "";
     }
@@ -135,18 +134,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Widget _buildProfileImage() {
     final ProfileController controller = Get.find<ProfileController>();
-    final user = controller.profile2.value?.user;
+    final user = controller.profile2.value?.data?.user;
 
     String imageUrl = "https://via.placeholder.com/150";
 
     if (user != null) {
       if (user.profilePic != null) {
-        if (user.profilePic is String && user.profilePic!.isNotEmpty) {
+        if (user.profilePic is String && (user.profilePic as String).isNotEmpty) {
           imageUrl =
-              "https://shyeyes-b.onrender.com/uploads/${user.profilePic!}";
-        } else if (user.profilePic is List && user.profilePic!.isNotEmpty) {
+              "https://shyeyes-b.onrender.com/uploads/${user.profilePic}";
+        } else if (user.profilePic is List &&
+            (user.profilePic as List).isNotEmpty) {
           imageUrl =
-              "https://shyeyes-b.onrender.com/uploads/${user.profilePic!.first}";
+              "https://shyeyes-b.onrender.com/uploads/${(user.profilePic as List).first}";
         }
       } else if (user.photos != null && user.photos!.isNotEmpty) {
         imageUrl =
@@ -285,7 +285,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         );
 
                         await controller.fetchProfile();
-                        Navigator.pop(context);
+                        if (context.mounted) Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
