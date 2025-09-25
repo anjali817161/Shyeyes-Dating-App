@@ -111,7 +111,7 @@ class _HomeViewState extends State<HomeView> {
 
                 if (widget.viewType == HomeViewType.activeUsers) {
                   final Users userData = user as Users;
-                  userId = userData.sId ?? '';
+                  userId = userData.id ?? '';
                   imageUrl =
                       (userData.profilePic != null &&
                           userData.profilePic!.isNotEmpty)
@@ -122,7 +122,7 @@ class _HomeViewState extends State<HomeView> {
                   age = userData.age ?? 0;
                   if (userData.location != null) {
                     location =
-                        '${userData.location!.street ?? ''},${userData.location!.city ?? ''},${userData.location!.state ?? ''}, ${userData.location!.country ?? ''}';
+                        '${userData.location!.city ?? ''}, ${userData.location!.country ?? ''}';
                     if (location.trim() == ',') 'N/A';
                   } else {
                     location = 'N/A';

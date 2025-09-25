@@ -12,7 +12,7 @@ class ActiveUsersController extends GetxController {
 
   /// Observables
   var isLoading = false.obs;
-  var activeUserModel = Activeusermodel().obs;
+  var activeUserModel = ActiveUsersModel().obs;
   var errorMessage = "".obs;
 
   /// Users list
@@ -39,7 +39,7 @@ class ActiveUsersController extends GetxController {
       isLoading.value = true;
       final response = await _userRepository.getActiveUsers();
       activeUserModel.value = response;
-      users.value = response.users ?? [];
+      users.value = response.data?.users ?? [];
     } catch (e) {
       Get.snackbar("Error", e.toString());
     } finally {

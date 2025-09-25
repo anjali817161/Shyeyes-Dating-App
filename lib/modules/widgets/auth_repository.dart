@@ -148,7 +148,7 @@ class AuthRepository {
     return EditProfileModel.fromJson(jsonDecode(response.body));
   }
 
-  Future<Activeusermodel> getActiveUsers() async {
+  Future<ActiveUsersModel> getActiveUsers() async {
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.activeUsers);
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
@@ -165,7 +165,7 @@ class AuthRepository {
       final data = jsonDecode(response.body);
 
       /// API response directly map karenge Activeusermodel pe
-      return Activeusermodel.fromJson(data);
+      return ActiveUsersModel.fromJson(data);
     } else {
       throw Exception("Failed to fetch active users: ${response.statusCode}");
     }
@@ -603,6 +603,4 @@ class AuthRepository {
   //     },
   //   );
   // }
-
-  
 }
