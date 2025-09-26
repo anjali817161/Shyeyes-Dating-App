@@ -779,7 +779,6 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(width: 1),
           Obx(() {
             final user = controller.profile2.value?.data?.user;
-            //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
               // Profile load nahi hua → placeholder
@@ -794,10 +793,14 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
-            final hasPhoto =
-                user.photos != null &&
-                user.photos!.isNotEmpty &&
-                user.photos!.first.isNotEmpty;
+            // profilePic check karna
+            final hasProfilePic =
+                user.profilePic != null && user.profilePic!.isNotEmpty;
+
+            // agar profilePic hai toh url banayenge
+            final profilePicUrl = hasProfilePic
+                ? "https://shyeyes-b.onrender.com/uploads/${user.profilePic}"
+                : null;
 
             return GestureDetector(
               onTap: () {
@@ -807,10 +810,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
                   radius: 29,
-                  backgroundImage: hasPhoto
-                      ? NetworkImage(user.photos!.first)
+                  backgroundImage: hasProfilePic
+                      ? NetworkImage(profilePicUrl!)
                       : null,
-                  child: !hasPhoto
+                  child: !hasProfilePic
                       ? Icon(
                           Icons.person,
                           size: 28,

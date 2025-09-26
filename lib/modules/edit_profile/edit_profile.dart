@@ -56,7 +56,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       // Bio & hobbies
       aboutController.text = user.bio ?? "";
-      hobbiesController.text = (user.hobbies != null && user.hobbies!.isNotEmpty)
+      hobbiesController.text =
+          (user.hobbies != null && user.hobbies!.isNotEmpty)
           ? user.hobbies!.join(", ")
           : "";
     }
@@ -140,7 +141,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     if (user != null) {
       if (user.profilePic != null) {
-        if (user.profilePic is String && (user.profilePic as String).isNotEmpty) {
+        if (user.profilePic is String &&
+            (user.profilePic as String).isNotEmpty) {
           imageUrl =
               "https://shyeyes-b.onrender.com/uploads/${user.profilePic}";
         } else if (user.profilePic is List &&

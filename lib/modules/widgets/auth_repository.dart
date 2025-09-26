@@ -6,7 +6,7 @@ import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/edit_profile/edit_model.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
-import 'package:shyeyes/modules/profile/model/profile_model.dart';
+import 'package:shyeyes/modules/profile/model/current_plan.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class AuthRepository {
@@ -14,7 +14,7 @@ class AuthRepository {
   Future<http.Response> login(String email, String password) {
     print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.login}");
     print("Email: $email, Password: $password");
-    
+
 
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.login),

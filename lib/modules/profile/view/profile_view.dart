@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
+import 'package:shyeyes/modules/profile/model/current_plan.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -51,13 +52,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
         // ✅ Profile image handling
         String imageUrl = "https://via.placeholder.com/150";
+
         if (profileData.profilePic != null &&
             profileData.profilePic is String &&
             (profileData.profilePic as String).isNotEmpty) {
-          imageUrl = profileData.profilePic as String;
+          // 👇 yaha prefix kar diya
+          imageUrl =
+              "https://shyeyes-b.onrender.com/uploads/${profileData.profilePic}";
         } else if (profileData.photos != null &&
             profileData.photos!.isNotEmpty) {
-          imageUrl = profileData.photos!.first.toString();
+          // Agar photos list me path aaye toh uspe bhi prefix lagana hai
+          imageUrl =
+              "https://shyeyes-b.onrender.com/uploads/${profileData.photos!.first}";
         }
 
         return _buildProfileView(
@@ -65,7 +71,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
           "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
           profileData.email ?? "No email",
           profileData.phoneNo ?? "N/A", // pehle phone
-          profileData.age != null ? profileData.age.toString() : "N/A", // fir age
+          profileData.age != null
+              ? profileData.age.toString()
+              : "N/A", // fir age
           profileData.gender ?? "N/A",
           profileData.location != null
               ? [
@@ -152,15 +160,83 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ],
           ),
 
-          const SizedBox(height: 60),
+          // const SizedBox(height: 60),
 
           // Profile details
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 35),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetail("Name", name),
-                _divider(),
+                // ✅ Name + Actions Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      // Edit Profile Icon
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EditProfilePage(),
+                            ),
+                          );
+                          if (result == true) {
+                            controller.fetchProfile();
+                          }
+                        },
+                        child: Image.asset(
+                          "assets/images/png_editprofile.png",
+                          height: 33,
+                          width: 33,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.person,
+                              size: 28,
+                              color: Colors.grey.shade400,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      // View Plan Button
+                      ElevatedButton(
+                        onPressed: () {
+                          showPlanBottomSheet(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          "View Plan",
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
                 _buildDetail("Email", email),
                 _divider(),
                 _buildDetail("PhoneNo", phoneno),
@@ -183,39 +259,38 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
           const SizedBox(height: 32),
 
-          // Edit Profile button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfilePage(),
-                    ),
-                  );
+          // // Edit Profile button
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 24),
+          //   child: SizedBox(
+          //     width: double.infinity,
+          //     child: ElevatedButton(
+          //       onPressed: () async {
+          //         final result = await Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (context) => const EditProfilePage(),
+          //           ),
+          //         );
 
-                  if (result == true) {
-                    controller.fetchProfile(); // ✅ refresh karwa lo
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  "Edit Profile",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-
+          //         if (result == true) {
+          //           controller.fetchProfile(); // ✅ refresh karwa lo
+          //         }
+          //       },
+          //       style: ElevatedButton.styleFrom(
+          //         backgroundColor: theme.colorScheme.primary,
+          //         padding: const EdgeInsets.symmetric(vertical: 14),
+          //         shape: RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.circular(10),
+          //         ),
+          //       ),
+          //       child: const Text(
+          //         "Edit Profile",
+          //         style: TextStyle(fontSize: 16, color: Colors.white),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           const SizedBox(height: 20),
         ],
       ),
