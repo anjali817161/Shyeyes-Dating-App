@@ -1,13 +1,14 @@
 // lib/modules/accepted/view/accepted_requests_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/accepted_requests/controller/accepted_request_conroller.dart';
-import 'package:shyeyes/modules/accepted_requests/model/accepted_Requests_model.dart';
+import 'package:shyeyes/modules/pending_requests/controller/pending_request_conroller.dart';
+import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/invitation/controller/invitation_controller.dart';
+import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
 
-class AcceptedRequestsView extends StatelessWidget {
-  final AcceptedRequestController controller = Get.put(
-    AcceptedRequestController(),
+class PendingRequestView extends StatelessWidget {
+  final PendingRequestConroller controller = Get.put(
+    PendingRequestConroller(),
   );
   final InvitationController invitationController = Get.put(
     InvitationController(),
@@ -97,8 +98,8 @@ class AcceptedRequestsView extends StatelessWidget {
     );
   }
 
-  Widget _buildRequestCard(AcceptedRequest req) {
-    final user = req.to;
+  Widget _buildRequestCard(Request req) {
+    final user = req.user2;
     final isProcessing = invitationController.invitations.any(
       (inv) => inv.id == req.id,
     );
@@ -183,8 +184,9 @@ class AcceptedRequestsView extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   Text(
-                    user?.age ?? 'No age provided',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    "Age: 29 Years old",
+                    // user.age ?? 0,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -279,19 +281,22 @@ class AcceptedRequestsView extends StatelessWidget {
     }
   }
 
-  void _showRemoveConfirmation(AcceptedRequest req) {
+  void _showRemoveConfirmation(Request req) {
+    final ActiveUsersController activeUsersController = Get.put(
+      ActiveUsersController(),
+    );
     Get.dialog(
       AlertDialog(
         title: const Text("Remove Request?"),
         content: Text(
-          "Are you sure you want to remove ${_getUserName(req.to)} from your accepted requests?",
+          "Are you sure you want to remove ${_getUserName(req.user2)} from your pending requests?",
         ),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text("Cancel")),
           TextButton(
             onPressed: () {
               Get.back();
-              invitationController.cancelInvite(req.id!);
+              activeUsersController.cancelRequestByRequestId(req.id!);
             },
             child: const Text("Remove", style: TextStyle(color: Colors.red)),
           ),

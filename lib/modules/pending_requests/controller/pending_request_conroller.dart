@@ -1,12 +1,12 @@
 // lib/modules/accepted/controller/accepted_request_controller.dart
 
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/accepted_requests/model/accepted_Requests_model.dart';
+import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 
-class AcceptedRequestController extends GetxController {
+class PendingRequestConroller extends GetxController {
   var isLoading = false.obs;
-  var acceptedRequests = <AcceptedRequest>[].obs;
+  var acceptedRequests = <Request>[].obs; // ✅ Single Request objects
 
   @override
   void onInit() {
@@ -23,12 +23,12 @@ class AcceptedRequestController extends GetxController {
       if (response != null && response['requests'] != null) {
         acceptedRequests.assignAll(
           (response['requests'] as List)
-              .map((json) => AcceptedRequest.fromJson(json))
+              .map((json) => Request.fromJson(json))
               .toList(),
         );
       }
     } catch (e) {
-      print("❌ Error: $e");
+      print("❌ Error fetching accepted requests: $e");
     } finally {
       isLoading.value = false;
     }

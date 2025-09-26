@@ -128,6 +128,27 @@ class ActiveUsersController extends GetxController {
     }
   }
 
+  Future<void> cancelRequestByRequestId(String requestId) async {
+    try {
+      // Optionally show loader in your requestLoading map
+      requestLoading[requestId] = true;
+
+      final response = await AuthRepository.cancelRequest(requestId);
+      if (response != null && response['message'] != null) {
+        final message = response['message']!;
+        if (message.toLowerCase().contains("cancelled")) {
+          // Remove from your local list
+          // acceptedRequests.removeWhere((r) => r.id == requestId);
+          Get.snackbar("Success", "Request cancelled");
+        } else {
+          Get.snackbar("Info", "Could not cancel request");
+        }
+      }
+    } finally {
+      requestLoading[requestId] = false;
+    }
+  }
+
   bool isRequestSent(String receiverId) =>
       requestStatus[receiverId] == "pending";
 
@@ -157,6 +178,8 @@ class ActiveUsersController extends GetxController {
           "Content-Type": "application/json",
         },
       );
+      print(" Like API response code: ${response.statusCode}");
+      print(" Like API response body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         likedUsers.add(userId);
@@ -195,6 +218,9 @@ class ActiveUsersController extends GetxController {
           "Content-Type": "application/json",
         },
       );
+
+      print(" Like API response code: ${response.statusCode}");
+      print(" Like API response body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         likedUsers.remove(userId);

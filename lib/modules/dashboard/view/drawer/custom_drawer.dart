@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/Friendlist/friendlist.dart';
-import 'package:shyeyes/modules/accepted_requests/view/accepted_request_view.dart';
+import 'package:shyeyes/modules/pending_requests/view/pending_request_view.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/invitation/view/invitation_view.dart';
@@ -49,10 +49,10 @@ class CustomDrawer extends StatelessWidget {
         },
       ),
       _DrawerItem(
-        icon: Icons.done_all,
-        label: 'Accepted Requests',
+        icon: Icons.pending_actions,
+        label: 'Pending Requests',
         ontap: () {
-          Get.to(() => AcceptedRequestsView());
+          Get.to(() => PendingRequestView());
         },
       ),
       _DrawerItem(
