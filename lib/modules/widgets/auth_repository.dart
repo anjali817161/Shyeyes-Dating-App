@@ -15,7 +15,6 @@ class AuthRepository {
     print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.login}");
     print("Email: $email, Password: $password");
 
-
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.login),
       headers: {
@@ -589,19 +588,50 @@ class AuthRepository {
     );
   }
 
-  // Friend list api
+  // you sent like show favorite
 
-  // Future<http.Response> Friendlist() {
-  //   print("URL===== ${ApiEndpoints.baseUrl2 + ApiEndpoints.Friendlist}");
-  //   // print("Email: $email);
+  Future<http.Response> Sentlikes(String token,) {
+    print("URL===== ${ApiEndpoints.likes + ApiEndpoints.sentrequestlike}");
+    // print("Email: $email);
 
-  //   return http.get(
-  //     Uri.parse(ApiEndpoints.baseUrl2 + ApiEndpoints.Friendlist),
-  //     headers: {
-  //       "Accept": "application/json",
+    return http.get(
+      Uri.parse(ApiEndpoints.likes + ApiEndpoints.sentrequestlike),
+      headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+  }
 
-  //       "Content-Type": "application/json",
-  //     },
-  //   );
-  // }
+  // show who likes my profiles
+
+   Future<http.Response> Showlikesprofiles(String token,) {
+    print("URL===== ${ApiEndpoints.likes + ApiEndpoints.showlikesprofiles}");
+    // print("Email: $email);
+
+    return http.get(
+      Uri.parse(ApiEndpoints.likes + ApiEndpoints.showlikesprofiles),
+      headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+  }
+  // upload more photo
+
+   Future<http.Response> Uploadmorephoto(String token,) {
+    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.moreuploadphoto}");
+    // print("Email: $email);
+
+    return http.post(
+      Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.moreuploadphoto),
+      headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+  }
 }
