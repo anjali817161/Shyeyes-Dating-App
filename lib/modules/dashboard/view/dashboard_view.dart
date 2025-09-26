@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
+import 'package:shyeyes/modules/about/view/about_view.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
@@ -222,10 +223,14 @@ class _DashboardPageState extends State<DashboardPage> {
           separatorBuilder: (context, index) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
             final profile = usersController.matches[index];
+            final userId = profile.id ?? ""; // User ID get karo
 
             return GestureDetector(
               onTap: () {
-                // Get.to(() => AboutView(profileData: profile));
+                // ✅ AboutView open karo with userId
+                if (userId.isNotEmpty) {
+                  Get.to(() => AboutView(userId: userId));
+                }
               },
               child: Container(
                 width: 180,
@@ -660,9 +665,14 @@ class _DashboardPageState extends State<DashboardPage> {
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final profile = controller.users[index];
+              final userId = profile.id ?? ""; // User ID get karo
+
               return GestureDetector(
                 onTap: () {
-                  // Get.to(() => AboutView(profileData: profile));
+                  // ✅ AboutView open karo with userId
+                  if (userId.isNotEmpty) {
+                    Get.to(() => AboutView(userId: userId));
+                  }
                 },
                 child: Column(
                   children: [
@@ -779,7 +789,6 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(width: 1),
           Obx(() {
             final user = controller.profile2.value?.data?.user;
-            //  print("Profile updated: ${user?.imageUrl}");
 
             if (user == null) {
               // Profile load nahi hua → placeholder
@@ -794,10 +803,14 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
-            final hasPhoto =
-                user.photos != null &&
-                user.photos!.isNotEmpty &&
-                user.photos!.first.isNotEmpty;
+            // profilePic check karna
+            final hasProfilePic =
+                user.profilePic != null && user.profilePic!.isNotEmpty;
+
+            // agar profilePic hai toh url banayenge
+            final profilePicUrl = hasProfilePic
+                ? "https://shyeyes-b.onrender.com/uploads/${user.profilePic}"
+                : null;
 
             return GestureDetector(
               onTap: () {
@@ -807,10 +820,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
                   radius: 29,
-                  backgroundImage: hasPhoto
-                      ? NetworkImage(user.photos!.first)
+                  backgroundImage: hasProfilePic
+                      ? NetworkImage(profilePicUrl!)
                       : null,
-                  child: !hasPhoto
+                  child: !hasProfilePic
                       ? Icon(
                           Icons.person,
                           size: 28,
@@ -861,24 +874,12 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                       ),
-                      // Positioned(
-                      //   top: -20,
-                      //   left: -10,
-                      //   child: Container(
-                      //     padding: const EdgeInsets.all(8),
-                      //     child: Image.asset(
-                      //       '',
-                      //       width: 90,
-                      //       height: 90,
-                      //     ),
-                      //   ),
-                      // ),
                     ],
                   ),
 
                   const SizedBox(height: 30),
 
-                  //  New Members
+                  //  New MembersR
                   sectionTitle("Active Now", () {
                     Get.to(() => HomeView(viewType: HomeViewType.activeUsers));
                   }),

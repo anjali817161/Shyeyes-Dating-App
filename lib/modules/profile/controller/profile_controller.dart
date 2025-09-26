@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/edit_profile/edit_model.dart';
-import 'package:shyeyes/modules/profile/model/profile_model.dart';
+import 'package:shyeyes/modules/profile/model/current_plan.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 // adjust path if needed
 
@@ -78,7 +78,7 @@ class ProfileController extends GetxController {
         img: img,
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final json = jsonDecode(response.body);
         if (json['status'] == true) {
           await fetchProfile(); // refresh

@@ -62,7 +62,10 @@ class _LikesPageState extends State<LikesPage> {
                     radius: 28,
                   ),
                   title: Text(profile.name),
-                  trailing: Icon(Icons.favorite, color: theme.colorScheme.primary),
+                  trailing: Icon(
+                    Icons.favorite,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               );
             },
@@ -99,7 +102,10 @@ class _LikesPageState extends State<LikesPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.primaryColor,
                 shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
               ),
               child: const Text(
                 "See who likes you",
@@ -124,8 +130,11 @@ class _LikesPageState extends State<LikesPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.warning_amber_rounded,
-                  color: theme.colorScheme.primary, size: 50),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: theme.colorScheme.primary,
+                size: 50,
+              ),
               const SizedBox(height: 10),
               Text(
                 'Subscription Required',
@@ -161,8 +170,10 @@ class _LikesPageState extends State<LikesPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
                 ),
                 child: const Text(
                   'Subscribe Now',

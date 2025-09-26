@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
-import 'package:shyeyes/modules/profile/model/profile_model.dart';
+import 'package:shyeyes/modules/profile/model/current_plan.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 

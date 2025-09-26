@@ -15,7 +15,7 @@ import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
-import 'package:shyeyes/modules/profile/model/profile_model.dart';
+import 'package:shyeyes/modules/profile/model/current_plan.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
