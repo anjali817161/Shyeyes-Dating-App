@@ -83,153 +83,162 @@ class ActiveUsersController extends GetxController {
   // REQUEST HANDLING
   // -----------------------
 
+  bool isRequestSent(String userId) {
+    final status = requestStatus[userId]?.toLowerCase() ?? "cancelled";
+    return status == "pending";
+  }
+
   Future<void> sendRequest(String receiverId) async {
     try {
       requestLoading[receiverId] = true;
 
       final response = await AuthRepository.sendRequest(receiverId);
 
-      if (response != null && response['request'] != null) {
-        final requestId = response['request']['_id'];
-        sentRequests[receiverId] = requestId;
-        requestStatus[receiverId] = "pending";
-        Get.snackbar("Success", "Request sent successfully!");
-      } else {
-        Get.snackbar("Error", "Failed to send request");
-      }
-    } finally {
-      requestLoading[receiverId] = false;
-    }
-  }
+      if (response != null) {
+        final bool sent = response['sent'] ?? false;
 
-  Future<void> cancelRequest(String receiverId) async {
-    try {
-      requestLoading[receiverId] = true;
+        // ✅ Backend se aaya status use karo
+        final status = (response['status'] ?? "Cancelled").toLowerCase();
+        requestStatus[receiverId] = status;
 
-      final requestId = sentRequests[receiverId];
-      if (requestId == null) {
-        Get.snackbar("Error", "No request found for this user");
-        return;
-      }
+        if (sent && status == "pending") {
+          // request sent hai
+          final requestId = response['request']?['_id'];
+          if (requestId != null) {
+            sentRequests[receiverId] = requestId;
+          }
 
-      final response = await AuthRepository.cancelRequest(requestId);
-      if (response != null && response['message'] != null) {
-        final message = response['message']!;
-        if (message.toLowerCase().contains("cancelled")) {
-          requestStatus[receiverId] = "none";
+          Get.closeAllSnackbars();
+          Get.snackbar(
+            "Success",
+            "Friend request sent successfully!",
+            snackPosition: SnackPosition.TOP,
+          );
+        } else if (!sent && status == "cancelled") {
+          // request cancel hai
           sentRequests.remove(receiverId);
-          Get.snackbar("Success", "Request cancelled");
-        } else {
-          Get.snackbar("Info", "Could not cancel request");
+
+          Get.closeAllSnackbars();
+          Get.snackbar(
+            "Success",
+            "Friend request cancelled successfully!",
+            snackPosition: SnackPosition.TOP,
+          );
         }
+      } else {
+        Get.closeAllSnackbars();
+        Get.snackbar(
+          "Error",
+          "Something went wrong",
+          snackPosition: SnackPosition.TOP,
+        );
       }
     } finally {
       requestLoading[receiverId] = false;
     }
   }
 
-  Future<void> cancelRequestByRequestId(String requestId) async {
-    try {
-      // Optionally show loader in your requestLoading map
-      requestLoading[requestId] = true;
+  // Future<void> cancelRequest(String receiverId) async {
+  //   try {
+  //     requestLoading[receiverId] = true;
 
-      final response = await AuthRepository.cancelRequest(requestId);
-      if (response != null && response['message'] != null) {
-        final message = response['message']!;
-        if (message.toLowerCase().contains("cancelled")) {
-          // Remove from your local list
-          // acceptedRequests.removeWhere((r) => r.id == requestId);
-          Get.snackbar("Success", "Request cancelled");
-        } else {
-          Get.snackbar("Info", "Could not cancel request");
-        }
-      }
-    } finally {
-      requestLoading[requestId] = false;
-    }
-  }
+  //     final requestId = sentRequests[receiverId];
+  //     if (requestId == null) {
+  //       Get.snackbar("Error", "No request found for this user");
+  //       return;
+  //     }
 
-  bool isRequestSent(String receiverId) =>
-      requestStatus[receiverId] == "pending";
+  //     final response = await AuthRepository.cancelRequest(requestId);
+  //     if (response != null && response['message'] != null) {
+  //       final message = response['message']!;
+  //       if (message.toLowerCase().contains("cancelled")) {
+  //         requestStatus[receiverId] = "none";
+  //         sentRequests.remove(receiverId);
+  //         Get.snackbar("Success", "Request cancelled");
+  //       } else {
+  //         Get.snackbar("Info", "Could not cancel request");
+  //       }
+  //     }
+  //   } finally {
+  //     requestLoading[receiverId] = false;
+  //   }
+  // }
+
+  // Future<void> cancelRequestByRequestId(String requestId) async {
+  //   try {
+  //     // Optionally show loader in your requestLoading map
+  //     requestLoading[requestId] = true;
+
+  //     final response = await AuthRepository.cancelRequest(requestId);
+  //     if (response != null && response['message'] != null) {
+  //       final message = response['message']!;
+  //       if (message.toLowerCase().contains("cancelled")) {
+  //         // Remove from your local list
+  //         // acceptedRequests.removeWhere((r) => r.id == requestId);
+  //         Get.snackbar("Success", "Request cancelled");
+  //       } else {
+  //         Get.snackbar("Info", "Could not cancel request");
+  //       }
+  //     }
+  //   } finally {
+  //     requestLoading[requestId] = false;
+  //   }
+  // }
+
+  // bool isRequestSent(String receiverId) =>
+  //     requestStatus[receiverId] == "pending";
 
   // -----------------------
   // LIKE / UNLIKE HANDLING
   // -----------------------
-
   Future<void> toggleFavorite(String userId) async {
     try {
-      final token = await SharedPrefHelper.getToken();
+      final token = await SharedPrefHelper.getToken() ?? '';
 
-      // Check if user is already in liked list
-      if (likedUsers.contains(userId)) {
-        // Unlike directly
-        await _unlikeUser(userId, token.toString());
-        return;
-      }
-
-      // Try Like API
-      final likeUrl = Uri.parse(
+      // Toggle API URL
+      final uri = Uri.parse(
         "https://shyeyes-b.onrender.com/api/likes/$userId/like",
       );
+
       final response = await http.post(
-        likeUrl,
+        uri,
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",
         },
       );
-      print(" Like API response code: ${response.statusCode}");
-      print(" Like API response body: ${response.body}");
+
+      print("Toggle Favorite response code: ${response.statusCode}");
+      print("Toggle Favorite response body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        likedUsers.add(userId);
-        recentlyLikedUsers.add(userId);
-        print(" Like success: ${response.body}");
+        final data = jsonDecode(response.body);
+        final liked = data['liked'] ?? false;
 
-        // Heart animation thodi der ke liye
-        Future.delayed(const Duration(seconds: 1), () {
-          recentlyLikedUsers.remove(userId);
-        });
-      } else {
-        final body = response.body;
-        print(" Like API response: $body");
+        // Update likedUsers set based on backend response
+        if (liked) {
+          likedUsers.add(userId);
+          recentlyLikedUsers.add(userId);
 
-        // ager  "already liked" ka error aya, toh unlike call karo
-        if (body.contains("Profile already liked")) {
-          await _unlikeUser(userId, token.toString());
+          // Heart animation thodi der ke liye
+          Future.delayed(const Duration(seconds: 1), () {
+            recentlyLikedUsers.remove(userId);
+          });
         } else {
-          print(" Like failed: ${response.statusCode} $body");
+          likedUsers.remove(userId);
         }
-      }
-    } catch (e) {
-      print(" Error toggleFavorite: $e");
-    }
-  }
 
-  Future<void> _unlikeUser(String userId, String token) async {
-    try {
-      final unlikeUrl = Uri.parse(
-        "https://shyeyes-b.onrender.com/api/likes/$userId/unlike",
-      );
-      final response = await http.delete(
-        unlikeUrl,
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
-
-      print(" Like API response code: ${response.statusCode}");
-      print(" Like API response body: ${response.body}");
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        likedUsers.remove(userId);
-        print(" Unlike success: ${response.body}");
+        // Optional: Show snackbar
+        Get.snackbar(
+          "Success",
+          liked ? "Profile liked" : "Profile unliked",
+          snackPosition: SnackPosition.BOTTOM,
+        );
       } else {
-        print(" Unlike failed: ${response.statusCode} ${response.body}");
+        print("Toggle failed: ${response.statusCode} ${response.body}");
       }
     } catch (e) {
-      print(" Error in unlike: $e");
+      print("Error in toggleFavorite: $e");
     }
   }
 

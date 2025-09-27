@@ -264,13 +264,8 @@ class _HomeViewState extends State<HomeView> {
                                             return GestureDetector(
                                               onTap: () async {
                                                 if (isLoading) return;
-                                                if (isRequestPending) {
-                                                  await usersController
-                                                      .cancelRequest(userId);
-                                                } else {
-                                                  await usersController
-                                                      .sendRequest(userId);
-                                                }
+                                                await usersController
+                                                    .sendRequest(userId);
                                               },
                                               child: Container(
                                                 margin: const EdgeInsets.only(
@@ -300,15 +295,12 @@ class _HomeViewState extends State<HomeView> {
                                                               strokeWidth: 2,
                                                             ),
                                                       )
-                                                    : (isRequestPending
-                                                          ? Image.asset(
-                                                              "assets/images/png_cancelr.png",
-                                                              scale: 17,
-                                                            )
-                                                          : Image.asset(
-                                                              "assets/images/invite.png",
-                                                              scale: 17,
-                                                            )),
+                                                    : Image.asset(
+                                                        isRequestPending
+                                                            ? "assets/images/png_cancelr.png" // request pending → cancel image
+                                                            : "assets/images/invite.png", // no request → send image
+                                                        scale: 17,
+                                                      ),
                                               ),
                                             );
                                           }),

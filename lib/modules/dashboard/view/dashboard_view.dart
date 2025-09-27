@@ -291,23 +291,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           onPressed: loading
                               ? null
                               : () async {
-                                  usersController.requestLoading[receiverId] =
-                                      true;
-
-                                  try {
-                                    if (status == "pending") {
-                                      await usersController.cancelRequest(
-                                        receiverId,
-                                      );
-                                    } else {
-                                      await usersController.sendRequest(
-                                        receiverId,
-                                      );
-                                    }
-                                  } finally {
-                                    usersController.requestLoading[receiverId] =
-                                        false;
-                                  }
+                                  await usersController.sendRequest(receiverId);
                                 },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: status == "pending"

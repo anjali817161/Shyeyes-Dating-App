@@ -7,9 +7,7 @@ import 'package:shyeyes/modules/invitation/controller/invitation_controller.dart
 import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
 
 class PendingRequestView extends StatelessWidget {
-  final PendingRequestConroller controller = Get.put(
-    PendingRequestConroller(),
-  );
+  final PendingRequestConroller controller = Get.put(PendingRequestConroller());
   final InvitationController invitationController = Get.put(
     InvitationController(),
   );
@@ -138,7 +136,7 @@ class PendingRequestView extends StatelessWidget {
                   child: ClipOval(
                     child: user?.profilePic != null
                         ? Image.network(
-                            "https://shyeyes-b.onrender.com/uploads/${user!.profilePic}",
+                            "https://shyeyes-b.onrender.com/uploads/${user?.profilePic}",
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return _buildPlaceholderAvatar();
@@ -184,8 +182,9 @@ class PendingRequestView extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   Text(
-                    "Age: 29 Years old",
-                    // user.age ?? 0,
+                    user?.age != null
+                        ? '${user?.age} years old'
+                        : 'Age not set',
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -258,11 +257,11 @@ class PendingRequestView extends StatelessWidget {
 
   String _getUserName(user) {
     if (user?.name?.firstName != null && user?.name?.lastName != null) {
-      return '${user!.name!.firstName} ${user.name!.lastName}';
+      return '${user?.name!.firstName} ${user?.name!.lastName}';
     } else if (user?.name?.firstName != null) {
-      return user!.name!.firstName!;
+      return user?.name!.firstName!;
     } else if (user?.username != null) {
-      return user!.username!;
+      return user?.username!;
     } else {
       return 'Unknown User';
     }
@@ -295,8 +294,8 @@ class PendingRequestView extends StatelessWidget {
           TextButton(onPressed: () => Get.back(), child: const Text("Cancel")),
           TextButton(
             onPressed: () {
-              Get.back();
-              activeUsersController.cancelRequestByRequestId(req.id!);
+              //Get.back();
+              activeUsersController.sendRequest(req.user2?.id ?? '');
             },
             child: const Text("Remove", style: TextStyle(color: Colors.red)),
           ),

@@ -30,8 +30,8 @@ class ApiEndpoints {
   static const String editprofile = "profile";
   static const String forgetotp = "verify-pass-otp";
   static const String Friendlist = "list";
-  static const String deleteRequest = "cancel";
-  static const String sentRequest = "request";
+  // static const String deleteRequest = "cancel";
+  static const String sentRequest = "friend-request";
   static const String requests = "requests";
 
   static const String cancelInvite = "reject";
