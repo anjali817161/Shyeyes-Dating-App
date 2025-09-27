@@ -5,8 +5,14 @@ import 'package:shyeyes/modules/splash/splash_screen.dart';
 import 'package:shyeyes/modules/home/controller/notificationController.dart';
 import 'package:shyeyes/modules/theme/theme.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
+import 'package:zego_zimkit/zego_zimkit.dart';
 
-void main() {
+Future<void> main() async {
+ await ZIMKit().init(
+    appID: 1855474960, // your appid
+    appSign:
+        'dffcc3933e01e9debe08f228e3ac8e2f17bcdf8c7556e5f59062d94b6e9d2ffa', // your appSign
+  );
   Get.put(ProfileController());
   Get.put(NotificationController());
   Get.put(MusicController());

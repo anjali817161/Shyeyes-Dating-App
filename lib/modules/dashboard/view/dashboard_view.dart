@@ -466,8 +466,50 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                             );
                           }),
-                          _iconCircle(Icons.chat_bubble_outline, () {
-                            Get.to(() => ChatScreen(user: dummyUser));
+                          // DashboardPage में chat button
+                          _iconCircle(Icons.chat_bubble_outline, () async {
+                            final profile = usersController.matches[index];
+                            final userId = profile.id ?? "";
+                            final currentUserId =
+                                await SharedPrefHelper.getUserId();
+
+                            // Safety checks
+                            if (userId.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'User ID not available for chatting',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            if (currentUserId == null ||
+                                currentUserId.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Please login again to use chat',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            // Same user se chat prevent करें
+                            if (userId == currentUserId) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'You cannot chat with yourself',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            Get.to(() => ChatScreen(user: profile));
                           }),
                           _iconCircle(Icons.videocam, () {
                             showDialog(

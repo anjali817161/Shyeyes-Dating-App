@@ -168,7 +168,7 @@ class ChatLobbyPage extends StatelessWidget {
                       ),
                       onTap: () {
                         // Navigate to chat screen
-                        Get.to(() => ChatScreen(user: dummyUser));
+                     //   Get.to(() => ChatScreen(user: dummyUser));
                       },
                     ),
                   );

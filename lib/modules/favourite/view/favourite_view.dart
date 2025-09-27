@@ -171,9 +171,12 @@ class FavouritePage extends StatelessWidget {
                                   _buildCircleIcon(
                                     icon: Icons.chat_bubble,
                                     theme: theme,
-                                    onPressed: () => Get.to(
-                                      () => ChatScreen(user: dummyUser),
-                                    ),
+                                    onPressed: () {
+                                      
+                                    },
+                                    // onPressed: () => Get.to(
+                                    //  // () => ChatScreen(user: dummyUser),
+                                    // ),
                                   ),
                                   _buildCircleIcon(
                                     icon: Icons.call,
