@@ -227,11 +227,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
             return GestureDetector(
               onTap: () {
-                // ✅ AboutView open karo with userId
                 if (userId.isNotEmpty) {
-                  Get.to(() => AboutView(userId: userId));
+                  Get.to(
+                    () => AboutView(userId: userId),
+                    transition: Transition.upToDown,
+                    duration: const Duration(milliseconds: 400),
+                  );
                 }
               },
+
               child: Container(
                 width: 180,
                 decoration: BoxDecoration(
@@ -653,11 +657,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
               return GestureDetector(
                 onTap: () {
-                  // ✅ AboutView open karo with userId
                   if (userId.isNotEmpty) {
-                    Get.to(() => AboutView(userId: userId));
+                    Get.to(
+                      () => AboutView(userId: userId),
+                      transition: Transition.upToDown,
+                      duration: const Duration(milliseconds: 400),
+                    );
                   }
                 },
+
                 child: Column(
                   children: [
                     Stack(

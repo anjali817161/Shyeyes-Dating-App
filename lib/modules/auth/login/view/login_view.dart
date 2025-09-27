@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/Forgetpassword/forgetemail.dart';
 import 'package:shyeyes/modules/auth/login/controller/login_controller.dart';
+import 'package:shyeyes/modules/auth/signup/view/personal_info.dart';
 import 'package:shyeyes/modules/auth/signup/view/signup_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
@@ -177,6 +178,7 @@ class _LoginViewState extends State<LoginView> {
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () {
+                      
                       Get.offAll(() => SignUpView());
                     },
                     child: Text(

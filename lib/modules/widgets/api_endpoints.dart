@@ -3,11 +3,9 @@ class ApiEndpoints {
 
   static const String baseUrl2 = "https://shyeyes-b.onrender.com/api/friends/";
 
-
   static const String imgUrl = "https://shyeyes-b.onrender.com/uploads/";
 
   static const String likes = "https://shyeyes-b.onrender.com/api/likes/";
-
 
   // Auth
   static const String report = "report";
@@ -39,8 +37,10 @@ class ApiEndpoints {
   static const String acceptedRequests = "sent";
   static const String unfriend = "unfriend";
 
-
   // like and unlike
   static const String like = "like";
 
+  static const String sentrequestlike = "sent";
+  static const String showlikesprofiles = "received";
+  static const String moreuploadphoto = "photos";
 }

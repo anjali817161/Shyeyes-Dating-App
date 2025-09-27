@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/profile/model/current_plan.dart';
+import 'package:shyeyes/modules/profile/uploadmore_photo/view/uploadmorephoto.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -109,6 +110,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       child: Column(
         children: [
           // Banner with gradient + lotties
+          // Banner with gradient + lotties
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -154,6 +156,34 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundImage: NetworkImage(imageUrl),
+                  ),
+                ),
+              ),
+
+              // Upload More Pictures Button at bottom right
+              Positioned(
+                bottom: 10,
+                right: 16,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    showUploadPhotoBottomSheet(context);
+                  },
+                  icon: const Icon(Icons.add_a_photo, size: 20),
+                  label: const Text(
+                    "Upload More pics",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.pink,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 3,
                   ),
                 ),
               ),
