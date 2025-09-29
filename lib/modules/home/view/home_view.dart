@@ -154,7 +154,20 @@ class _HomeViewState extends State<HomeView> {
                       onDoubleTap: () async {
                         await usersController.toggleFavorite(userId);
                       },
-                      child: Image.network(imageUrl, fit: BoxFit.cover),
+                      child: imageUrl.isNotEmpty
+                          ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    "assets/images/profile_image1.png",
+                                    fit: BoxFit.cover,
+                                  ),
+                            )
+                          : Image.asset(
+                              "assets/images/profile_image1.png",
+                              fit: BoxFit.cover,
+                            ),
                     ),
 
                     Obx(() {

@@ -107,11 +107,11 @@ class InvitationPage extends StatelessWidget {
                           ),
                           child: ClipOval(
                             child:
-                                (invite.sender?.profilePic != null &&
-                                    invite.sender!.profilePic!.isNotEmpty)
+                                (invite.user1?.profilePic != null &&
+                                    invite.user1!.profilePic!.isNotEmpty)
                                 ? Image.network(
                                     ApiEndpoints.imgUrl +
-                                        invite.sender!.profilePic!,
+                                        invite.user1!.profilePic!,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Container(
@@ -165,7 +165,11 @@ class InvitationPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            invite.sender?.fullName ?? "Unknown User",
+                            "${invite.user1?.name?.firstName ?? ''} ${invite.user1?.name?.lastName ?? ''}"
+                                    .trim()
+                                    .isEmpty
+                                ? "Unknown User"
+                                : "${invite.user1?.name?.firstName ?? ''} ${invite.user1?.name?.lastName ?? ''}",
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
@@ -189,8 +193,9 @@ class InvitationPage extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: ElevatedButton(
-                                  onPressed: () =>
-                                      controller.acceptInvite(invite.id!),
+                                  onPressed: () => controller.acceptInvite(
+                                    invite.user1?.id ?? '',
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.green,
                                     foregroundColor: Colors.white,

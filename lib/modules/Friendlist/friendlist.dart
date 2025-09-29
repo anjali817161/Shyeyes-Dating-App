@@ -305,7 +305,8 @@ class FriendListScreen extends StatelessWidget {
                             //   ),
                             // );
                           },
-                          onDelete: () => controller.unfriendFriend(friend.id!),
+                          onDelete: () =>
+                              controller.unfriendFriend(friend.userId!),
                         );
                       },
                     );

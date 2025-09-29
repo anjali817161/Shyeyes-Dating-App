@@ -139,7 +139,7 @@ class _AboutViewState extends State<AboutView> {
 
               const SizedBox(height: 24),
 
-              _infoTile(theme, Icons.work, "Job", profileData.bio ?? ""),
+              _infoTile(theme, Icons.work, "Bio", profileData.bio ?? ""),
               _infoTile(
                 theme,
                 (profileData.gender?.toLowerCase() == "male")

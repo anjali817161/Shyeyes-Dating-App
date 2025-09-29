@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as ApiClient;
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/edit_profile/edit_model.dart';
@@ -146,6 +147,41 @@ class AuthRepository {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
     }
     return EditProfileModel.fromJson(jsonDecode(response.body));
+  }
+
+  /// Search Users API
+  static Future<Map<String, dynamic>?> searchUsers(String query) async {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+    print("Searching users with query: '$query' and token: $token");
+    print("URL: ${ApiEndpoints.baseUrl}search?q=$query");
+    try {
+      if (token == null) {
+        print("❌ No token found!");
+        return null;
+      }
+
+      final url = Uri.parse("${ApiEndpoints.baseUrl}search?q=$query");
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        print("❌ Search API failed: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("❌ Error in searchUsers: $e");
+      return null;
+    }
   }
 
   Future<ActiveUsersModel> getActiveUsers() async {
@@ -331,44 +367,42 @@ class AuthRepository {
     return http.Response.fromStream(streamedResponse);
   }
 
-// send request api
-static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
-  try {
-    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-    final Uri uri = Uri.parse(
-      "${ApiEndpoints.baseUrl2}$receiverId/${ApiEndpoints.sentRequest}",
-    );
+  // send request api
+  static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+      final Uri uri = Uri.parse(
+        "${ApiEndpoints.baseUrl2}$receiverId/${ApiEndpoints.sentRequest}",
+      );
 
-    final response = await http.post(
-      uri,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
 
-    print("Toggle Request Response: ${response.body}");
-    print("Receiver ID: $receiverId");
-    print("Status Code: ${response.statusCode}");
+      print("Toggle Request Response: ${response.body}");
+      print("Receiver ID: $receiverId");
+      print("Status Code: ${response.statusCode}");
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      // ✅ handle dono status codes
-      return jsonDecode(response.body);
-    } else {
-      return {
-        "message": "Failed",
-        "status_code": response.statusCode,
-        "body": response.body,
-      };
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // ✅ handle dono status codes
+        return jsonDecode(response.body);
+      } else {
+        return {
+          "message": "Failed",
+          "status_code": response.statusCode,
+          "body": response.body,
+        };
+      }
+    } catch (e) {
+      print("Error in toggleRequest: $e");
+      return null;
     }
-  } catch (e) {
-    print("Error in toggleRequest: $e");
-    return null;
   }
-}
-
-
 
   // static Future<Map<String, dynamic>?> cancelRequest(String requestId) async {
   //   try {
@@ -590,7 +624,7 @@ static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
 
   // you sent like show favorite
 
-  Future<http.Response> Sentlikes(String token,) {
+  Future<http.Response> Sentlikes(String token) {
     print("URL===== ${ApiEndpoints.likes + ApiEndpoints.sentrequestlike}");
     // print("Email: $email);
 
@@ -606,7 +640,7 @@ static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
 
   // show who likes my profiles
 
-   Future<http.Response> Showlikesprofiles(String token,) {
+  Future<http.Response> Showlikesprofiles(String token) {
     print("URL===== ${ApiEndpoints.likes + ApiEndpoints.showlikesprofiles}");
     // print("Email: $email);
 
@@ -621,7 +655,7 @@ static Future<Map<String, dynamic>?> sendRequest(String receiverId) async {
   }
   // upload more photo
 
-   Future<http.Response> Uploadmorephoto(String token,) {
+  Future<http.Response> Uploadmorephoto(String token) {
     print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.moreuploadphoto}");
     // print("Email: $email);
 

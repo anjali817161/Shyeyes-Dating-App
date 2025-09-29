@@ -130,24 +130,46 @@ class _UploadPhotoSheetState extends State<UploadPhotoSheet> {
               return GestureDetector(
                 onTap: () => pickImage(index),
                 child: DottedBorder(
+                  options: RectDottedBorderOptions(
+                    color: const Color.fromARGB(255, 226, 55, 69),
+                    strokeWidth: 2,
+                    dashPattern: [6, 3],
+                  ),
                   child: Container(
+                    height: 150, // 👈 fixed height for better layout
                     decoration: BoxDecoration(
                       color: Colors.pink.shade50,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
                       child: selectedImages[index] != null
-                          ? Image.file(
-                              File(selectedImages[index]!.path),
-                              fit: BoxFit.cover,
-                            )
-                          : Text(
-                              "Upload Image",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFFDF314D),
-                                fontWeight: FontWeight.w500,
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                File(selectedImages[index]!.path),
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
                               ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  Icons.cloud_upload_outlined, // 👈 Upload icon
+                                  size: 40,
+                                  color: Color(0xFFDF314D),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "Upload Image",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFFDF314D),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                     ),
                   ),

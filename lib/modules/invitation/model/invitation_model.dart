@@ -1,52 +1,115 @@
-class ReceivedRequest {
-  final String? id;
-  final Sender? sender;
-  final String? receiverId;
-  final String? status;
-  final String? createdAt;
-  final String? updatedAt;
+class RequestsModel {
+  List<RequestsResponse>? requests;
 
-  ReceivedRequest({
-    this.id,
-    this.sender,
-    this.receiverId,
-    this.status,
-    this.createdAt,
-    this.updatedAt,
-  });
+  RequestsModel({this.requests});
 
-  factory ReceivedRequest.fromJson(Map<String, dynamic> json) {
-    return ReceivedRequest(
-      id: json['_id'],
-      sender: json['user1'] != null
-          ? Sender.fromJson(json['user1'])
-          : null, // 👈 FIXED
-      receiverId: json['user2'], // 👈 FIXED
-      status: json['status'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-    );
+  RequestsModel.fromJson(Map<String, dynamic> json) {
+    if (json['requests'] != null) {
+      requests = <RequestsResponse>[];
+      json['requests'].forEach((v) {
+        requests!.add(RequestsResponse.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+    if (requests != null) {
+      data['requests'] = requests!.map((v) => v.toJson()).toList();
+    }
+    return data;
   }
 }
 
-class Sender {
-  final String? id;
-  final String? email;
-  final String? profilePic;
-  final String? firstName;
-  final String? lastName;
+class RequestsResponse {
+  String? id;
+  User1? user1;
+  String? user2;
+  String? status;
+  String? actionBy;
+  String? createdAt;
+  String? updatedAt;
+  int? v;
 
-  Sender({this.id, this.email, this.profilePic, this.firstName, this.lastName});
+  RequestsResponse({
+    this.id,
+    this.user1,
+    this.user2,
+    this.status,
+    this.actionBy,
+    this.createdAt,
+    this.updatedAt,
+    this.v,
+  });
 
-  factory Sender.fromJson(Map<String, dynamic> json) {
-    return Sender(
-      id: json['_id'],
-      email: json['email'],
-      profilePic: json['profilePic'],
-      firstName: json['Name']?['firstName'], // 👈 Correct mapping
-      lastName: json['Name']?['lastName'],
-    );
+  RequestsResponse.fromJson(Map<String, dynamic> json) {
+    id = json['_id'];
+    user1 = json['user1'] != null ? User1.fromJson(json['user1']) : null;
+    user2 = json['user2'];
+    status = json['status'];
+    actionBy = json['actionBy'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    v = json['__v'];
   }
 
-  String get fullName => "${firstName ?? ''} ${lastName ?? ''}".trim();
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+    data['_id'] = id;
+    if (user1 != null) data['user1'] = user1!.toJson();
+    data['user2'] = user2;
+    data['status'] = status;
+    data['actionBy'] = actionBy;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    data['__v'] = v;
+    return data;
+  }
+}
+
+class User1 {
+  String? id;
+  Name? name;
+  String? email;
+  int? age;
+  String? profilePic;
+
+  User1({this.id, this.name, this.email, this.age, this.profilePic});
+
+  User1.fromJson(Map<String, dynamic> json) {
+    id = json['_id'];
+    name = json['Name'] != null ? Name.fromJson(json['Name']) : null;
+    email = json['email'];
+    age = json['age'];
+    profilePic = json['profilePic'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+    data['_id'] = id;
+    if (name != null) data['Name'] = name!.toJson();
+    data['email'] = email;
+    data['age'] = age;
+    data['profilePic'] = profilePic;
+    return data;
+  }
+}
+
+class Name {
+  String? firstName;
+  String? lastName;
+
+  Name({this.firstName, this.lastName});
+
+  Name.fromJson(Map<String, dynamic> json) {
+    firstName = json['firstName'];
+    lastName = json['lastName'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+    };
+  }
 }

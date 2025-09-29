@@ -10,7 +10,7 @@ import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class InvitationController extends GetxController {
   var isLoading = false.obs;
-  var invitations = <ReceivedRequest>[].obs;
+  var invitations = <RequestsResponse>[].obs;
 
   /// Fetch all invitations
   Future<void> fetchInvitations() async {
@@ -21,7 +21,7 @@ class InvitationController extends GetxController {
       if (response != null && response['requests'] != null) {
         invitations.assignAll(
           (response['requests'] as List)
-              .map((json) => ReceivedRequest.fromJson(json))
+              .map((json) => RequestsResponse.fromJson(json))
               .toList(),
         );
       }
@@ -32,50 +32,49 @@ class InvitationController extends GetxController {
     }
   }
 
- /// Accept invitation
-  Future<void> acceptInvite(String invitationId) async {
-    try {
-      final response = await AuthRepository.acceptInvite(invitationId);
-      invitations.removeWhere((inv) => inv.id == invitationId);
+ Future<void> acceptInvite(String userId) async {
+  try {
+    final response = await AuthRepository.acceptInvite(userId);
+    invitations.removeWhere((inv) => inv.id == userId);
 
-      Get.snackbar(
-        'Success',
-        response?['message'] ?? 'Invitation accepted successfully',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      fetchInvitations();
-      Get.snackbar(
-        'Error',
-        'Failed to accept invitation: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
+    Get.snackbar(
+      'Success',
+      response?['message'] ?? 'Invitation accepted successfully',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
+  } catch (e) {
+    fetchInvitations();
+    Get.snackbar(
+      'Error',
+      'Failed to accept invitation: $e',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
   }
+}
 
-  /// Reject invitation
-  Future<void> cancelInvite(String invitationId) async {
-    try {
-      final response = await AuthRepository.cancelInvite(invitationId);
-      invitations.removeWhere((inv) => inv.id == invitationId);
+Future<void> cancelInvite(String userId) async {
+  try {
+    final response = await AuthRepository.cancelInvite(userId);
+    invitations.removeWhere((inv) => inv.id == userId);
 
-      Get.snackbar(
-        'Success',
-        response?['message'] ?? 'Invitation rejected successfully',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      fetchInvitations();
-      Get.snackbar(
-        'Error',
-        'Failed to reject invitation: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
+    Get.snackbar(
+      'Success',
+      response?['message'] ?? 'Invitation rejected successfully',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } catch (e) {
+    fetchInvitations();
+    Get.snackbar(
+      'Error',
+      'Failed to reject invitation: $e',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
   }
+}
+
 
 }

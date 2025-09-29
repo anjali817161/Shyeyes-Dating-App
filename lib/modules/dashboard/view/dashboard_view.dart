@@ -9,6 +9,7 @@ import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
+import 'package:shyeyes/modules/dashboard/controller/search_controller.dart';
 import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
@@ -28,6 +29,8 @@ class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final MusicController musicController = Get.find<MusicController>();
+  final searchController = Get.put(SearchFilterController());
+  final TextEditingController searchTextController = TextEditingController();
 
   final ActiveUsersController usersController = Get.put(
     ActiveUsersController(),
@@ -869,7 +872,88 @@ class _DashboardPageState extends State<DashboardPage> {
                     ],
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 10),
+
+                  // search bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
+                    ),
+                    child: TextField(
+                      controller: searchTextController,
+                      decoration: InputDecoration(
+                        hintText: "Search users...",
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                        suffixIcon: searchTextController.text.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear),
+                                onPressed: () {
+                                  searchTextController.clear();
+                                  searchController.results
+                                      .clear(); // also clear results
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (value) =>
+                          searchController.performSearch(value),
+                    ),
+                  ),
+
+                  // Search results list
+                  Obx(() {
+                    final query = searchTextController.text.trim();
+
+                    if (searchController.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (query.isEmpty || searchController.results.isEmpty) {
+                      return const SizedBox.shrink(); // hide completely
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: searchController.results.length,
+                      itemBuilder: (context, index) {
+                        final user = searchController.results[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage:
+                                user.profilePic != null &&
+                                    user.profilePic!.isNotEmpty
+                                ? NetworkImage(
+                                    "https://shyeyes-b.onrender.com/uploads/${user.profilePic}",
+                                  )
+                                : null,
+                            child:
+                                user.profilePic == null ||
+                                    user.profilePic!.isEmpty
+                                ? Icon(
+                                    Icons.person,
+                                    color: Colors.grey.shade200,
+                                  )
+                                : null,
+                          ),
+                          title: Text(user.fullName ?? "No Name"),
+                          subtitle: Text(user.email ?? "No email provided"),
+                          onTap: () {
+                            Get.to(() => AboutView(userId: user.id ?? ""));
+                          },
+                        );
+                      },
+                    );
+                  }),
+
+                  const SizedBox(height: 5),
 
                   //  New MembersR
                   sectionTitle("Active Now", () {

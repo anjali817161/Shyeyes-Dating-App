@@ -38,11 +38,15 @@ class FriendController extends GetxController {
         },
       );
       print(apiUrl);
+      print("body:----------${response.body}");
+      print("status code:--------${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final model = FriendListModel.fromJson(data);
-        friends.value = model.friends ?? [];
+        final model = FriendsModel.fromJson(data); // ✅ new model
+
+        // friends list ko data.friends se lo
+        friends.value = model.data?.friends ?? [];
         filteredFriends.value = friends; // 👈 populate filtered list
       } else {
         Get.snackbar("Error", "Failed to fetch friends");
@@ -93,8 +97,8 @@ class FriendController extends GetxController {
         Get.snackbar("Success", data["message"] ?? "Unfriended successfully");
 
         // Local list se bhi remove karo
-        friends.removeWhere((f) => f.id == friendId);
-        filteredFriends.removeWhere((f) => f.id == friendId);
+        friends.removeWhere((f) => f.userId == friendId);
+        filteredFriends.removeWhere((f) => f.userId == friendId);
       } else {
         Get.snackbar("Error", "Failed to unfriend");
       }
