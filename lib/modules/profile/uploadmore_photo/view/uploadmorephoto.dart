@@ -52,7 +52,7 @@ class _UploadPhotoSheetState extends State<UploadPhotoSheet> {
       isLoading = true;
     });
 
-    String token = SharedPrefHelper.getToken() as String; // get your token
+    String token = await SharedPrefHelper.getToken() ?? '';
     try {
       // Prepare multipart request
       var request = http.MultipartRequest(

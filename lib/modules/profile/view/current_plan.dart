@@ -1,41 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 
 void showPlanBottomSheet(BuildContext context) {
+  final ActivePlanController controller = Get.put(ActivePlanController());
+
   showModalBottomSheet(
-    backgroundColor: Color(0xFFFFF3F3),
+    backgroundColor: const Color(0xFFFFF3F3),
     context: context,
-    isScrollControlled: true, // Changed to false as per your comment
-    shape: RoundedRectangleBorder(
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
     ),
     builder: (context) {
       return SafeArea(
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.95,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  SizedBox(height: 20),
-                  _buildPlanTitle(),
-                  SizedBox(height: 12),
-                  _buildPricingSection(),
-                  SizedBox(height: 20),
-                  _buildFeaturesSection(),
-                  SizedBox(height: 24),
-                  _buildActionButtons(context),
-                  SizedBox(height: 10),
-                ],
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final plan = controller.activePlan.value;
+          if (plan == null) {
+            return const Center(child: Text("No Active Plan Found"));
+          }
+
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.95,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context),
+                    const SizedBox(height: 20),
+                    _buildPlanTitle(plan.planType ?? "Unknown"),
+                    const SizedBox(height: 12),
+                    _buildPricingSection(plan),
+                    const SizedBox(height: 20),
+                    _buildFeaturesSection(plan),
+                    const SizedBox(height: 24),
+                    _buildActionButtons(context),
+                    const SizedBox(height: 10),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       );
     },
   );
@@ -47,7 +62,7 @@ Widget _buildHeader(BuildContext context) {
       Expanded(
         child: Center(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -55,7 +70,7 @@ Widget _buildHeader(BuildContext context) {
                 BoxShadow(
                   color: Colors.red.shade100,
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -65,13 +80,13 @@ Widget _buildHeader(BuildContext context) {
                 Container(
                   width: 10,
                   height: 10,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.green,
                     shape: BoxShape.circle,
                   ),
                 ),
-                SizedBox(width: 8),
-                Text(
+                const SizedBox(width: 8),
+                const Text(
                   'Active Plan',
                   style: TextStyle(
                     fontSize: 18,
@@ -84,7 +99,6 @@ Widget _buildHeader(BuildContext context) {
           ),
         ),
       ),
-      // Cancel Icon - Top Right End
       GestureDetector(
         onTap: () => Navigator.pop(context),
         child: Container(
@@ -97,36 +111,35 @@ Widget _buildHeader(BuildContext context) {
               BoxShadow(
                 color: Colors.red.shade100,
                 blurRadius: 6,
-                offset: Offset(0, 2),
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Icon(Icons.close, size: 20, color: Color(0xFFDF314D)),
+          child: const Icon(Icons.close, size: 20, color: Color(0xFFDF314D)),
         ),
       ),
     ],
   );
 }
 
-// Baaki sab widgets wahi rahenge...
-Widget _buildPlanTitle() {
+Widget _buildPlanTitle(String title) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        'Starter Love Plan',
-        style: TextStyle(
+        title.toUpperCase(),
+        style: const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w800,
           color: Colors.black87,
         ),
       ),
-      SizedBox(height: 6),
+      const SizedBox(height: 6),
       Container(
         height: 3,
         width: 50,
         decoration: BoxDecoration(
-          color: Color(0xFFDF314D),
+          color: const Color(0xFFDF314D),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -134,9 +147,9 @@ Widget _buildPlanTitle() {
   );
 }
 
-Widget _buildPricingSection() {
+Widget _buildPricingSection(plan) {
   return Container(
-    padding: EdgeInsets.all(14),
+    padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(14),
@@ -144,7 +157,7 @@ Widget _buildPricingSection() {
         BoxShadow(
           color: Colors.red.shade50,
           blurRadius: 6,
-          offset: Offset(0, 2),
+          offset: const Offset(0, 2),
         ),
       ],
     ),
@@ -154,22 +167,22 @@ Widget _buildPricingSection() {
         Row(
           children: [
             Text(
-              '₹999',
+              "₹${plan.price ?? 0}",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Colors.green.shade700,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: Colors.green.shade50,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text(
-                'OFFER',
+                plan.isActive == true ? "ACTIVE" : "INACTIVE",
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
@@ -179,22 +192,36 @@ Widget _buildPricingSection() {
             ),
           ],
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         Text(
-          '₹999 Now, then ₹1999 / Month',
+          "Validity: ${plan.durationDays ?? 0} Days",
           style: TextStyle(
             fontSize: 13,
             color: Colors.grey.shade600,
             fontWeight: FontWeight.w500,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Row(
           children: [
-            Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
-            SizedBox(width: 5),
+            const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+            const SizedBox(width: 5),
             Text(
-              'Validity: 1 Month',
+              "Start: ${plan.startDate?.toLocal().toString().split(' ').first ?? ''}",
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            const Icon(Icons.calendar_month, size: 14, color: Colors.grey),
+            const SizedBox(width: 5),
+            Text(
+              "End: ${plan.endDate?.toLocal().toString().split(' ').first ?? ''}",
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade600,
@@ -208,11 +235,11 @@ Widget _buildPricingSection() {
   );
 }
 
-Widget _buildFeaturesSection() {
+Widget _buildFeaturesSection(plan) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
+      const Text(
         'Features',
         style: TextStyle(
           fontSize: 18,
@@ -220,7 +247,7 @@ Widget _buildFeaturesSection() {
           color: Colors.black87,
         ),
       ),
-      SizedBox(height: 10),
+      const SizedBox(height: 10),
       Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -229,7 +256,7 @@ Widget _buildFeaturesSection() {
             BoxShadow(
               color: Colors.red.shade50,
               blurRadius: 6,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -237,12 +264,22 @@ Widget _buildFeaturesSection() {
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-              _buildFeatureItem('View member profiles', Icons.visibility),
-              _buildFeatureItem('Send 10 messages daily', Icons.message),
-              _buildFeatureItem('Access public chat rooms', Icons.chat),
-              _buildFeatureItem('Video calling feature', Icons.video_call),
-              _buildFeatureItem('Priority matchmaking', Icons.favorite),
-              _buildFeatureItem('Access exclusive events', Icons.event),
+              _buildFeatureItem(
+                "Messages per day: ${plan.limits?.messagesPerDay ?? 0}",
+                Icons.message,
+              ),
+              _buildFeatureItem(
+                "Video time: ${(plan.limits?.videoTimeSeconds ?? 0) ~/ 60} mins",
+                Icons.video_call,
+              ),
+              _buildFeatureItem(
+                "Audio time: ${(plan.limits?.audioTimeSeconds ?? 0) ~/ 60} mins",
+                Icons.mic,
+              ),
+              _buildFeatureItem(
+                "Matches allowed: ${plan.limits?.matchesAllowed ?? "Unlimited"}",
+                Icons.favorite,
+              ),
             ],
           ),
         ),
@@ -265,7 +302,7 @@ Widget _buildFeatureItem(String text, IconData icon) {
           ),
           child: Icon(icon, size: 14, color: Colors.green.shade700),
         ),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
@@ -290,9 +327,7 @@ Widget _buildActionButtons(BuildContext context) {
         height: 48,
         child: ElevatedButton(
           onPressed: () {
-            Navigator.pop(
-              context,
-            ); // pehle current sheet band kar do (agar khuli hai)
+            Navigator.pop(context);
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
@@ -308,13 +343,13 @@ Widget _buildActionButtons(BuildContext context) {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Text(
+          child: const Text(
             'Upgrade Now',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
       ),
-      SizedBox(height: 8),
+      const SizedBox(height: 8),
       SizedBox(
         width: double.infinity,
         height: 44,
@@ -326,7 +361,7 @@ Widget _buildActionButtons(BuildContext context) {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Text(
+          child: const Text(
             'Maybe Later',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),

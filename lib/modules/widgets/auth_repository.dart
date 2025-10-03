@@ -268,6 +268,35 @@ class AuthRepository {
     print("Token after logout: $token");
   }
 
+  static Future<Map<String, dynamic>?> getActivePlan() async {
+    try {
+      final String token = await SharedPrefHelper.getToken() ?? "NULL";
+
+      final response = await http.get(
+        Uri.parse("https://shyeyes-b.onrender.com/api/plans/remaining"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+        },
+      );
+
+      print("getActivePlan Response: ${response.body}");
+      print("Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      } else {
+        print(
+          "❌ getActivePlan failed: ${response.statusCode} ${response.body}",
+        );
+        return null;
+      }
+    } catch (e) {
+      print("❌ getActivePlan Exception: $e");
+      return null;
+    }
+  }
+
   // Future<Message> sendMessage(int receiverId, String text) async {
   //   final String? token = await SharedPrefHelper.getToken();
   //   print("Token from SharedPref: $token");
@@ -668,6 +697,4 @@ class AuthRepository {
       },
     );
   }
-
-  
 }
