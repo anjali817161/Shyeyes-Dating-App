@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/Friendlist/friendlist.dart';
+import 'package:shyeyes/modules/blockedUsers/view/blocked_view.dart';
 import 'package:shyeyes/modules/pending_requests/view/pending_request_view.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
@@ -53,6 +54,13 @@ class CustomDrawer extends StatelessWidget {
         label: 'Pending Requests',
         ontap: () {
           Get.to(() => PendingRequestView());
+        },
+      ),
+      _DrawerItem(
+        icon: Icons.block,
+        label: 'Blocked',
+        ontap: () {
+          Get.to(() => BlockedUserView());
         },
       ),
       _DrawerItem(

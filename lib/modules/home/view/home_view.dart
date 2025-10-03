@@ -15,7 +15,7 @@ import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
-import 'package:shyeyes/modules/profile/model/current_plan.dart';
+import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
@@ -120,7 +120,9 @@ class _HomeViewState extends State<HomeView> {
                       ? "https://shyeyes-b.onrender.com/uploads/${userData.profilePic}"
                       : "https://picsum.photos/seed/$index/600/800"; // stable fallback
 
-                  name = userData.name ?? 'No Name';
+                  name =
+                      "${userData.name?.firstName ?? ''} ${userData.name?.lastName ?? ''}";
+
                   age = userData.age ?? 0;
                   if (userData.location != null) {
                     location =
@@ -133,12 +135,12 @@ class _HomeViewState extends State<HomeView> {
                   final BestmatchModel match = user as BestmatchModel;
                   userId = match.id ?? '';
                   name = match.name ?? '';
+
+                  // Use only profilePic with a fallback
                   imageUrl =
                       (match.profilePic != null && match.profilePic!.isNotEmpty)
                       ? "https://shyeyes-b.onrender.com/uploads/${match.profilePic}"
-                      : (match.photos?.isNotEmpty == true
-                            ? "https://shyeyes-b.onrender.com/uploads/${match.photos!.first}"
-                            : "https://picsum.photos/seed/$index/600/800"); // stable fallback
+                      : "https://picsum.photos/seed/$index/600/800"; // stable fallback
 
                   age = match.age ?? 0;
                   location = match.location != null
@@ -265,57 +267,213 @@ class _HomeViewState extends State<HomeView> {
                                             ),
                                           ),
                                           Obx(() {
-                                            final isRequestPending =
-                                                usersController.isRequestSent(
-                                                  userId,
-                                                );
+                                            final userId =
+                                                widget.viewType ==
+                                                    HomeViewType.activeUsers
+                                                ? (user as Users).id ?? ""
+                                                : (user as BestmatchModel).id ??
+                                                      "";
+
+                                            final status =
+                                                widget.viewType ==
+                                                    HomeViewType.activeUsers
+                                                ? ((user as Users)
+                                                              .friendshipStatus ??
+                                                          "none")
+                                                      .toLowerCase()
+                                                : ((user as BestmatchModel)
+                                                              .status ??
+                                                          "none")
+                                                      .toLowerCase();
+
                                             final isLoading =
                                                 usersController
                                                     .requestLoading[userId] ??
                                                 false;
 
-                                            return GestureDetector(
-                                              onTap: () async {
-                                                if (isLoading) return;
-                                                await usersController
-                                                    .sendRequest(userId);
-                                              },
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                  left: 12,
-                                                  top: 8,
+                                            Widget buildStatusText(
+                                              IconData icon,
+                                              String text,
+                                              Color color,
+                                            ) {
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: color.withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  border: Border.all(
+                                                    color: color,
+                                                    width: 1.5,
+                                                  ),
                                                 ),
-                                                decoration: const BoxDecoration(
-                                                  color: Colors.white,
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black12,
-                                                      blurRadius: 6,
-                                                      offset: Offset(0, 2),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      icon,
+                                                      color: color,
+                                                      size: 16,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Text(
+                                                      text,
+                                                      style: TextStyle(
+                                                        color: color,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 13,
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
-                                                padding: const EdgeInsets.all(
-                                                  12,
-                                                ),
-                                                child: isLoading
-                                                    ? const SizedBox(
-                                                        width: 20,
-                                                        height: 20,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              strokeWidth: 2,
+                                              );
+                                            }
+
+                                            if (status == "friend" ||
+                                                status == "accepted") {
+                                              return buildStatusText(
+                                                Icons.check_circle,
+                                                "Friends",
+                                                Colors.green,
+                                              );
+                                            }
+                                            //  else if (status == "requested") {
+                                            //   // ✅ Sirf text
+                                            //   return buildStatusText(
+                                            //     Icons.hourglass_top,
+                                            //     "Requested",
+                                            //     Colors.orange,
+                                            //   );
+                                            // }
+                                            else if (status == "pending" ||
+                                                status == "requested") {
+                                              // Cancel button (image)
+                                              return GestureDetector(
+                                                onTap: isLoading
+                                                    ? null
+                                                    : () async {
+                                                        await usersController
+                                                            .sendRequest(
+                                                              userId,
+                                                            ); // cancel karega
+                                                      },
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(
+                                                    left: 12,
+                                                    top: 8,
+                                                  ),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        color: Colors.white,
+                                                        shape: BoxShape.circle,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color:
+                                                                Colors.black12,
+                                                            blurRadius: 6,
+                                                            offset: Offset(
+                                                              0,
+                                                              2,
                                                             ),
-                                                      )
-                                                    : Image.asset(
-                                                        isRequestPending
-                                                            ? "assets/images/png_cancelr.png" // request pending → cancel image
-                                                            : "assets/images/invite.png", // no request → send image
-                                                        scale: 17,
+                                                          ),
+                                                        ],
                                                       ),
-                                              ),
-                                            );
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: isLoading
+                                                      ? const SizedBox(
+                                                          width: 20,
+                                                          height: 20,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                              ),
+                                                        )
+                                                      : Image.asset(
+                                                          "assets/images/png_cancelr.png",
+                                                          scale: 17,
+                                                        ),
+                                                ),
+                                              );
+                                            } else if (status == "blocked") {
+                                              return buildStatusText(
+                                                Icons.block,
+                                                "Blocked",
+                                                Colors.red,
+                                              );
+                                            } else if (status == "unblocked") {
+                                              return buildStatusText(
+                                                Icons.lock_open,
+                                                "Unblocked",
+                                                Colors.grey,
+                                              );
+                                            } else if (status == "none" ||
+                                                status == "cancelled" ||
+                                                status == "new") {
+                                              // ✅ Send request (image button only)
+                                              return GestureDetector(
+                                                onTap: isLoading
+                                                    ? null
+                                                    : () async {
+                                                        await usersController
+                                                            .sendRequest(
+                                                              userId,
+                                                            ); // send request karega
+                                                      },
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(
+                                                    left: 12,
+                                                    top: 8,
+                                                  ),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        color: Colors.white,
+                                                        shape: BoxShape.circle,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color:
+                                                                Colors.black12,
+                                                            blurRadius: 6,
+                                                            offset: Offset(
+                                                              0,
+                                                              2,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: isLoading
+                                                      ? const SizedBox(
+                                                          width: 20,
+                                                          height: 20,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                              ),
+                                                        )
+                                                      : Image.asset(
+                                                          "assets/images/invite.png",
+                                                          scale: 17,
+                                                        ),
+                                                ),
+                                              );
+                                            } else {
+                                              // ✅ Default → Requested text
+                                              return buildStatusText(
+                                                Icons.hourglass_top,
+                                                "Requested",
+                                                Colors.green,
+                                              );
+                                            }
                                           }),
                                         ],
                                       ),
@@ -337,13 +495,73 @@ class _HomeViewState extends State<HomeView> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Obx(() {
-                            final isLiked = usersController.isLiked(userId);
+                            // Determine users list based on viewType
+                            final users =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? usersController.users
+                                : usersController.matches;
+
+                            if (users.isEmpty) return const SizedBox.shrink();
+
+                            // Clamp _currentIndex to valid range
+                            final currentIndexSafe =
+                                (_currentIndex < users.length)
+                                ? _currentIndex
+                                : users.length - 1;
+
+                            // Get current user safely
+                            final currentUser =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? (users[currentIndexSafe] as Users)
+                                : (users[currentIndexSafe] as BestmatchModel);
+
+                            final String userId =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? (currentUser as Users).id ?? ""
+                                : (currentUser as BestmatchModel).id ?? "";
+
+                            // Determine if user is liked (API likedByMe or recently liked locally)
+                            final bool isLiked =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? ((currentUser as Users).likedByMe ?? false) ||
+                                      usersController.recentlyLikedUsers
+                                          .contains(userId)
+                                : ((currentUser as BestmatchModel).likedByMe ??
+                                          false) ||
+                                      usersController.recentlyLikedUsers
+                                          .contains(userId);
+
                             return buildActionButton(
                               isLiked ? Icons.favorite : Icons.favorite_border,
                               isLiked ? Colors.red : Colors.grey,
                               30,
                               () async {
-                                await usersController.toggleFavorite(userId);
+                                // Optimistic toggle
+                                if (isLiked) {
+                                  usersController.recentlyLikedUsers.remove(
+                                    userId,
+                                  );
+                                } else {
+                                  usersController.recentlyLikedUsers.add(
+                                    userId,
+                                  );
+                                }
+
+                                // Call API after local update
+                                try {
+                                  await usersController.toggleFavorite(userId);
+                                } catch (e) {
+                                  // Rollback if API fails
+                                  if (isLiked) {
+                                    usersController.recentlyLikedUsers.add(
+                                      userId,
+                                    );
+                                  } else {
+                                    usersController.recentlyLikedUsers.remove(
+                                      userId,
+                                    );
+                                  }
+                                }
                               },
                             );
                           }),

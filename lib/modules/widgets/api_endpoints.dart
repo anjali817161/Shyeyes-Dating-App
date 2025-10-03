@@ -43,4 +43,5 @@ class ApiEndpoints {
   static const String sentrequestlike = "sent";
   static const String showlikesprofiles = "received";
   static const String moreuploadphoto = "photos";
+  static const String plans = "plans";
 }

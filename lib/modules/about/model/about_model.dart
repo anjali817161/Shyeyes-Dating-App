@@ -55,6 +55,7 @@ class User {
   DateTime? createdAt;
   DateTime? updatedAt;
   int? likeCount;
+  final bool? likedByMe;
 
   User({
     this.name,
@@ -78,6 +79,7 @@ class User {
     this.createdAt,
     this.updatedAt,
     this.likeCount,
+    this.likedByMe,
   });
 
   factory User.fromJson(Map<String, dynamic>? json) => User(
@@ -111,6 +113,7 @@ class User {
         updatedAt:
             json?["updatedAt"] != null ? DateTime.tryParse(json?["updatedAt"]) : null,
         likeCount: json?["likeCount"],
+        likedByMe: json?["likedByMe"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -135,6 +138,7 @@ class User {
         "createdAt": createdAt?.toIso8601String(),
         "updatedAt": updatedAt?.toIso8601String(),
         "likeCount": likeCount,
+        "likedByMe": likedByMe,
       };
 }
 

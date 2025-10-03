@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
-import 'package:shyeyes/modules/profile/model/current_plan.dart';
+import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
@@ -61,11 +61,10 @@ class ActiveUsersController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final decoded = json.decode(response.body);
-        if (decoded['matches'] != null && decoded['matches'] is List) {
-          matches.value = (decoded['matches'] as List)
-              .map((e) => BestmatchModel.fromJson(e))
-              .toList();
+        final result = BestMatchResponse.fromJson(json.decode(response.body));
+
+        if (result.data?.matches != null) {
+          matches.value = result.data!.matches!;
         } else {
           matches.clear();
         }
@@ -95,43 +94,48 @@ class ActiveUsersController extends GetxController {
       final response = await AuthRepository.sendRequest(receiverId);
 
       if (response != null) {
-        final bool sent = response['sent'] ?? false;
-
-        // ✅ Backend se aaya status use karo
-        final status = (response['status'] ?? "Cancelled").toLowerCase();
+        final status = (response['status'] ?? "cancelled").toLowerCase();
         requestStatus[receiverId] = status;
 
-        if (sent && status == "pending") {
-          // request sent hai
-          final requestId = response['request']?['_id'];
-          if (requestId != null) {
-            sentRequests[receiverId] = requestId;
-          }
-
-          Get.closeAllSnackbars();
-          Get.snackbar(
-            "Success",
-            "Friend request sent successfully!",
-            snackPosition: SnackPosition.TOP,
+        // ✅ Active Users list me update karo
+        final userIndex = users.indexWhere((u) => u.id == receiverId);
+        if (userIndex != -1) {
+          users[userIndex] = Users(
+            id: users[userIndex].id,
+            name: users[userIndex].name,
+            age: users[userIndex].age,
+            bio: users[userIndex].bio,
+            profilePic: users[userIndex].profilePic,
+            hobbies: users[userIndex].hobbies,
+            location: users[userIndex].location,
+            friendshipStatus: status, // 👈 yaha update
           );
-        } else if (!sent && status == "cancelled") {
-          // request cancel hai
-          sentRequests.remove(receiverId);
-
-          Get.closeAllSnackbars();
-          Get.snackbar(
-            "Success",
-            "Friend request cancelled successfully!",
-            snackPosition: SnackPosition.TOP,
-          );
+          users.refresh();
         }
-      } else {
-        Get.closeAllSnackbars();
-        Get.snackbar(
-          "Error",
-          "Something went wrong",
-          snackPosition: SnackPosition.TOP,
-        );
+
+        // ✅ Best Matches list me update karo
+        final matchIndex = matches.indexWhere((m) => m.id == receiverId);
+        if (matchIndex != -1) {
+          matches[matchIndex] = BestmatchModel(
+            id: matches[matchIndex].id,
+            age: matches[matchIndex].age,
+            bio: matches[matchIndex].bio,
+            status: status, // 👈 yaha update
+            likedByMe: matches[matchIndex].likedByMe,
+            profilePic: matches[matchIndex].profilePic,
+            hobbies: matches[matchIndex].hobbies,
+            name: matches[matchIndex].name,
+            location: matches[matchIndex].location,
+          );
+          matches.refresh();
+        }
+
+        // ✅ Snackbar
+        if (status == "pending") {
+          Get.snackbar("Success", "Friend request sent successfully!");
+        } else {
+          Get.snackbar("Success", "Friend request cancelled successfully!");
+        }
       }
     } finally {
       requestLoading[receiverId] = false;

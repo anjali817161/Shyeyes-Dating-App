@@ -286,63 +286,142 @@ class _DashboardPageState extends State<DashboardPage> {
 
                     Obx(() {
                       final receiverId = profile.id ?? "";
-                      final status =
-                          usersController.requestStatus[receiverId] ?? "none";
+                      final status = (profile.status ?? "none").toLowerCase();
                       final loading =
                           usersController.requestLoading[receiverId] ?? false;
 
-                      return SizedBox(
-                        width: 140,
-                        height: 36,
-                        child: ElevatedButton(
-                          onPressed: loading
-                              ? null
-                              : () async {
-                                  await usersController.sendRequest(receiverId);
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: status == "pending"
-                                ? Colors.red
-                                : Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
-                            shape: const StadiumBorder(),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
+                      Widget statusText(
+                        IconData icon,
+                        String text,
+                        Color color,
+                      ) {
+                        return Container(
+                          width: 150,
+                          height: 38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: color, width: 1.5),
                           ),
-                          child: loading
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      status == "pending"
-                                          ? Icons.cancel
-                                          : Icons.send,
-                                      size: 16,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(icon, color: color, size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                text,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      if (status == "accepted") {
+                        return statusText(
+                          Icons.check_circle,
+                          "Friends",
+                          Colors.green,
+                        );
+                      } else if (status == "pending" || status == "requested") {
+                        return SizedBox(
+                          width: 150,
+                          height: 38,
+                          child: ElevatedButton(
+                            onPressed: loading
+                                ? null
+                                : () async {
+                                    await usersController.sendRequest(
+                                      receiverId,
+                                    ); // cancel karega
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: loading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
                                       color: Colors.white,
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      status == "pending" ? "Cancel" : "Send",
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.cancel, size: 16),
+                                      SizedBox(width: 6),
+                                      Text("Cancel"),
+                                    ],
+                                  ),
+                          ),
+                        );
+                      } else if (status == "cancelled" || status == "none") {
+                        return SizedBox(
+                          width: 150,
+                          height: 38,
+                          child: ElevatedButton(
+                            onPressed: loading
+                                ? null
+                                : () async {
+                                    await usersController.sendRequest(
+                                      receiverId,
+                                    ); // send karega
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: loading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
                                     ),
-                                  ],
-                                ),
-                        ),
-                      );
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.send, size: 16),
+                                      SizedBox(width: 6),
+                                      Text("Send"),
+                                    ],
+                                  ),
+                          ),
+                        );
+                      } else if (status == "friend") {
+                        return statusText(
+                          Icons.check_circle,
+                          "Friends",
+                          Colors.green,
+                        );
+                      } else if (status == "blocked") {
+                        return statusText(Icons.block, "Blocked", Colors.red);
+                      } else if (status == "unblocked") {
+                        return statusText(
+                          Icons.lock_open,
+                          "Unblocked",
+                          Colors.grey,
+                        );
+                      } else {
+                        // ✅ default me Requested + icon
+                        return statusText(
+                          Icons.hourglass_top,
+                          "Requested",
+                          Colors.green,
+                        );
+                      }
                     }),
 
                     const SizedBox(height: 8),
@@ -722,12 +801,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     SizedBox(
                       width: 72,
                       child: Text(
-                        profile.name ?? "",
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                        "${profile.name?.firstName ?? ''} ${profile.name?.lastName ?? ''}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          overflow: TextOverflow.ellipsis,
+
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

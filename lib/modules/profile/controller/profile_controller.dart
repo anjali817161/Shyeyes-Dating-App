@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/edit_profile/edit_model.dart';
-import 'package:shyeyes/modules/profile/model/current_plan.dart';
+import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 // adjust path if needed
 

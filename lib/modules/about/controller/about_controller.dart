@@ -23,6 +23,8 @@ class AboutController extends GetxController {
           "Authorization": "Bearer $token",
         },
       );
+      print(" Response Status: ${response.statusCode}");
+      print(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = json.decode(response.body);

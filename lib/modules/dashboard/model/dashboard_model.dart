@@ -57,29 +57,38 @@ class Data {
 class Users {
   String? id;
   int? age;
+  String? gender;
   Location? location;
   String? bio;
   List<String>? hobbies;
+  List<String>? photos;
   dynamic profilePic;
   String? friendshipStatus;
+  List<Friend>? friendsList;
   int? mutualFriendsCount;
-  String? name;
+  bool likedByMe;
+  Name? name;
 
   Users({
     this.id,
     this.age,
+    this.gender,
     this.location,
     this.bio,
     this.hobbies,
+    this.photos,
     this.profilePic,
     this.friendshipStatus,
+    this.friendsList,
     this.mutualFriendsCount,
+    this.likedByMe = false,
     this.name,
   });
 
   factory Users.fromJson(Map<String, dynamic> json) => Users(
     id: json["_id"],
     age: json["age"],
+    gender: json["gender"],
     location: json["location"] != null
         ? Location.fromJson(json["location"])
         : null,
@@ -87,24 +96,52 @@ class Users {
     hobbies: json["hobbies"] != null
         ? List<String>.from(json["hobbies"].map((x) => x))
         : null,
+    photos: json["photos"] != null
+        ? List<String>.from(json["photos"].map((x) => x))
+        : null,
     profilePic: json["profilePic"],
     friendshipStatus: json["friendshipStatus"],
+    friendsList: json["friendsList"] != null
+        ? List<Friend>.from(json["friendsList"].map((x) => Friend.fromJson(x)))
+        : null,
     mutualFriendsCount: json["mutualFriendsCount"],
-    name: json["name"],
+    likedByMe: json["likedByMe"] ?? false,
+    name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
   );
 
   Map<String, dynamic> toJson() => {
     "_id": id,
     "age": age,
+    "gender": gender,
     "location": location?.toJson(),
     "bio": bio,
     "hobbies": hobbies != null
         ? List<dynamic>.from(hobbies!.map((x) => x))
         : null,
+    "photos": photos != null ? List<dynamic>.from(photos!.map((x) => x)) : null,
     "profilePic": profilePic,
     "friendshipStatus": friendshipStatus,
+    "friendsList": friendsList != null
+        ? List<dynamic>.from(friendsList!.map((x) => x.toJson()))
+        : null,
     "mutualFriendsCount": mutualFriendsCount,
-    "name": name,
+    "likedByMe": likedByMe,
+    "Name": name?.toJson(),
+  };
+}
+
+class Name {
+  String? firstName;
+  String? lastName;
+
+  Name({this.firstName, this.lastName});
+
+  factory Name.fromJson(Map<String, dynamic> json) =>
+      Name(firstName: json["firstName"], lastName: json["lastName"]);
+
+  Map<String, dynamic> toJson() => {
+    "firstName": firstName,
+    "lastName": lastName,
   };
 }
 
@@ -118,4 +155,24 @@ class Location {
       Location(city: json["city"], country: json["country"]);
 
   Map<String, dynamic> toJson() => {"city": city, "country": country};
+}
+
+class Friend {
+  String? id;
+  Name? name;
+  String? profilePic;
+
+  Friend({this.id, this.name, this.profilePic});
+
+  factory Friend.fromJson(Map<String, dynamic> json) => Friend(
+    id: json["_id"],
+    name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
+    profilePic: json["profilePic"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "_id": id,
+    "Name": name?.toJson(),
+    "profilePic": profilePic,
+  };
 }

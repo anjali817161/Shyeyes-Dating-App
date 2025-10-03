@@ -3,8 +3,11 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
+import 'package:shyeyes/modules/about/controller/block_controller.dart';
 import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
 import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
+import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class AboutView extends StatefulWidget {
   final String userId;
@@ -17,8 +20,10 @@ class AboutView extends StatefulWidget {
 
 class _AboutViewState extends State<AboutView> {
   final AboutController controller = Get.put(AboutController());
+  final userController = Get.find<ActiveUsersController>();
+  final BlockController blockController = Get.put(BlockController());
 
-  bool isLiked = false;
+  // bool isLiked = false;
   bool playHeartAnimation = false;
 
   @override
@@ -75,16 +80,33 @@ class _AboutViewState extends State<AboutView> {
                         profileData.profilePic != null &&
                             profileData.profilePic!.isNotEmpty
                         ? Image.network(
-                            profileData.profilePic!,
+                            ApiEndpoints.imgUrl + profileData.profilePic!,
                             height: 320,
                             width: double.infinity,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              // If image fails to load, show fallback
+                              return Container(
+                                height: 320,
+                                width: double.infinity,
+                                color: Colors.grey[200],
+                                child: const Icon(
+                                  Icons.account_circle,
+                                  size: 120,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
                           )
-                        : Image.asset(
-                            "assets/images/profile_image1.png",
+                        : Container(
                             height: 320,
                             width: double.infinity,
-                            fit: BoxFit.cover,
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.account_circle,
+                              size: 120,
+                              color: Colors.grey,
+                            ),
                           ),
                   ),
 
@@ -182,21 +204,62 @@ class _AboutViewState extends State<AboutView> {
                 child: _actionButton(theme, "Share Profile"),
               ),
 
-              // Block Button
-              GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => BlockReasonBottomSheet(
-                      onReasonSelected: (reason) {
-                        Navigator.pop(context);
-                      },
+              // Block / Unblock Button
+              Obx(() {
+                final profileData = controller.aboutModel.value?.user;
+                final isBlockedFromApi =
+                    profileData?.status?.toLowerCase() == "blocked";
+
+                // Agar API se "Blocked" mila to wahi dikhao
+                final isBlocked =
+                    isBlockedFromApi || blockController.isBlocked.value;
+
+                return GestureDetector(
+                  onTap: () async {
+                    await blockController.toggleBlockUser(widget.userId);
+
+                    // Toggle ke baad API ko dobara call karke status fresh kar lo
+                    await controller.fetchUserProfile(widget.userId);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: isBlocked
+                          ? theme
+                                .colorScheme
+                                .primary // blocked hai toh primary color
+                          : theme.colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-                child: _actionButton(theme, "Block User"),
-              ),
+                    child: Center(
+                      child: blockController.isLoading.value
+                          ? const CircularProgressIndicator(strokeWidth: 2)
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isBlocked ? Icons.block_flipped : Icons.block,
+                                  color: isBlocked
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onSurface,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isBlocked ? "Unblock User" : "Block User",
+                                  style: TextStyle(
+                                    color: isBlocked
+                                        ? theme.colorScheme.onPrimary
+                                        : theme.colorScheme.onSurface,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                );
+              }),
 
               // Report Button
               GestureDetector(
@@ -366,49 +429,59 @@ class _AboutViewState extends State<AboutView> {
         const SizedBox(width: 16),
 
         // Like button with animation
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              isLiked = !isLiked;
-              if (isLiked) {
-                playHeartAnimation = true;
-              }
-            });
-          },
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: theme.colorScheme.surfaceVariant,
-                child: Icon(
-                  isLiked ? Icons.favorite : Icons.favorite_border_outlined,
-                  color: Colors.redAccent,
-                  size: 28,
-                ),
-              ),
+        Obx(() {
+          final isLiked =
+              controller.aboutModel.value?.user?.likedByMe ??
+              false; // ✅ API se direct check
 
-              if (playHeartAnimation)
-                Positioned(
-                  top: -77,
-                  child: Lottie.asset(
-                    'assets/lotties/newHeart.json',
-                    width: 200,
-                    height: 200,
-                    repeat: false,
-                    onLoaded: (composition) {
-                      Future.delayed(composition.duration, () {
-                        if (mounted) {
-                          setState(() => playHeartAnimation = false);
-                        }
-                      });
-                    },
+          return GestureDetector(
+            onTap: () async {
+              await userController.toggleFavorite(widget.userId);
+
+              // Toggle ke baad API call karke refresh karna hoga
+              await controller.fetchUserProfile(widget.userId);
+
+              if (controller.aboutModel.value?.user?.likedByMe == true) {
+                setState(() {
+                  playHeartAnimation = true;
+                });
+              }
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: theme.colorScheme.surfaceVariant,
+                  child: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border_outlined,
+                    color: Colors.redAccent,
+                    size: 28,
                   ),
                 ),
-            ],
-          ),
-        ),
+
+                if (playHeartAnimation)
+                  Positioned(
+                    top: -77,
+                    child: Lottie.asset(
+                      'assets/lotties/newHeart.json',
+                      width: 200,
+                      height: 200,
+                      repeat: false,
+                      onLoaded: (composition) {
+                        Future.delayed(composition.duration, () {
+                          if (mounted) {
+                            setState(() => playHeartAnimation = false);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }),
       ],
     );
   }

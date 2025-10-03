@@ -3,7 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
-import 'package:shyeyes/modules/profile/model/current_plan.dart';
+import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/profile/uploadmore_photo/view/uploadmorephoto.dart';
 
 class UserProfilePage extends StatefulWidget {
