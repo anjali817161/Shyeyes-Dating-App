@@ -33,7 +33,7 @@ class SharedPrefHelper {
     await prefs.remove(_userPicKey);
   }
 
-  /// ✅ Save user details
+  ///  Save user details
   static Future<void> saveUserId(String id) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userIdKey, id);

@@ -90,7 +90,7 @@ class FriendController extends GetxController {
       print("body:----------${response.body}");
       print("status code:--------${response.statusCode}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
 
         // Snackbar message from API

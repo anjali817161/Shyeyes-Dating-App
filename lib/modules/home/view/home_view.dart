@@ -17,6 +17,7 @@ import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
 
@@ -565,25 +566,67 @@ class _HomeViewState extends State<HomeView> {
                               },
                             );
                           }),
+buildActionButton(
+  Icons.call,
+  Colors.teal[400]!,
+  30,
+  () async {
+    final currentUser = widget.viewType == HomeViewType.activeUsers
+        ? (users[_currentIndex] as Users)
+        : (users[_currentIndex] as BestmatchModel);
 
-                          buildActionButton(
-                            Icons.call,
-                            Colors.teal[400]!,
-                            30,
-                            () {
-                              Get.to(AudioCallScreen());
-                              // _showSubscriptionDialog(context, theme, true);
-                            },
-                          ),
-                          buildActionButton(
-                            Icons.video_call,
-                            Colors.lightBlueAccent,
-                            32,
-                            () {
-                              Get.to(VideoCallScreen());
-                              //_showSubscriptionDialog(context, theme, false);
-                            },
-                          ),
+    final String receiverId = widget.viewType == HomeViewType.activeUsers
+        ? (currentUser as Users).id ?? ""
+        : (currentUser as BestmatchModel).id ?? "";
+
+    final String receiverName = widget.viewType == HomeViewType.activeUsers
+        ? "${(currentUser as Users).name?.firstName ?? ''} ${(currentUser).name?.lastName ?? ''}"
+        : (currentUser as BestmatchModel).name ?? "";
+
+    // ✅ अब call screen पर real user data भेजेंगे
+   final myUserId = await SharedPrefHelper.getUserId();
+final myUserName = await SharedPrefHelper.getUserName();
+final myUserPic = await SharedPrefHelper.getUserPic();
+
+Get.to(() => VideoCallPage(
+  roomID: "room_$receiverId",   // receiver id से unique room बनाओ
+  userID: myUserId ?? "",       // ✅ caller id (from SharedPref)
+  userName: myUserName ?? "",   // ✅ caller name (from SharedPref)
+));
+
+  },
+),
+
+buildActionButton(
+  Icons.video_call,
+  Colors.lightBlueAccent,
+  32,
+  () async {
+    final currentUser = widget.viewType == HomeViewType.activeUsers
+        ? (users[_currentIndex] as Users)
+        : (users[_currentIndex] as BestmatchModel);
+
+    final String receiverId = widget.viewType == HomeViewType.activeUsers
+        ? (currentUser as Users).id ?? ""
+        : (currentUser as BestmatchModel).id ?? "";
+
+    final String receiverName = widget.viewType == HomeViewType.activeUsers
+        ? "${(currentUser as Users).name?.firstName ?? ''} ${(currentUser).name?.lastName ?? ''}"
+        : (currentUser as BestmatchModel).name ?? "";
+
+ final myUserId = await SharedPrefHelper.getUserId();
+final myUserName = await SharedPrefHelper.getUserName();
+final myUserPic = await SharedPrefHelper.getUserPic();
+
+Get.to(() => VideoCallPage(
+  roomID: "room_$receiverId",   // receiver id से unique room बनाओ
+  userID: myUserId ?? "",       // ✅ caller id (from SharedPref)
+  userName: myUserName ?? "",   // ✅ caller name (from SharedPref)
+));
+
+  },
+),
+
                           buildActionButton(
                             Icons.chat,
                             Colors.blueAccent,
