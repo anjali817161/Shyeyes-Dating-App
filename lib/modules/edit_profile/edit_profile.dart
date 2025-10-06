@@ -268,40 +268,63 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final ProfileController controller =
-                            Get.find<ProfileController>();
+                    child: Obx(() {
+                      final ProfileController controller =
+                          Get.find<ProfileController>();
+                      final bool isLoading = controller.isLoading.value;
 
-                        await controller.updateProfile(
-                          fullName: nameController.text.trim(),
-                          email: emailController.text.trim(),
-                          phone: phoneController.text.trim(),
-                          age: ageController.text.trim(),
-                          dob: dobController.text.trim(),
-                          gender: genderController.text.trim(),
-                          location: locationController.text.trim(),
-                          bio: aboutController.text.trim(),
-                          hobbies: hobbiesController.text.trim(),
-                          img: _imageFile,
-                        );
+                      return ElevatedButton(
+                        onPressed: isLoading
+                            ? null // Disable button when loading
+                            : () async {
+                                await controller.updateProfile(
+                                  fullName: nameController.text.trim(),
+                                  email: emailController.text.trim(),
+                                  phone: phoneController.text.trim(),
+                                  age: ageController.text.trim(),
+                                  dob: dobController.text.trim(),
+                                  gender: genderController.text.trim(),
+                                  location: locationController.text.trim(),
+                                  bio: aboutController.text.trim(),
+                                  hobbies: hobbiesController.text.trim(),
+                                  img: _imageFile,
+                                );
 
-                        await controller.fetchProfile();
-                        if (context.mounted) Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                                if (context.mounted) Navigator.pop(context);
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          // Change background color when disabled
+                          disabledBackgroundColor: theme.colorScheme.primary
+                              .withOpacity(0.6),
                         ),
-                      ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                        child: isLoading
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                "Submit",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      );
+                    }),
                   ),
+
+                  SizedBox(height: 15),
                 ],
               ),
             ),

@@ -49,7 +49,8 @@ class User {
   List<String>? hobbies;
   List<dynamic>? photos;
   dynamic profilePic;
-  String? status;
+  String? friendshipStatus; // ✅ Add this
+
   bool? emailVerified;
   dynamic membership;
   DateTime? createdAt;
@@ -73,7 +74,7 @@ class User {
     this.hobbies,
     this.photos,
     this.profilePic,
-    this.status,
+    this.friendshipStatus,
     this.emailVerified,
     this.membership,
     this.createdAt,
@@ -105,7 +106,7 @@ class User {
             ? List<dynamic>.from(json?["photos"].map((x) => x))
             : [],
         profilePic: json?["profilePic"],
-        status: json?["status"],
+        friendshipStatus: json?["friendshipStatus"],
         emailVerified: json?["emailVerified"],
         membership: json?["membership"],
         createdAt:
@@ -132,7 +133,7 @@ class User {
         "hobbies": hobbies != null ? List<dynamic>.from(hobbies!.map((x) => x)) : [],
         "photos": photos != null ? List<dynamic>.from(photos!.map((x) => x)) : [],
         "profilePic": profilePic,
-        "status": status,
+        "friendshipStatus": friendshipStatus,
         "emailVerified": emailVerified,
         "membership": membership,
         "createdAt": createdAt?.toIso8601String(),

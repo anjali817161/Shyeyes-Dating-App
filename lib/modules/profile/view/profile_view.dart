@@ -5,6 +5,7 @@ import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/profile/uploadmore_photo/view/uploadmorephoto.dart';
+import 'package:shyeyes/modules/profile/widget/get_profiles_slider.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -111,40 +112,51 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           // Banner with gradient + lotties
           // Banner with gradient + lotties
+          // Banner with gradient + lotties or photo slider
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Container(
-                height: 180,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 212, 85, 85),
-                      Color.fromARGB(255, 252, 48, 116),
+              // ✅ Conditional: show slider if photos exist
+              if (controller.profile2.value!.data!.user!.photos != null &&
+                  controller.profile2.value!.data!.user!.photos!.isNotEmpty)
+                PhotoSliderBanner(
+                  height: 200,
+                  photos: (controller.profile2.value!.data!.user!.photos ?? [])
+                      .map((e) => e.toString())
+                      .toList(),
+                )
+              else
+                Container(
+                  height: 180,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 212, 85, 85),
+                        Color.fromARGB(255, 252, 48, 116),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Lottie.asset(
+                          'assets/lotties/heart_fly.json',
+                          fit: BoxFit.cover,
+                          repeat: true,
+                        ),
+                      ),
+                      Expanded(
+                        child: Lottie.asset(
+                          'assets/lotties/heart_fly.json',
+                          fit: BoxFit.cover,
+                          repeat: true,
+                        ),
+                      ),
                     ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Lottie.asset(
-                        'assets/lotties/heart_fly.json',
-                        fit: BoxFit.cover,
-                        repeat: true,
-                      ),
-                    ),
-                    Expanded(
-                      child: Lottie.asset(
-                        'assets/lotties/heart_fly.json',
-                        fit: BoxFit.cover,
-                        repeat: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
               // Profile image overlapping banner
               Positioned(

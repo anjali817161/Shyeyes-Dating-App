@@ -44,4 +44,5 @@ class ApiEndpoints {
   static const String showlikesprofiles = "received";
   static const String moreuploadphoto = "photos";
   static const String plans = "plans";
+  static const String getPhotos = "photos";
 }

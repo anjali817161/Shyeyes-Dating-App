@@ -32,49 +32,49 @@ class InvitationController extends GetxController {
     }
   }
 
- Future<void> acceptInvite(String userId) async {
-  try {
-    final response = await AuthRepository.acceptInvite(userId);
-    invitations.removeWhere((inv) => inv.id == userId);
+  Future<void> acceptInvite(String userId) async {
+    try {
+      final response = await AuthRepository.acceptInvite(userId);
 
-    Get.snackbar(
-      'Success',
-      response?['message'] ?? 'Invitation accepted successfully',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
-  } catch (e) {
-    fetchInvitations();
-    Get.snackbar(
-      'Error',
-      'Failed to accept invitation: $e',
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
+      // ✅ Re-fetch updated invitations from server
+      await fetchInvitations();
+
+      Get.snackbar(
+        'Success',
+        response?['message'] ?? 'Invitation accepted successfully',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to accept invitation: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
-}
 
-Future<void> cancelInvite(String userId) async {
-  try {
-    final response = await AuthRepository.cancelInvite(userId);
-    invitations.removeWhere((inv) => inv.id == userId);
+  Future<void> cancelInvite(String userId) async {
+    try {
+      final response = await AuthRepository.cancelInvite(userId);
 
-    Get.snackbar(
-      'Success',
-      response?['message'] ?? 'Invitation rejected successfully',
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-  } catch (e) {
-    fetchInvitations();
-    Get.snackbar(
-      'Error',
-      'Failed to reject invitation: $e',
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
+      // ✅ Re-fetch updated invitations from server
+      await fetchInvitations();
+
+      Get.snackbar(
+        'Success',
+        response?['message'] ?? 'Invitation rejected successfully',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to reject invitation: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
-}
-
-
 }

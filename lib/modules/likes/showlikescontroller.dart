@@ -17,6 +17,7 @@ class LikesController extends GetxController {
   }
 
   Future<void> fetchLikedProfiles() async {
+    print("fetchLikedProfiles called");
     try {
       isLoading.value = true;
       String? token = await SharedPrefHelper.getToken();
@@ -24,8 +25,12 @@ class LikesController extends GetxController {
         errorMessage.value = "No token found";
         return;
       }
+      print("Token: $token");
 
       http.Response response = await AuthRepository().Showlikesprofiles(token);
+
+      print("Response Status: ${response.statusCode}");
+      print("Response Body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> jsonData = json.decode(response.body);

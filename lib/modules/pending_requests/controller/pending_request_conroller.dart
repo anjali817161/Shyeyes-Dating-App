@@ -1,34 +1,36 @@
-// lib/modules/accepted/controller/accepted_request_controller.dart
+// lib/modules/pending_requests/controller/pending_request_controller.dart
 
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
+import 'package:shyeyes/modules/pending_requests/model/pending_requests_model.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 
-class PendingRequestConroller extends GetxController {
+class PendingRequestController extends GetxController {
   var isLoading = false.obs;
-  var acceptedRequests = <Request>[].obs; // ✅ Single Request objects
+  var pendingRequests = <Request>[].obs; // ✅ Correct name according to model
 
   @override
   void onInit() {
     super.onInit();
-    fetchAcceptedRequests();
+    fetchPendingRequests();
   }
 
-  /// Fetch accepted requests
-  Future<void> fetchAcceptedRequests() async {
+  /// Fetch Pending Requests
+  Future<void> fetchPendingRequests() async {
     try {
       isLoading.value = true;
       final response = await AuthRepository.getAcceptedRequests();
 
       if (response != null && response['requests'] != null) {
-        acceptedRequests.assignAll(
+        pendingRequests.assignAll(
           (response['requests'] as List)
               .map((json) => Request.fromJson(json))
               .toList(),
         );
+      } else {
+        pendingRequests.clear();
       }
     } catch (e) {
-      print("❌ Error fetching accepted requests: $e");
+      print("❌ Error fetching pending requests: $e");
     } finally {
       isLoading.value = false;
     }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
+import 'package:intl/intl.dart';
+import 'package:shyeyes/modules/profile/model/current_plan_model.dart';
 
 void showPlanBottomSheet(BuildContext context) {
   final ActivePlanController controller = Get.put(ActivePlanController());
@@ -20,10 +22,8 @@ void showPlanBottomSheet(BuildContext context) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final plan = controller.activePlan.value;
-          if (plan == null) {
-            return const Center(child: Text("No Active Plan Found"));
-          }
+          // ✅ Use API plan or fallback Free plan
+          final plan = controller.activePlan.value ?? _getDefaultFreePlan();
 
           return Container(
             constraints: BoxConstraints(
@@ -53,6 +53,24 @@ void showPlanBottomSheet(BuildContext context) {
         }),
       );
     },
+  );
+}
+
+/// ✅ Default free plan model
+_getDefaultFreePlan() {
+  return Plan(
+    planType: "Free Plan",
+    price: 0,
+    durationDays: 30,
+    isActive: true,
+    startDate: DateTime.now(),
+    endDate: DateTime.now().add(const Duration(days: 30)),
+    limits: Limits(
+      messagesPerDay: 10,
+      videoTimeSeconds: 60 * 5,
+      audioTimeSeconds: 60 * 5,
+      matchesAllowed: 5,
+    ),
   );
 }
 
@@ -147,7 +165,14 @@ Widget _buildPlanTitle(String title) {
   );
 }
 
-Widget _buildPricingSection(plan) {
+Widget _buildPricingSection(Plan plan) {
+  int? daysLeft;
+  if (plan.endDate != null) {
+    final now = DateTime.now();
+    daysLeft = plan.endDate!.difference(now).inDays;
+    if (daysLeft < 0) daysLeft = 0;
+  }
+
   return Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
@@ -190,6 +215,26 @@ Widget _buildPricingSection(plan) {
                 ),
               ),
             ),
+            const Spacer(),
+            if (daysLeft != null)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDF314D).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  "$daysLeft days left",
+                  style: const TextStyle(
+                    color: Color(0xFFDF314D),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 6),
@@ -207,7 +252,7 @@ Widget _buildPricingSection(plan) {
             const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
             const SizedBox(width: 5),
             Text(
-              "Start: ${plan.startDate?.toLocal().toString().split(' ').first ?? ''}",
+              "Start: ${plan.startDate != null ? DateFormat('yyyy-MM-dd').format(plan.startDate!) : '-'}",
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade600,
@@ -221,7 +266,7 @@ Widget _buildPricingSection(plan) {
             const Icon(Icons.calendar_month, size: 14, color: Colors.grey),
             const SizedBox(width: 5),
             Text(
-              "End: ${plan.endDate?.toLocal().toString().split(' ').first ?? ''}",
+              "End: ${plan.endDate != null ? DateFormat('yyyy-MM-dd').format(plan.endDate!) : '-'}",
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade600,
@@ -235,7 +280,7 @@ Widget _buildPricingSection(plan) {
   );
 }
 
-Widget _buildFeaturesSection(plan) {
+Widget _buildFeaturesSection(Plan plan) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -331,7 +376,7 @@ Widget _buildActionButtons(BuildContext context) {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white,
               builder: (_) => const SubscriptionBottomSheet(),
             );
           },

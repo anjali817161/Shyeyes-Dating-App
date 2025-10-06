@@ -51,21 +51,20 @@ class _PersonalInfoState extends State<PersonalInfo> {
       imageQuality: 80,
     );
     if (pickedFile != null) {
-      controller.profileImage.value = File(pickedFile.path); // ✅ use controller
+      controller.pickedImage.value = File(pickedFile.path); // ✅ use controller
     }
   }
 
   @override
   void onClose() {
-    controller.fullNameCtrl.dispose();
-    controller.emailCtrl.dispose();
     controller.dobCtrl.dispose();
     controller.ageCtrl.dispose();
     controller.streetCtrl.dispose();
     controller.cityCtrl.dispose();
     controller.stateCtrl.dispose();
     controller.countryCtrl.dispose();
-    controller.aboutCtrl.dispose();
+    controller.bioCtrl.dispose();
+    controller.hobbiesCtrl.dispose();
     // super.onclose();
   }
 
@@ -114,10 +113,10 @@ class _PersonalInfoState extends State<PersonalInfo> {
                             radius: 50,
                             backgroundColor: primary.withOpacity(0.3),
                             backgroundImage:
-                                controller.profileImage.value != null
-                                ? FileImage(controller.profileImage.value!)
+                                controller.pickedImage.value != null
+                                ? FileImage(controller.pickedImage.value!)
                                 : null,
-                            child: controller.profileImage.value == null
+                            child: controller.pickedImage.value == null
                                 ? Icon(
                                     Icons.camera_alt,
                                     color: primary,
@@ -236,46 +235,43 @@ class _PersonalInfoState extends State<PersonalInfo> {
                     const SizedBox(height: 8),
                     _buildTextField(
                       context,
-                      controller: controller.aboutCtrl,
+                      controller: controller.bioCtrl,
                       label: "Tell us about yourselfs",
                       maxLines: 4,
                     ),
                     const SizedBox(height: 20),
-                    Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                    Obx(() {
+                      return SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
                           ),
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : () => controller.submitPersonalInfo(),
+                          child: controller.isLoading.value
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  "Signup",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            controller.submitPersonalInfo();
-                          } else {
-                            Get.snackbar(
-                              "Error",
-                              "Failed to complete registration",
-                              snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.redAccent.withOpacity(
-                                0.8,
-                              ),
-                              colorText: Colors.white,
-                            );
-                          }
-                        },
-                        child: const Text(
-                          "Signup",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                    ),
+                      );
+                    }),
                   ],
                 ),
               ),

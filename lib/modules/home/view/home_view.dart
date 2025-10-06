@@ -351,8 +351,7 @@ class _HomeViewState extends State<HomeView> {
                                             //     Colors.orange,
                                             //   );
                                             // }
-                                            else if (status == "pending" ||
-                                                status == "requested") {
+                                            else if (status == "requested") {
                                               // Cancel button (image)
                                               return GestureDetector(
                                                 onTap: isLoading
@@ -465,6 +464,13 @@ class _HomeViewState extends State<HomeView> {
                                                           scale: 17,
                                                         ),
                                                 ),
+                                              );
+                                            } else if (status == "pending") {
+                                              // ✅ Default → Requested text
+                                              return buildStatusText(
+                                                Icons.hourglass_top,
+                                                "Requested",
+                                                Colors.green,
                                               );
                                             } else {
                                               // ✅ Default → Requested text

@@ -328,7 +328,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           "Friends",
                           Colors.green,
                         );
-                      } else if (status == "pending" || status == "requested") {
+                      } else if (status == "requested") {
                         return SizedBox(
                           width: 150,
                           height: 38,
@@ -364,7 +364,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                           ),
                         );
-                      } else if (status == "cancelled" || status == "none") {
+                      } else if (status == "cancelled" ||
+                          status == "none" ||
+                          status == "rejected") {
                         return SizedBox(
                           width: 150,
                           height: 38,
@@ -413,6 +415,13 @@ class _DashboardPageState extends State<DashboardPage> {
                           Icons.lock_open,
                           "Unblocked",
                           Colors.grey,
+                        );
+                      } else if (status == "pending") {
+                        // ✅ default me Requested + icon
+                        return statusText(
+                          Icons.hourglass_top,
+                          "Requested",
+                          Colors.green,
                         );
                       } else {
                         // ✅ default me Requested + icon
@@ -914,7 +923,8 @@ class _DashboardPageState extends State<DashboardPage> {
       endDrawer: const CustomDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
-          await profileList();
+          await usersController.fetchActiveUsers();
+          await usersController.fetchBestMatches();
         },
         child: SingleChildScrollView(
           child: Padding(

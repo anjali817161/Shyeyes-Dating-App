@@ -7,6 +7,8 @@ class SharedPrefHelper {
   static const String _userIdKey = "user_id";
   static const String _userNameKey = "user_name";
   static const String _userPicKey = "user_pic";
+  static const String _userEmailKey = "email";
+  static const String _userPhoneKey = "phoneNo";
 
   ///  Save token
   static Future<void> saveToken(String token) async {
@@ -63,6 +65,32 @@ class SharedPrefHelper {
   static Future<String?> getUserPic() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userPicKey);
+  }
+
+  /// ===============================
+  /// 📧 EMAIL HANDLING (NEW)
+  /// ===============================
+  static Future<void> saveEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userEmailKey, email);
+  }
+
+  static Future<String?> getEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userEmailKey);
+  }
+
+  /// ===============================
+  /// 📱 PHONE HANDLING (NEW)
+  /// ===============================
+  static Future<void> savePhone(String phone) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userPhoneKey, phone);
+  }
+
+  static Future<String?> getPhone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userPhoneKey);
   }
 
   ///  Dialog flag
