@@ -20,7 +20,7 @@ Future<void> main() async {
   /// 🔹 Assign navigatorKey to ZegoUIKit Call Service
   ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
 
-  /// 🔹 Initialize ZEGO SDKs
+  /// 🔹 Initialize ZEGO Engine + ZIMKit
   await ZegoService.initZegoEngine();
   await ZIMKit().init(
     appID: ZegoService.appID,
@@ -32,34 +32,19 @@ Future<void> main() async {
   Get.put(NotificationController());
   Get.put(MusicController());
 
+  /// 🔹 Fetch current logged-in user
   await profileController.fetchProfile();
   final user = profileController.profile2.value?.data?.edituser;
 
   if (user != null && user.id != null && user.id!.isNotEmpty) {
     print("👤 Logged in User => ${user.name?.firstName} (${user.id})");
+
+    /// 🔹 Initialize Zego user connection (ZIMKit)
     await ZegoService.initZego(user);
 
-    /// 🟢 Initialize Zego Call Invitation Service (for incoming call popup)
-    await ZegoUIKitPrebuiltCallInvitationService().init(
-      appID: ZegoService.appID,
-      appSign: ZegoService.appSign,
-      userID: user.id ?? "",
-      userName: user.name?.firstName ?? "User",
-      plugins: [ZegoUIKitSignalingPlugin()],
-      /// Optional: handle offline calls
-      requireConfig: (ZegoCallInvitationData data) {
-        return ZegoUIKitPrebuiltCallConfig(
-          turnOnCameraWhenJoining: data.type == ZegoCallType.videoCall,
-          turnOnMicrophoneWhenJoining: true,
-        );
-      },
-    );
-
-    /// 🟢 If app opened from offline call — enter automatically
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ZegoUIKitPrebuiltCallInvitationService().enterAcceptedOfflineCall();
-    });
-
+    /// 🟢 Important Note:
+    /// ZegoUIKitPrebuiltCallInvitationService().init() ab DashboardPage me initialize hoga
+    /// jab user login ke baad successfully app ke main screen par aa chuka ho.
   } else {
     print("⚠️ No valid user found — skipping Zego login");
   }

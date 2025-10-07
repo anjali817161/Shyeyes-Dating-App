@@ -34,7 +34,6 @@ class ZegoService {
     print("✅ Zego Engine Initialized");
   }
 
-  // ----------------------------------------------------------------
   // ✅ Initialize User (ZIMKit)
   // ----------------------------------------------------------------
   static Future<void> initZego(edit.EditUser user) async {
@@ -54,49 +53,54 @@ class ZegoService {
   // ----------------------------------------------------------------
   // 🚀 Outgoing Call using Zego Call Invitation (v4.x compatible)
   // ----------------------------------------------------------------
-  static Future<void> startCall({
-    required dynamic targetUser,
-    required bool isVideoCall,
-  }) async {
-    String? targetId;
-    String? targetName;
+static Future<void> startCall({
+  required dynamic targetUser,
+  required bool isVideoCall,
+}) async {
+  String? targetId;
+  String? targetName;
 
-    if (targetUser is active.Users) {
-      targetId = targetUser.id;
-      targetName = targetUser.name?.firstName ?? "User";
-    } else if (targetUser is edit.EditUser) {
-      targetId = targetUser.id;
-      targetName = targetUser.name?.firstName ?? "User";
-    } else {
-      print("❌ Unsupported target user type");
-      return;
-    }
-
-    if (currentUserId == null) {
-      print("⚠️ You must initialize the current user before starting a call.");
-      return;
-    }
-
-    final callID = DateTime.now().millisecondsSinceEpoch.toString();
-
-    try {
-      /// ✅ New API in v4.19.0 (this replaces sendCallInvitation)
-     await ZegoUIKitPrebuiltCallInvitationService().send(
-  isVideoCall: isVideoCall,
-  invitees: [
-   ZegoCallUser(targetId!, targetName)
- // ✅ Correct class
-  ],
-  callID: callID,
-  resourceID: "zegouikit_call", // ✅ Must match ZEGO Cloud setup
-);
-
-
-      print("📞 ${isVideoCall ? 'Video' : 'Voice'} call invitation sent to $targetName ($targetId)");
-    } catch (e) {
-      print("❌ Failed to send call invitation: $e");
-    }
+  if (targetUser is active.Users) {
+    targetId = targetUser.id;
+    targetName = targetUser.name?.firstName ?? "User";
+  } else if (targetUser is edit.EditUser) {
+    targetId = targetUser.id;
+    targetName = targetUser.name?.firstName ?? "User";
+  } else {
+    print("❌ Unsupported target user type");
+    return;
   }
+
+  if (currentUserId == null) {
+    print("⚠️ Initialize current user before starting call.");
+    return;
+  }
+
+  // ✅ Ensure ZIMKit connection is active
+  if (ZIMKit().currentUser == null) {
+    await ZIMKit().connectUser(
+      id: currentUserId!,
+      name: currentUserName ?? "User",
+      avatarUrl: currentUserAvatar ?? "",
+    );
+    print("🔄 Reconnected ZIM user before call.");
+  }
+
+  final callID = DateTime.now().millisecondsSinceEpoch.toString();
+
+  try {
+    await ZegoUIKitPrebuiltCallInvitationService().send(
+      isVideoCall: isVideoCall,
+      invitees: [ZegoCallUser(targetId!, targetName)],
+      callID: callID,
+      resourceID: "zegouikit_call",
+    );
+    print("📞 ${isVideoCall ? 'Video' : 'Voice'} call invitation sent to $targetName ($targetId)");
+  } catch (e) {
+    print("❌ Failed to send call invitation: $e");
+  }
+}
+
 
   // ----------------------------------------------------------------
   // ⚙️ Optional Room Control

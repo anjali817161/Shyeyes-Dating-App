@@ -172,7 +172,49 @@ class FavouritePage extends StatelessWidget {
                                     icon: Icons.chat_bubble,
                                     theme: theme,
                                     onPressed: () => Get.to(
-                                      () => ChatScreen(user: dummyUser),
+                            //           final  profile = usersController.matches[index];
+                            // final userId = profile.id ?? "";
+                            // final currentUserId =
+                            //     await SharedPrefHelper.getUserId();
+
+                            // // Safety checks
+                            // if (userId.isEmpty) {
+                            //   ScaffoldMessenger.of(context).showSnackBar(
+                            //     SnackBar(
+                            //       content: Text(
+                            //         'User ID not available for chatting',
+                            //       ),
+                            //     ),
+                            //   );
+                            //   return;
+                            // }
+
+                            // if (currentUserId == null ||
+                            //     currentUserId.isEmpty) {
+                            //   ScaffoldMessenger.of(context).showSnackBar(
+                            //     SnackBar(
+                            //       content: Text(
+                            //         'Please login again to use chat',
+                            //       ),
+                            //     ),
+                            //   );
+                            //   return;
+                            // }
+
+                            // // Same user se chat prevent करें
+                            // if (userId == currentUserId) {
+                            //   ScaffoldMessenger.of(context).showSnackBar(
+                            //     SnackBar(
+                            //       content: Text(
+                            //         'You cannot chat with yourself',
+                            //       ),
+                            //     ),
+                            //   );
+                            //   return;
+                            // }
+
+                           // Get.to(() => ChatScreen(user: profile));
+                           Get.to("jsnj")
                                     ),
                                   ),
                                   _buildCircleIcon(

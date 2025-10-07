@@ -14,9 +14,13 @@ import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
+import 'package:shyeyes/modules/widgets/Zego_service.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
+import 'package:shyeyes/modules/widgets/permission_handler.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 
 class DashboardPage extends StatefulWidget {
   DashboardPage({super.key});
@@ -26,26 +30,54 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final MusicController musicController = Get.find<MusicController>();
   final searchController = Get.put(SearchFilterController());
   final TextEditingController searchTextController = TextEditingController();
-
-  final ActiveUsersController usersController = Get.put(
-    ActiveUsersController(),
-  );
+  final ActiveUsersController usersController = Get.put(ActiveUsersController());
+  final ProfileController controller = Get.find<ProfileController>();
 
   @override
   void initState() {
     super.initState();
+    requestAppPermissions();
     final ProfileController controller = Get.find<ProfileController>();
     controller.fetchProfile();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      initZegoInvitationService();
       showWelcomeDialog(context);
       usersController.fetchActiveUsers();
       usersController.fetchBestMatches();
     });
+  }
+
+  Future<void> initZegoInvitationService() async {
+    try {
+      final user = controller.profile2.value?.data?.edituser;
+      if (user == null || user.id == null || user.id!.isEmpty) {
+        print("⚠️ Cannot init Zego Invitation — invalid user");
+        return;
+      }
+
+      await ZegoUIKitPrebuiltCallInvitationService().init(
+        appID: ZegoService.appID,
+        appSign: ZegoService.appSign,
+        userID: user.id!,
+        userName: user.name?.firstName ?? "User",
+        plugins: [ZegoUIKitSignalingPlugin()],
+        requireConfig: (ZegoCallInvitationData data) {
+          return ZegoUIKitPrebuiltCallConfig(
+            turnOnCameraWhenJoining: data.type == ZegoCallType.videoCall,
+            turnOnMicrophoneWhenJoining: true,
+          );
+        },
+      );
+
+      print("✅ Zego Call Invitation initialized for ${user.id}");
+      ZegoUIKitPrebuiltCallInvitationService().enterAcceptedOfflineCall();
+    } catch (e) {
+      print("❌ Failed to init Zego Invitation: $e");
+    }
   }
 
   void showWelcomeDialog(BuildContext context) async {
@@ -549,7 +581,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             );
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
-                            Get.to(() => ChatScreen(user: dummyUser));
+                          //  Get.to(() => ChatScreen(user: dummyUser));
                           }),
                           _iconCircle(Icons.videocam, () {
                             showDialog(
@@ -820,7 +852,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  final ProfileController controller = Get.find<ProfileController>();
+ // final ProfileController controller = Get.find<ProfileController>();
 
   @override
   Widget build(BuildContext context) {
