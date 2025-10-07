@@ -43,18 +43,34 @@ class LoginController extends GetxController {
       if (response.statusCode == 200) {
         // ✅ Save token
         final token = data['token'];
-        if (token != null) {
+        if (token != null && token.toString().isNotEmpty) {
           await SharedPrefHelper.saveToken(token);
-          print("Token saved: $token");
+          print("🔑 Token saved: $token");
         }
 
-        // ✅ Save user details
+        // ✅ Save user details safely
         final user = data['user'];
         if (user != null) {
-          await SharedPrefHelper.saveUserId(user['id'] ?? '');
-          await SharedPrefHelper.saveUserName(user['name'] ?? '');
-          await SharedPrefHelper.saveUserPic(user['profilePic'] ?? '');
-          print("User saved: ${user['name']}");
+          final userId = user['_id'] ?? user['id'] ?? '';
+          final userName = user['Name'] != null
+              ? "${user['Name']['firstName'] ?? ''} ${user['Name']['lastName'] ?? ''}".trim()
+              : (user['name'] ?? '');
+          final profilePic = user['profilePic'] ?? '';
+
+          if (userId.isEmpty) {
+            print("⚠️ Warning: userId is empty, check backend response!");
+          }
+
+          await SharedPrefHelper.saveUserId(userId);
+          await SharedPrefHelper.saveUserName(userName);
+          await SharedPrefHelper.saveUserPic(profilePic);
+
+          print("✅ User saved in SharedPref:");
+          print("   ID: $userId");
+          print("   Name: $userName");
+          print("   Pic: $profilePic");
+        } else {
+          print("⚠️ No user object found in response");
         }
 
         Get.snackbar(
@@ -67,7 +83,6 @@ class LoginController extends GetxController {
         // ✅ Navigate to main screen
         Get.offAll(() => MainScaffold());
       } else {
-        // Non-200 response
         Get.snackbar(
           "Login Failed",
           data["message"] ?? "Invalid credentials",

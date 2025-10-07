@@ -15,8 +15,10 @@ import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
+import 'package:shyeyes/modules/widgets/Zego_service.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
@@ -38,28 +40,6 @@ class _HomeViewState extends State<HomeView> {
   final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
 
   int _currentIndex = 0;
-
-  // final AboutModel dummyUsers = AboutModel(
-  //   image: 'assets/images/profile_image1.png',
-  //   name: 'Shaan',
-  //   age: 25,
-  //   distance: '2 km away',
-  //   job: 'Software Engineer',
-  //   college: 'IIT Delhi',
-  //   location: 'New Delhi',
-  //   about: 'Loves traveling and coffee.',
-  //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-  //   pets: 'Dog',
-  //   drinking: 'Socially',
-  //   smoking: 'No',
-  //   workout: 'Daily',
-  //   zodiac: 'Leo',
-  //   education: 'Masters',
-  //   vaccine: 'Yes',
-  //   communication: 'English, Hindi',
-  //   height: '',
-  //   active: '',
-  // );
 
   @override
   void initState() {
@@ -119,7 +99,7 @@ class _HomeViewState extends State<HomeView> {
                       (userData.profilePic != null &&
                           userData.profilePic!.isNotEmpty)
                       ? "https://shyeyes-b.onrender.com/uploads/${userData.profilePic}"
-                      : "https://picsum.photos/seed/$index/600/800"; // stable fallback
+                      : "https://picsum.photos/seed/$index/600/800";
 
                   name =
                       "${userData.name?.firstName ?? ''} ${userData.name?.lastName ?? ''}";
@@ -137,11 +117,10 @@ class _HomeViewState extends State<HomeView> {
                   userId = match.id ?? '';
                   name = match.name ?? '';
 
-                  // Use only profilePic with a fallback
                   imageUrl =
                       (match.profilePic != null && match.profilePic!.isNotEmpty)
                       ? "https://shyeyes-b.onrender.com/uploads/${match.profilePic}"
-                      : "https://picsum.photos/seed/$index/600/800"; // stable fallback
+                      : "https://picsum.photos/seed/$index/600/800";
 
                   age = match.age ?? 0;
                   location = match.location != null
@@ -254,7 +233,7 @@ class _HomeViewState extends State<HomeView> {
                                                   const EdgeInsets.symmetric(
                                                     horizontal: 24,
                                                     vertical: 12,
-                                                  ),
+                                              ),
                                             ),
                                             onPressed: () {
                                               Get.to(AboutView(userId: userId));
@@ -302,7 +281,7 @@ class _HomeViewState extends State<HomeView> {
                                                     const EdgeInsets.symmetric(
                                                       horizontal: 12,
                                                       vertical: 8,
-                                                    ),
+                                                ),
                                                 decoration: BoxDecoration(
                                                   color: color.withOpacity(0.1),
                                                   borderRadius:
@@ -344,17 +323,8 @@ class _HomeViewState extends State<HomeView> {
                                                 Colors.green,
                                               );
                                             }
-                                            //  else if (status == "requested") {
-                                            //   // ✅ Sirf text
-                                            //   return buildStatusText(
-                                            //     Icons.hourglass_top,
-                                            //     "Requested",
-                                            //     Colors.orange,
-                                            //   );
-                                            // }
                                             else if (status == "pending" ||
                                                 status == "requested") {
-                                              // Cancel button (image)
                                               return GestureDetector(
                                                 onTap: isLoading
                                                     ? null
@@ -362,7 +332,7 @@ class _HomeViewState extends State<HomeView> {
                                                         await usersController
                                                             .sendRequest(
                                                               userId,
-                                                            ); // cancel karega
+                                                            );
                                                       },
                                                 child: Container(
                                                   margin: const EdgeInsets.only(
@@ -418,7 +388,6 @@ class _HomeViewState extends State<HomeView> {
                                             } else if (status == "none" ||
                                                 status == "cancelled" ||
                                                 status == "new") {
-                                              // ✅ Send request (image button only)
                                               return GestureDetector(
                                                 onTap: isLoading
                                                     ? null
@@ -426,7 +395,7 @@ class _HomeViewState extends State<HomeView> {
                                                         await usersController
                                                             .sendRequest(
                                                               userId,
-                                                            ); // send request karega
+                                                            );
                                                       },
                                                 child: Container(
                                                   margin: const EdgeInsets.only(
@@ -468,7 +437,6 @@ class _HomeViewState extends State<HomeView> {
                                                 ),
                                               );
                                             } else {
-                                              // ✅ Default → Requested text
                                               return buildStatusText(
                                                 Icons.hourglass_top,
                                                 "Requested",
@@ -488,6 +456,7 @@ class _HomeViewState extends State<HomeView> {
                       ),
                     ),
 
+                    // ✅ CALL BUTTONS - YEH HAR SLIDE KE ANDAR HAI
                     Positioned(
                       bottom: 50,
                       left: 0,
@@ -495,39 +464,14 @@ class _HomeViewState extends State<HomeView> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          // 🔹 Like Button
                           Obx(() {
-                            // Determine users list based on viewType
-                            final users =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? usersController.users
-                                : usersController.matches;
-
-                            if (users.isEmpty) return const SizedBox.shrink();
-
-                            // Clamp _currentIndex to valid range
-                            final currentIndexSafe =
-                                (_currentIndex < users.length)
-                                ? _currentIndex
-                                : users.length - 1;
-
-                            // Get current user safely
-                            final currentUser =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? (users[currentIndexSafe] as Users)
-                                : (users[currentIndexSafe] as BestmatchModel);
-
-                            final String userId =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? (currentUser as Users).id ?? ""
-                                : (currentUser as BestmatchModel).id ?? "";
-
-                            // Determine if user is liked (API likedByMe or recently liked locally)
                             final bool isLiked =
                                 widget.viewType == HomeViewType.activeUsers
-                                ? ((currentUser as Users).likedByMe ?? false) ||
+                                ? ((user as Users).likedByMe ?? false) ||
                                       usersController.recentlyLikedUsers
                                           .contains(userId)
-                                : ((currentUser as BestmatchModel).likedByMe ??
+                                : ((user as BestmatchModel).likedByMe ??
                                           false) ||
                                       usersController.recentlyLikedUsers
                                           .contains(userId);
@@ -566,66 +510,26 @@ class _HomeViewState extends State<HomeView> {
                               },
                             );
                           }),
-buildActionButton(
-  Icons.call,
-  Colors.teal[400]!,
-  30,
-  () async {
-    final currentUser = widget.viewType == HomeViewType.activeUsers
-        ? (users[_currentIndex] as Users)
-        : (users[_currentIndex] as BestmatchModel);
 
-    final String receiverId = widget.viewType == HomeViewType.activeUsers
-        ? (currentUser as Users).id ?? ""
-        : (currentUser as BestmatchModel).id ?? "";
+                          // 🔹 Audio Call Button - YEH CURRENT SLIDE KE USER KO CALL KAREGA
+                          buildActionButton(
+                            Icons.call,
+                            Colors.teal[400]!,
+                            30,
+                            () async {
+                              await _makeAudioCall(user, userId, name);
+                            },
+                          ),
 
-    final String receiverName = widget.viewType == HomeViewType.activeUsers
-        ? "${(currentUser as Users).name?.firstName ?? ''} ${(currentUser).name?.lastName ?? ''}"
-        : (currentUser as BestmatchModel).name ?? "";
-
-    // ✅ अब call screen पर real user data भेजेंगे
-   final myUserId = await SharedPrefHelper.getUserId();
-final myUserName = await SharedPrefHelper.getUserName();
-final myUserPic = await SharedPrefHelper.getUserPic();
-
-Get.to(() => VideoCallPage(
-  roomID: "room_$receiverId",   // receiver id से unique room बनाओ
-  userID: myUserId ?? "",       // ✅ caller id (from SharedPref)
-  userName: myUserName ?? "",   // ✅ caller name (from SharedPref)
-));
-
-  },
-),
-
-buildActionButton(
-  Icons.video_call,
-  Colors.lightBlueAccent,
-  32,
-  () async {
-    final currentUser = widget.viewType == HomeViewType.activeUsers
-        ? (users[_currentIndex] as Users)
-        : (users[_currentIndex] as BestmatchModel);
-
-    final String receiverId = widget.viewType == HomeViewType.activeUsers
-        ? (currentUser as Users).id ?? ""
-        : (currentUser as BestmatchModel).id ?? "";
-
-    final String receiverName = widget.viewType == HomeViewType.activeUsers
-        ? "${(currentUser as Users).name?.firstName ?? ''} ${(currentUser).name?.lastName ?? ''}"
-        : (currentUser as BestmatchModel).name ?? "";
-
- final myUserId = await SharedPrefHelper.getUserId();
-final myUserName = await SharedPrefHelper.getUserName();
-final myUserPic = await SharedPrefHelper.getUserPic();
-
-Get.to(() => VideoCallPage(
-  roomID: "room_$receiverId",   // receiver id से unique room बनाओ
-  userID: myUserId ?? "",       // ✅ caller id (from SharedPref)
-  userName: myUserName ?? "",   // ✅ caller name (from SharedPref)
-));
-
-  },
-),
+                          // 🔹 Video Call Button - YEH CURRENT SLIDE KE USER KO CALL KAREGA
+                          buildActionButton(
+                            Icons.video_call,
+                            Colors.lightBlueAccent,
+                            32,
+                            () async {
+                              await _makeVideoCall(user, userId, name);
+                            },
+                          ),
 
                           buildActionButton(
                             Icons.chat,
@@ -646,7 +550,9 @@ Get.to(() => VideoCallPage(
               unlimitedMode: true,
               initialPage: 0,
               onSlideChanged: (index) {
-                setState(() => _currentIndex = index);
+                setState(() {
+                  _currentIndex = index;
+                });
               },
             ),
             Positioned(
@@ -688,6 +594,72 @@ Get.to(() => VideoCallPage(
       }),
     );
   }
+
+Future<void> _makeAudioCall(dynamic user, String userId, String userName) async {
+  try {
+    final profileController = Get.find<ProfileController>();
+    final editUser = profileController.profile2.value?.data?.edituser;
+
+    if (editUser == null) {
+      print("⚠️ Current user not found!");
+      Get.snackbar('Error', 'User profile not found');
+      return;
+    }
+
+    // Validate receiver
+    if (userId.isEmpty) {
+      print("⚠️ Receiver ID is empty!");
+      Get.snackbar('Error', 'Cannot call this user');
+      return;
+    }
+
+    print("🎧 Sending AUDIO call invitation to $userName ($userId)");
+
+    // 🟢 Use ZegoService helper
+    await ZegoService.startCall(
+      targetUser: user,
+      isVideoCall: false, // 🔈 audio call
+    );
+
+  } catch (e) {
+    print("❌ Error in audio call: $e");
+    Get.snackbar('Error', 'Failed to start audio call: $e');
+  }
+}
+
+// ✅ Video Call Function (updated)
+Future<void> _makeVideoCall(dynamic user, String userId, String userName) async {
+  try {
+    final profileController = Get.find<ProfileController>();
+    final editUser = profileController.profile2.value?.data?.edituser;
+
+    if (editUser == null) {
+      print("⚠️ Current user not found!");
+      Get.snackbar('Error', 'User profile not found');
+      return;
+    }
+
+    // Validate receiver
+    if (userId.isEmpty) {
+      print("⚠️ Receiver ID is empty!");
+      Get.snackbar('Error', 'Cannot call this user');
+      return;
+    }
+
+    print("🎥 Sending VIDEO call invitation to $userName ($userId)");
+
+    // 🟢 Use ZegoService helper
+    await ZegoService.startCall(
+      targetUser: user,
+      isVideoCall: true, // 🎥 video call
+    );
+
+  } catch (e) {
+    print("❌ Error in video call: $e");
+    Get.snackbar('Error', 'Failed to start video call: $e');
+  }
+}
+
 
   void _showSubscriptionDialog(
     BuildContext context,

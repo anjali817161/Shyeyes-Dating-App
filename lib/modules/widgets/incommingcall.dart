@@ -16,9 +16,9 @@ Future<void> showIncomingCallDialog({
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
-      title: Text(
+      title: const Text(
         "Incoming Call",
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: Colors.white),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -33,37 +33,54 @@ Future<void> showIncomingCallDialog({
         ],
       ),
       actions: [
+        /// Reject Button
         TextButton(
           onPressed: () {
-            /// Reject -> Just close dialog
-            Get.back();
+            Get.back(); // Close the dialog
           },
-          child: const Text("Reject", style: TextStyle(color: Colors.redAccent)),
+          child: const Text(
+            "Reject",
+            style: TextStyle(color: Colors.redAccent),
+          ),
         ),
+
+        /// Accept Button
         TextButton(
-        onPressed: () async {
-  /// Accept -> Open call page
-  Get.back();
+          onPressed: () async {
+            Get.back(); // Close the dialog
 
-  final myUserId = await SharedPrefHelper.getUserId() ?? "";
-  final myUserName = await SharedPrefHelper.getUserName() ?? "";
+            final myUserId = await SharedPrefHelper.getUserId() ?? "";
+            final myUserName = await SharedPrefHelper.getUserName() ?? "";
 
-  if (isVideoCall) {
-    Get.to(() => VideoCallPage(
-          roomID: roomId,
-          userID: myUserId,     // ✅ apna ID
-          userName: myUserName, // ✅ apna Name
-        ));
-  } else {
-    Get.to(() => VoiceCallPage(
-          roomID: roomId,
-          userID: myUserId,
-          userName: myUserName,
-        ));
-  }
-},
+            if (myUserId.isEmpty) {
+              Get.snackbar("Error", "User ID not found");
+              return;
+            }
 
-          child: const Text("Accept", style: TextStyle(color: Colors.greenAccent)),
+            if (isVideoCall) {
+              /// ✅ Navigate to Video Call Screen
+              Get.to(() => VideoCallPage(
+                    roomID: roomId,
+                    userID: myUserId,       // Current user (receiver)
+                    userName: myUserName,   // Current user's name
+                    receiverId: callerId,   // ✅ Caller ID (opposite user)
+                    receiverName: callerName,
+                  ));
+            } else {
+              /// ✅ Navigate to Voice Call Screen
+              Get.to(() => AudioCallPage(
+                    roomID: roomId,
+                    userID: myUserId,
+                    userName: myUserName,
+                    receiverId: callerId,   // ✅ Add here also if your VoiceCallPage supports it
+                    receiverName: callerName,
+                  ));
+            }
+          },
+          child: const Text(
+            "Accept",
+            style: TextStyle(color: Colors.greenAccent),
+          ),
         ),
       ],
     ),

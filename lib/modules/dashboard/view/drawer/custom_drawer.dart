@@ -85,7 +85,7 @@ class CustomDrawer extends StatelessWidget {
         children: [
           /// DrawerHeader linked with Profile Data
           Obx(() {
-            final user = controller.profile2.value?.data?.user;
+            final user = controller.profile2.value?.data?.edituser;
 
             final displayName =
                 (user?.name?.firstName ?? '') +
