@@ -7,6 +7,7 @@ import 'package:shyeyes/modules/about/controller/block_controller.dart';
 import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
 import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
+import 'package:shyeyes/modules/profile/widget/get_profiles_slider.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class AboutView extends StatefulWidget {
@@ -53,231 +54,310 @@ class _AboutViewState extends State<AboutView> {
         );
       }
 
-      return Scaffold(
-        backgroundColor: secondaryColor,
-        appBar: AppBar(
-          title: Text(
-            profileData.name?.firstName ?? "",
-            style: TextStyle(color: onPrimaryColor),
+      return RefreshIndicator(
+        onRefresh: () async {
+          await controller.fetchUserProfile(widget.userId);
+        },
+        child: Scaffold(
+          backgroundColor: secondaryColor,
+          appBar: AppBar(
+            title: Text(
+              profileData.name?.firstName ?? "",
+              style: TextStyle(color: onPrimaryColor),
+            ),
+            backgroundColor: primaryColor,
+            elevation: 0,
+            iconTheme: IconThemeData(color: onPrimaryColor),
           ),
-          backgroundColor: primaryColor,
-          elevation: 0,
-          iconTheme: IconThemeData(color: onPrimaryColor),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Image + Bottom Actions in Stack
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.bottomCenter,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child:
-                        profileData.profilePic != null &&
-                            profileData.profilePic!.isNotEmpty
-                        ? Image.network(
-                            ApiEndpoints.imgUrl + profileData.profilePic!,
-                            height: 320,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              // If image fails to load, show fallback
-                              return Container(
-                                height: 320,
-                                width: double.infinity,
-                                color: Colors.grey[200],
-                                child: const Icon(
-                                  Icons.account_circle,
-                                  size: 120,
-                                  color: Colors.grey,
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            height: 320,
-                            width: double.infinity,
-                            color: Colors.grey[200],
-                            child: const Icon(
-                              Icons.account_circle,
-                              size: 120,
-                              color: Colors.grey,
-                            ),
-                          ),
-                  ),
-
-                  Positioned(bottom: -28, child: _bottomActions(theme)),
-                ],
-              ),
-
-              const SizedBox(height: 30),
-
-              Row(
-                children: [
-                  Text(
-                    "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: onSecondaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    ", ${profileData.age ?? ""} ",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: onSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  if ((profileData.status ?? "").isNotEmpty) ...[
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile Image + Bottom Actions in Stack
+                // Always show PhotoSliderBanner
+                // Profile Image + Bottom Actions in Stack
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: SizedBox(
+                        height: 320, // same height as previous image
+                        width: double.infinity,
+                        child: PhotoSliderBanner(
+                          height: double.infinity,
+                          photos:
+                              (profileData.photos != null &&
+                                  profileData.photos!.isNotEmpty)
+                              ? profileData.photos!
+                                    .map((e) => e.toString())
+                                    .toList()
+                              : (profileData.profilePic != null &&
+                                    profileData.profilePic!.isNotEmpty)
+                              ? [
+                                  profileData.profilePic!,
+                                ] // show profile pic if no photos
+                              : ["placeholder"], // fallback placeholder
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+
+                    // Bottom action buttons
+                    Positioned(bottom: -28, child: _bottomActions(theme)),
                   ],
-                  Text(
-                    profileData.status ?? "",
-                    style: TextStyle(color: onSecondaryColor.withOpacity(0.6)),
-                  ),
-                ],
-              ),
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 30),
 
-              _infoTile(theme, Icons.work, "Bio", profileData.bio ?? ""),
-              _infoTile(
-                theme,
-                (profileData.gender?.toLowerCase() == "male")
-                    ? Icons.man
-                    : (profileData.gender?.toLowerCase() == "female")
-                    ? Icons.woman
-                    : Icons
-                          .help_outline, // fallback agar gender null/unknown ho
-                "Gender",
-                profileData.gender ?? "N/A",
-              ),
+                Row(
+                  children: [
+                    Text(
+                      "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: onSecondaryColor,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      ", ${profileData.age ?? ""} ",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: onSecondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
 
-              _infoTile(
-                theme,
-                Icons.location_on,
-                "Location",
-                "${profileData.location?.street ?? ""}, ${profileData.location?.city ?? ""}, ${profileData.location?.state ?? ""}, ${profileData.location?.country ?? ""}",
-              ),
-              _infoTile(
-                theme,
-                Icons.favorite,
-                "Hobbies",
-                profileData.hobbies?.join(", ") ?? "",
-              ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    if ((profileData.friendshipStatus ?? "").isNotEmpty) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Text(
+                      profileData.friendshipStatus ?? "",
+                      style: TextStyle(
+                        color: onSecondaryColor.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-              // _sectionTitle(theme, Icons.chat, "Send a First Impression"),
-              // const SizedBox(height: 10),
-              // _firstImpressionBox(theme),
+                _infoTile(theme, Icons.work, "Bio", profileData.bio ?? ""),
+                _infoTile(
+                  theme,
+                  (profileData.gender?.toLowerCase() == "male")
+                      ? Icons.man
+                      : (profileData.gender?.toLowerCase() == "female")
+                      ? Icons.woman
+                      : Icons
+                            .help_outline, // fallback agar gender null/unknown ho
+                  "Gender",
+                  profileData.gender ?? "N/A",
+                ),
 
-              // Share Button
-              GestureDetector(
-                onTap: () {
-                  Share.share(
-                    'Check out ${profileData.name?.firstName ?? ""}\'s profile!',
-                    subject: 'Profile from ShyEyes',
+                _infoTile(
+                  theme,
+                  Icons.location_on,
+                  "Location",
+                  "${profileData.location?.street ?? ""}, ${profileData.location?.city ?? ""}, ${profileData.location?.state ?? ""}, ${profileData.location?.country ?? ""}",
+                ),
+                _infoTile(
+                  theme,
+                  Icons.favorite,
+                  "Hobbies",
+                  profileData.hobbies?.join(", ") ?? "",
+                ),
+
+                const SizedBox(height: 20),
+
+                // _sectionTitle(theme, Icons.chat, "Send a First Impression"),
+                // const SizedBox(height: 10),
+                // _firstImpressionBox(theme),
+                // request Button
+                // Request Button (Send / Cancel toggle)
+                Obx(() {
+                  final profileData = controller.aboutModel.value?.user;
+                  final isPending = controller.isRequestPending;
+                  final isLoading = controller.requestLoading.value;
+                  final status =
+                      profileData?.friendshipStatus?.toLowerCase() ?? "";
+                  final isBlocked =
+                      status == "blocked" || blockController.isBlocked.value;
+                  final isFriend = status == "friend";
+
+                  if (isBlocked || isFriend) return const SizedBox.shrink();
+
+                  if (isBlocked) return const SizedBox.shrink();
+
+                  return GestureDetector(
+                    onTap: () async {
+                      if (!isLoading) {
+                        await controller.toggleRequest(widget.userId);
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isPending
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceVariant,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    isPending
+                                        ? Icons.cancel_outlined
+                                        : Icons.send,
+                                    color: isPending
+                                        ? Colors.white
+                                        : theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    isPending
+                                        ? "Cancel Request"
+                                        : "Send Request",
+                                    style: TextStyle(
+                                      color: isPending
+                                          ? Colors.white
+                                          : theme.colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
                   );
-                },
-                child: _actionButton(theme, "Share Profile"),
-              ),
+                }),
 
-              // Block / Unblock Button
-              Obx(() {
-                final profileData = controller.aboutModel.value?.user;
-                final isBlockedFromApi =
-                    profileData?.status?.toLowerCase() == "blocked";
-
-                // Agar API se "Blocked" mila to wahi dikhao
-                final isBlocked =
-                    isBlockedFromApi || blockController.isBlocked.value;
-
-                return GestureDetector(
-                  onTap: () async {
-                    await blockController.toggleBlockUser(widget.userId);
-
-                    // Toggle ke baad API ko dobara call karke status fresh kar lo
-                    await controller.fetchUserProfile(widget.userId);
+                // Share Button
+                GestureDetector(
+                  onTap: () {
+                    Share.share(
+                      'Check out ${profileData.name?.firstName ?? ""}\'s profile!',
+                      subject: 'Profile from ShyEyes',
+                    );
                   },
                   child: Container(
+                    width:
+                        double.infinity, // ✅ Make width same as other buttons
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
-                      color: isBlocked
-                          ? theme
-                                .colorScheme
-                                .primary // blocked hai toh primary color
-                          : theme.colorScheme.surfaceVariant,
+                      color: theme.colorScheme.surfaceVariant,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Center(
-                      child: blockController.isLoading.value
-                          ? const CircularProgressIndicator(strokeWidth: 2)
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isBlocked ? Icons.block_flipped : Icons.block,
-                                  color: isBlocked
-                                      ? theme.colorScheme.onPrimary
-                                      : theme.colorScheme.onSurface,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  isBlocked ? "Unblock User" : "Block User",
-                                  style: TextStyle(
+                    child: Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // ✅ Center icon + text
+                      children: [
+                        const Icon(Icons.share, color: Colors.blueAccent),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Share Profile",
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Block / Unblock Button
+                Obx(() {
+                  final profileData = controller.aboutModel.value?.user;
+                  final isBlockedFromApi =
+                      profileData?.friendshipStatus?.toLowerCase() == "blocked";
+
+                  // Agar API se "Blocked" mila to wahi dikhao
+                  final isBlocked =
+                      isBlockedFromApi || blockController.isBlocked.value;
+
+                  return GestureDetector(
+                    onTap: () async {
+                      await blockController.toggleBlockUser(widget.userId);
+
+                      // Toggle ke baad API ko dobara call karke status fresh kar lo
+                      await controller.fetchUserProfile(widget.userId);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isBlocked
+                            ? theme
+                                  .colorScheme
+                                  .primary // blocked hai toh primary color
+                            : theme.colorScheme.surfaceVariant,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: blockController.isLoading.value
+                            ? const CircularProgressIndicator(strokeWidth: 2)
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isBlocked
+                                        ? Icons.block_flipped
+                                        : Icons.block,
                                     color: isBlocked
                                         ? theme.colorScheme.onPrimary
                                         : theme.colorScheme.onSurface,
-                                    fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                );
-              }),
-
-              // Report Button
-              GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => ReportReasonBottomSheet(
-                      onReasonSelected: (reason) {
-                        Navigator.pop(context);
-                      },
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    isBlocked ? "Unblock User" : "Block User",
+                                    style: TextStyle(
+                                      color: isBlocked
+                                          ? theme.colorScheme.onPrimary
+                                          : theme.colorScheme.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
                   );
-                },
-                child: _actionButton(theme, "Report", isDestructive: true),
-              ),
-              SizedBox(height: 40),
-            ],
+                }),
+
+                SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       );

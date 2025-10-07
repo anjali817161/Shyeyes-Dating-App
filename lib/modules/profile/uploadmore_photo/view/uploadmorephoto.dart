@@ -53,6 +53,26 @@ class _UploadPhotoSheetState extends State<UploadPhotoSheet> {
     });
 
     String token = await SharedPrefHelper.getToken() ?? '';
+    if (token.isEmpty) {
+      print("⚠️ No token found, cannot upload photos");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('User not authenticated')));
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    print(token);
+    print(
+      "📌 Upload URL: ${ApiEndpoints.baseUrl + ApiEndpoints.moreuploadphoto}",
+    );
+
+    print(
+      "📌 Files to upload: ${selectedImages.where((e) => e != null).length}",
+    );
+
     try {
       // Prepare multipart request
       var request = http.MultipartRequest(
@@ -61,12 +81,13 @@ class _UploadPhotoSheetState extends State<UploadPhotoSheet> {
       );
       request.headers['Authorization'] = 'Bearer $token';
       request.headers['Accept'] = 'application/json';
+      print("📌 Headers: ${request.headers}");
 
       // Add images to request
       for (var img in selectedImages) {
         if (img != null) {
           request.files.add(
-            await http.MultipartFile.fromPath('photos[]', img.path),
+            await http.MultipartFile.fromPath('photos', img.path),
           );
         }
       }
@@ -74,6 +95,8 @@ class _UploadPhotoSheetState extends State<UploadPhotoSheet> {
       var response = await request.send();
       var respStr = await response.stream.bytesToString();
       var jsonResp = json.decode(respStr);
+
+      print("status code----${response.statusCode}");
 
       if (response.statusCode == 200) {
         print('Photos uploaded: ${jsonResp['photos']}');

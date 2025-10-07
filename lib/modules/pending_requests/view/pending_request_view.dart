@@ -1,15 +1,12 @@
-// lib/modules/accepted/view/accepted_requests_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/pending_requests/controller/pending_request_conroller.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
-import 'package:shyeyes/modules/invitation/controller/invitation_controller.dart';
+import 'package:shyeyes/modules/pending_requests/controller/pending_request_conroller.dart';
 import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
 
 class PendingRequestView extends StatelessWidget {
-  final PendingRequestConroller controller = Get.put(PendingRequestConroller());
-  final InvitationController invitationController = Get.put(
-    InvitationController(),
+  final PendingRequestController controller = Get.put(
+    PendingRequestController(),
   );
 
   @override
@@ -31,24 +28,29 @@ class PendingRequestView extends StatelessWidget {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return _buildLoadingState();
-        }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.fetchPendingRequests();
+        },
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return _buildLoadingState();
+          }
 
-        if (controller.acceptedRequests.isEmpty) {
-          return _buildEmptyState();
-        }
+          if (controller.pendingRequests.isEmpty) {
+            return _buildEmptyState();
+          }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: controller.acceptedRequests.length,
-          itemBuilder: (context, index) {
-            final req = controller.acceptedRequests[index];
-            return _buildRequestCard(req);
-          },
-        );
-      }),
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: controller.pendingRequests.length,
+            itemBuilder: (context, index) {
+              final req = controller.pendingRequests[index];
+              return _buildRequestCard(req);
+            },
+          );
+        }),
+      ),
     );
   }
 
@@ -97,10 +99,7 @@ class PendingRequestView extends StatelessWidget {
   }
 
   Widget _buildRequestCard(Request req) {
-    final user = req.user2;
-    final isProcessing = invitationController.invitations.any(
-      (inv) => inv.id == req.id,
-    );
+    final user = req.recipient;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -120,7 +119,7 @@ class PendingRequestView extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            // Profile Avatar with Status
+            // Profile Avatar
             Stack(
               children: [
                 Container(
@@ -129,14 +128,15 @@ class PendingRequestView extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
+                      color: Colors.orange.withOpacity(0.3),
                       width: 2,
                     ),
                   ),
                   child: ClipOval(
-                    child: user?.profilePic != null
+                    child:
+                        user?.profilePic != null && user!.profilePic!.isNotEmpty
                         ? Image.network(
-                            "https://shyeyes-b.onrender.com/uploads/${user?.profilePic}",
+                            "https://shyeyes-b.onrender.com/uploads/${user.profilePic}",
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return _buildPlaceholderAvatar();
@@ -183,7 +183,7 @@ class PendingRequestView extends StatelessWidget {
 
                   Text(
                     user?.age != null
-                        ? '${user?.age} years old'
+                        ? '${user!.age} years old'
                         : 'Age not set',
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     maxLines: 1,
@@ -216,32 +216,23 @@ class PendingRequestView extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // Remove Button
-            isProcessing
-                ? const SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                    ),
-                  )
-                : IconButton(
-                    onPressed: () => _showRemoveConfirmation(req),
-                    icon: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.person_remove,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                    ),
-                  ),
+            // Action Button
+            IconButton(
+              onPressed: () => _showRemoveConfirmation(req),
+              icon: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_remove,
+                  color: Colors.red,
+                  size: 20,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -255,13 +246,13 @@ class PendingRequestView extends StatelessWidget {
     );
   }
 
-  String _getUserName(user) {
+  String _getUserName(Recipient? user) {
     if (user?.name?.firstName != null && user?.name?.lastName != null) {
-      return '${user?.name!.firstName} ${user?.name!.lastName}';
+      return '${user!.name!.firstName} ${user.name!.lastName}';
     } else if (user?.name?.firstName != null) {
-      return user?.name!.firstName!;
-    } else if (user?.username != null) {
-      return user?.username!;
+      return user!.name!.firstName!;
+    } else if (user?.email != null) {
+      return user!.email!;
     } else {
       return 'Unknown User';
     }
@@ -281,26 +272,57 @@ class PendingRequestView extends StatelessWidget {
   }
 
   void _showRemoveConfirmation(Request req) {
-    final ActiveUsersController activeUsersController = Get.put(
-      ActiveUsersController(),
-    );
+    final controller = Get.find<PendingRequestController>();
+    final activeUsersController = Get.find<ActiveUsersController>();
+
     Get.dialog(
       AlertDialog(
         title: const Text("Remove Request?"),
         content: Text(
-          "Are you sure you want to remove ${_getUserName(req.user2)} from your pending requests?",
+          "Are you sure you want to remove ${_getUserName(req.recipient)} from your pending requests?",
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Cancel")),
           TextButton(
-            onPressed: () {
-              //Get.back();
-              activeUsersController.sendRequest(req.user2?.id ?? '');
+            onPressed: () => Get.back(), // Close dialog
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                // Call API to remove/cancel request
+                await activeUsersController.sendRequest(
+                  req.recipient?.id ?? '',
+                );
+                // Close the dialog **before showing snackbar**
+                if (Get.isDialogOpen ?? false) Get.back();
+
+                // Remove the request from the controller list
+                controller.pendingRequests.removeWhere((r) => r.id == req.id);
+
+                // Show success snackbar
+                // Get.snackbar(
+                //   "Success",
+                //   "Request removed successfully!",
+                //   snackPosition: SnackPosition.BOTTOM,
+                //   backgroundColor: Colors.green.withOpacity(0.8),
+                //   colorText: Colors.white,
+                // );
+              } catch (e) {
+                // Handle error
+                Get.snackbar(
+                  "Error",
+                  "Failed to remove request.",
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.red.withOpacity(0.8),
+                  colorText: Colors.white,
+                );
+              }
             },
             child: const Text("Remove", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
+      barrierDismissible: false, // user must choose
     );
   }
 }

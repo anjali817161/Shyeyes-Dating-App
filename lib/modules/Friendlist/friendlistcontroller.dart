@@ -11,6 +11,7 @@ class FriendController extends GetxController {
   var isLoading = false.obs;
 
   final searchController = "".obs;
+  var isSearching = false.obs; // ✅ Add this for UI state management
 
   @override
   void onInit() {
@@ -37,17 +38,17 @@ class FriendController extends GetxController {
           "Authorization": "Bearer $token",
         },
       );
+
       print(apiUrl);
       print("body:----------${response.body}");
       print("status code:--------${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final model = FriendsModel.fromJson(data); // ✅ new model
+        final model = FriendsModel.fromJson(data);
 
-        // friends list ko data.friends se lo
-        friends.value = model.data?.friends ?? [];
-        filteredFriends.value = friends; // 👈 populate filtered list
+        friends.assignAll(model.data?.friends ?? []);
+        filteredFriends.assignAll(friends);
       } else {
         Get.snackbar("Error", "Failed to fetch friends");
       }
@@ -61,44 +62,61 @@ class FriendController extends GetxController {
   void filterFriends() {
     String query = searchController.value.toLowerCase();
     if (query.isEmpty) {
-      filteredFriends.value = friends;
+      filteredFriends.assignAll(friends);
     } else {
-      filteredFriends.value = friends
-          .where(
-            (f) => (f.name ?? "").toLowerCase().contains(query),
-          ) // 👈 null-safe
-          .toList();
+      filteredFriends.assignAll(
+        friends.where((f) => (f.name ?? "").toLowerCase().contains(query)),
+      );
     }
   }
 
+  // ✅ Toggle search mode
+  void toggleSearch() {
+    isSearching.value = !isSearching.value;
+    if (!isSearching.value) {
+      searchController.value = ""; // Clear search when closing
+    }
+  }
+
+  // ✅ Clear search
+  void clearSearch() {
+    searchController.value = "";
+    isSearching.value = false;
+  }
+
+  /// ✅ Unfriend user and remove instantly from UI
   Future<void> unfriendFriend(String friendId) async {
     final String token = await SharedPrefHelper.getToken() ?? "NULL";
 
     try {
       isLoading.value = true;
-      print("${ApiEndpoints.baseUrl2}${ApiEndpoints.unfriend}/$friendId");
-      print(token);
+
+      final url = "${ApiEndpoints.baseUrl2}${ApiEndpoints.unfriend}/$friendId";
+      print(url);
 
       final response = await http.delete(
-        Uri.parse("${ApiEndpoints.baseUrl2}${ApiEndpoints.unfriend}/$friendId"),
+        Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": "Bearer $token",
         },
       );
+
       print("body:----------${response.body}");
       print("status code:--------${response.statusCode}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-
-        // Snackbar message from API
         Get.snackbar("Success", data["message"] ?? "Unfriended successfully");
 
-        // Local list se bhi remove karo
+        // ✅ Remove user instantly from both lists
         friends.removeWhere((f) => f.userId == friendId);
         filteredFriends.removeWhere((f) => f.userId == friendId);
+
+        // 🔥 Force UI to update instantly
+        friends.refresh();
+        filteredFriends.refresh();
       } else {
         Get.snackbar("Error", "Failed to unfriend");
       }

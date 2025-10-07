@@ -420,6 +420,7 @@ class AuthRepository {
       if (response.statusCode == 200 || response.statusCode == 201) {
         // ✅ handle dono status codes
         return jsonDecode(response.body);
+        // Close the dialog safely after API completes
       } else {
         return {
           "message": "Failed",

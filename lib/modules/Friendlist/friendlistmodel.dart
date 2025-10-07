@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final friendsModel = friendsModelFromJson(jsonString);
-
 import 'dart:convert';
 
 FriendsModel friendsModelFromJson(String str) =>
@@ -52,20 +48,61 @@ class Friend {
   String? name;
   int? age;
   String? profilePic;
+  String? bio;
+  Location? location;
+  List<String>? hobbies;
+  String? friendshipStatus;
+  bool? likedByMe;
 
-  Friend({this.userId, this.name, this.age, this.profilePic});
+  Friend({
+    this.userId,
+    this.name,
+    this.age,
+    this.profilePic,
+    this.bio,
+    this.location,
+    this.hobbies,
+    this.friendshipStatus,
+    this.likedByMe,
+  });
 
   factory Friend.fromJson(Map<String, dynamic> json) => Friend(
-    userId: json["userId"],
+    userId: json["_id"],
     name: json["name"],
     age: json["age"],
     profilePic: json["profilePic"],
+    bio: json["bio"],
+    location: json["location"] != null
+        ? Location.fromJson(json["location"])
+        : null,
+    hobbies: json["hobbies"] == null ? [] : List<String>.from(json["hobbies"]),
+    friendshipStatus: json["friendshipStatus"],
+    likedByMe: json["likedByMe"],
   );
 
   Map<String, dynamic> toJson() => {
-    "userId": userId,
+    "_id": userId,
     "name": name,
     "age": age,
     "profilePic": profilePic,
+    "bio": bio,
+    "location": location?.toJson(),
+    "hobbies": hobbies == null
+        ? []
+        : List<dynamic>.from(hobbies!.map((x) => x)),
+    "friendshipStatus": friendshipStatus,
+    "likedByMe": likedByMe,
   };
+}
+
+class Location {
+  String? city;
+  String? country;
+
+  Location({this.city, this.country});
+
+  factory Location.fromJson(Map<String, dynamic> json) =>
+      Location(city: json["city"], country: json["country"]);
+
+  Map<String, dynamic> toJson() => {"city": city, "country": country};
 }

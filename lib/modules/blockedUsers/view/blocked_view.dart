@@ -22,147 +22,153 @@ class BlockedUserView extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    theme.colorScheme.primary,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  "Loading blocked users...",
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (controller.blockedUsers.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.block, size: 80, color: Colors.grey.shade400),
-                SizedBox(height: 16),
-                Text(
-                  "No Blocked Users",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "Users you block will appear here",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            // Header with count
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.fetchBlockedUsers();
+        },
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.block,
-                          color: theme.colorScheme.primary,
-                          size: 24,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Blocked Users",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          Text(
-                            "${controller.blockedUsers.length} ${controller.blockedUsers.length == 1 ? 'person' : 'people'} blocked",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    "You can unblock users anytime",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                      fontStyle: FontStyle.italic,
+                  CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      theme.colorScheme.primary,
                     ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "Loading blocked users...",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                   ),
                 ],
               ),
-            ),
+            );
+          }
 
-            SizedBox(height: 16),
-
-            // Blocked users list
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                itemCount: controller.blockedUsers.length,
-                itemBuilder: (context, index) {
-                  final BlockedUserModel user = controller.blockedUsers[index];
-                  final formattedDate = DateFormat(
-                    'MMM dd, yyyy • hh:mm a',
-                  ).format(user.blockedAt.toLocal());
-
-                  return _buildBlockedUserCard(
-                    user,
-                    formattedDate,
-                    theme,
-                    screenWidth,
-                  );
-                },
+          if (controller.blockedUsers.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.block, size: 80, color: Colors.grey.shade400),
+                  SizedBox(height: 16),
+                  Text(
+                    "No Blocked Users",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Users you block will appear here",
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                  ),
+                ],
               ),
-            ),
-          ],
-        );
-      }),
+            );
+          }
+
+          return Column(
+            children: [
+              // Header with count
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.block,
+                            color: theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Blocked Users",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                            Text(
+                              "${controller.blockedUsers.length} ${controller.blockedUsers.length == 1 ? 'person' : 'people'} blocked",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "You can unblock users anytime",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 16),
+
+              // Blocked users list
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount: controller.blockedUsers.length,
+                  itemBuilder: (context, index) {
+                    final BlockedUserModel user =
+                        controller.blockedUsers[index];
+                    final formattedDate = DateFormat(
+                      'MMM dd, yyyy • hh:mm a',
+                    ).format(user.blockedAt.toLocal());
+
+                    return _buildBlockedUserCard(
+                      user,
+                      formattedDate,
+                      theme,
+                      screenWidth,
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 
@@ -260,7 +266,7 @@ class BlockedUserView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user.email,
+                            user.name ?? "No Name",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: isSmallScreen ? 14 : 16,
@@ -328,7 +334,7 @@ class BlockedUserView extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _showUnblockConfirmation(user, theme),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
+                      backgroundColor: theme.colorScheme.primary,
                       foregroundColor: Colors.white,
                       elevation: 1,
                       shape: RoundedRectangleBorder(
@@ -424,9 +430,9 @@ class BlockedUserView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
-                  user.email.length > 30
+                  user.name.length > 30
                       ? "Are you sure you want to unblock this user?"
-                      : "Are you sure you want to unblock ${user.email}?",
+                      : "Are you sure you want to unblock ${user.name}?",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                 ),
@@ -461,7 +467,7 @@ class BlockedUserView extends StatelessWidget {
                           // Show success message
                           Get.snackbar(
                             "Unblocked",
-                            "${user.email.length > 30 ? 'User has been unblocked' : '${user.email} has been unblocked'}",
+                            "${user.name.length > 30 ? 'User has been unblocked' : '${user.name} has been unblocked'}",
                             backgroundColor: Colors.green,
                             colorText: Colors.white,
                             borderRadius: 12,

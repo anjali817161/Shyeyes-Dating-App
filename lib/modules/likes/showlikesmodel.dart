@@ -4,9 +4,9 @@ class showlikes {
   showlikes({this.rlikes});
 
   showlikes.fromJson(Map<String, dynamic> json) {
-    if (json['Rlikes'] != null) {
+    if (json['likes'] != null) {
       rlikes = <Rlikes>[];
-      json['Rlikes'].forEach((v) {
+      json['likes'].forEach((v) {
         rlikes!.add(new Rlikes.fromJson(v));
       });
     }
@@ -15,7 +15,7 @@ class showlikes {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     if (this.rlikes != null) {
-      data['Rlikes'] = this.rlikes!.map((v) => v.toJson()).toList();
+      data['likes'] = this.rlikes!.map((v) => v.toJson()).toList();
     }
     return data;
   }
