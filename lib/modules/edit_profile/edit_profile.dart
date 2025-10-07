@@ -290,7 +290,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   img: _imageFile,
                                 );
 
-                                if (context.mounted) Navigator.pop(context);
+                                if (context.mounted)
+                                  Navigator.pop(context, true);
                               },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,

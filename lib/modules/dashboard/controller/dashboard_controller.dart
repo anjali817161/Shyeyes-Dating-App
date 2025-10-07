@@ -110,6 +110,8 @@ class ActiveUsersController extends GetxController {
             location: users[userIndex].location,
             friendshipStatus: status, // 👈 yaha update
           );
+          Get.back();
+
           users.refresh();
         }
 

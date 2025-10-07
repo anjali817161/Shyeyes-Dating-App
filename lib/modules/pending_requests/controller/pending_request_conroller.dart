@@ -1,12 +1,10 @@
-// lib/modules/pending_requests/controller/pending_request_controller.dart
-
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/pending_requests/model/pending_requests_model.dart';
+import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 
 class PendingRequestController extends GetxController {
   var isLoading = false.obs;
-  var pendingRequests = <Request>[].obs; // ✅ Correct name according to model
+  var pendingRequests = <Request>[].obs;
 
   @override
   void onInit() {
@@ -31,6 +29,7 @@ class PendingRequestController extends GetxController {
       }
     } catch (e) {
       print("❌ Error fetching pending requests: $e");
+      pendingRequests.clear();
     } finally {
       isLoading.value = false;
     }

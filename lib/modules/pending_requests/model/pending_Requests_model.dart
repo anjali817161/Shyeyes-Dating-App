@@ -12,16 +12,14 @@ class PendingNewRequestModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "requests": requests?.map((x) => x.toJson()).toList(),
-    };
+    return {"requests": requests?.map((x) => x.toJson()).toList()};
   }
 }
 
 class Request {
   String? id;
   String? name;
-  From? from;
+  Recipient? recipient; 
   String? status;
   String? actionBy;
   String? sentAt;
@@ -29,7 +27,7 @@ class Request {
   Request({
     this.id,
     this.name,
-    this.from,
+    this.recipient,
     this.status,
     this.actionBy,
     this.sentAt,
@@ -39,7 +37,7 @@ class Request {
     return Request(
       id: json['id'],
       name: json['name'],
-      from: json['from'] != null ? From.fromJson(json['from']) : null,
+      recipient: json['to'] != null ? Recipient.fromJson(json['to']) : null,
       status: json['status'],
       actionBy: json['actionBy'],
       sentAt: json['sentAt'],
@@ -50,7 +48,7 @@ class Request {
     return {
       "id": id,
       "name": name,
-      "from": from?.toJson(),
+      "to": recipient?.toJson(),
       "status": status,
       "actionBy": actionBy,
       "sentAt": sentAt,
@@ -58,23 +56,17 @@ class Request {
   }
 }
 
-class From {
+class Recipient {
   String? id;
   Name? name;
   String? email;
   int? age;
   String? profilePic;
 
-  From({
-    this.id,
-    this.name,
-    this.email,
-    this.age,
-    this.profilePic,
-  });
+  Recipient({this.id, this.name, this.email, this.age, this.profilePic});
 
-  factory From.fromJson(Map<String, dynamic> json) {
-    return From(
+  factory Recipient.fromJson(Map<String, dynamic> json) {
+    return Recipient(
       id: json['_id'],
       name: json['Name'] != null ? Name.fromJson(json['Name']) : null,
       email: json['email'],
@@ -101,16 +93,10 @@ class Name {
   Name({this.firstName, this.lastName});
 
   factory Name.fromJson(Map<String, dynamic> json) {
-    return Name(
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-    );
+    return Name(firstName: json['firstName'], lastName: json['lastName']);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "firstName": firstName,
-      "lastName": lastName,
-    };
+    return {"firstName": firstName, "lastName": lastName};
   }
 }
