@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
-import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
@@ -19,12 +18,6 @@ class FavouritePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    UserModel dummyUser = UserModel(
-      name: 'Shaan',
-      imageUrl: 'https://i.pravatar.cc/150?img=65',
-      lastMessage: "Hey, how are you?🥰",
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -64,15 +57,18 @@ class FavouritePage extends StatelessWidget {
                 Likes profile = controller.likesList[index];
                 final likedUser = profile.liked;
 
-                // full image url
-                String profilePicUrl =
-                    (likedUser?.profilePic != null &&
-                        likedUser!.profilePic!.isNotEmpty)
+                if (likedUser == null) return const SizedBox();
+
+                final userId = likedUser.sId ?? "";
+                final profilePicUrl =
+                    (likedUser.profilePic != null &&
+                        likedUser.profilePic!.isNotEmpty)
                     ? "https://shyeyes-b.onrender.com/uploads/${likedUser.profilePic!}"
                     : "";
 
-                // userId safe fallback
-                final userId = likedUser?.sId ?? "";
+                final fullName =
+                    "${likedUser.name?.firstName ?? ''} ${likedUser.name?.lastName ?? ''}"
+                        .trim();
 
                 return InkWell(
                   onTap: () {
@@ -110,9 +106,11 @@ class FavouritePage extends StatelessWidget {
                                           profilePicUrl,
                                           fit: BoxFit.cover,
                                           errorBuilder: (_, __, ___) =>
-                                              const Icon(
-                                                Icons.person,
-                                                size: 50,
+                                              const Center(
+                                                child: Icon(
+                                                  Icons.person,
+                                                  size: 50,
+                                                ),
                                               ),
                                         )
                                       : const Center(
@@ -125,17 +123,16 @@ class FavouritePage extends StatelessWidget {
                                 right: 8,
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final likedUserId = likedUser?.sId;
+                                    final likedUserId = likedUser.sId;
                                     if (likedUserId != null) {
                                       await controller.unlikeLocally(
                                         likedUserId,
                                       );
                                     }
                                   },
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.favorite,
-                                    color: Colors
-                                        .red, // you can use theme.colorScheme.primary
+                                    color: Colors.red,
                                     size: 28,
                                   ),
                                 ),
@@ -154,7 +151,7 @@ class FavouritePage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${likedUser?.name?.firstName ?? ""} ${likedUser?.name?.lastName ?? ""}",
+                                  fullName,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFFDF314D),
@@ -167,7 +164,7 @@ class FavouritePage extends StatelessWidget {
                                   children: [
                                     const Icon(Icons.cake, size: 16),
                                     const SizedBox(width: 4),
-                                    Text("${likedUser?.age ?? ''} years"),
+                                    Text("${likedUser.age ?? ''} years"),
                                   ],
                                 ),
                                 const SizedBox(height: 2),
@@ -181,13 +178,14 @@ class FavouritePage extends StatelessWidget {
                                     const SizedBox(width: 4),
                                     Expanded(
                                       child: Text(
-                                        "${likedUser?.location?.state ?? ''}, ${likedUser?.location?.country ?? ''}",
+                                        "${likedUser.location?.state ?? ''}, ${likedUser.location?.country ?? ''}",
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 5),
+
                                 // Action buttons
                                 Row(
                                   mainAxisAlignment:
@@ -196,9 +194,19 @@ class FavouritePage extends StatelessWidget {
                                     _buildCircleIcon(
                                       icon: Icons.chat_bubble,
                                       theme: theme,
-                                      onPressed: () => Get.to(
-                                        () => ChatScreen(user: dummyUser),
-                                      ),
+                                      onPressed: () {
+                                        Get.to(
+                                          () => ChatScreen(
+                                            receiverId: userId,
+                                            receiverName: fullName,
+                                            receiverImage: profilePicUrl,
+                                          ),
+                                          transition: Transition.rightToLeft,
+                                          duration: const Duration(
+                                            milliseconds: 400,
+                                          ),
+                                        );
+                                      },
                                     ),
                                     _buildCircleIcon(
                                       icon: Icons.call,

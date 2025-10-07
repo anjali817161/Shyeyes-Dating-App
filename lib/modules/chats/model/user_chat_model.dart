@@ -1,15 +1,17 @@
-class ChatUserModel {
+class ChatPreviewModel {
+  final String receiverId;
   final String name;
-  final String message;
-  final String time;
   final String avatarUrl;
+  final String lastMessage;
+  final String time;
   final bool isRead;
 
-  ChatUserModel({
+  ChatPreviewModel({
+    required this.receiverId,
     required this.name,
-    required this.message,
-    required this.time,
     required this.avatarUrl,
-    this.isRead = false,
+    required this.lastMessage,
+    required this.time,
+    this.isRead = true,
   });
 }

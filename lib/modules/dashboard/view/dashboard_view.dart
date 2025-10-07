@@ -200,11 +200,11 @@ class _DashboardPageState extends State<DashboardPage> {
     final theme = Theme.of(context);
 
     // Dummy user for ChatScreen
-    UserModel dummyUser = UserModel(
-      name: 'Shaan',
-      imageUrl: 'https://i.pravatar.cc/150?img=65',
-      lastMessage: "Hey, how are you?🥰",
-    );
+    // UserModel dummyUser = UserModel(
+    //   name: 'Shaan',
+    //   imageUrl: 'https://i.pravatar.cc/150?img=65',
+    //   lastMessage: "Hey, how are you?🥰",
+    // );
 
     return Obx(() {
       if (controller.isLoading.value) {
@@ -558,7 +558,13 @@ class _DashboardPageState extends State<DashboardPage> {
                             );
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
-                            Get.to(() => ChatScreen(user: dummyUser));
+                            Get.to(
+                              () => ChatScreen(
+                                receiverId: profile.id ?? "",
+                                receiverName: profile.name ?? "",
+                                receiverImage: profile.profilePic ?? "na",
+                              ),
+                            );
                           }),
                           _iconCircle(Icons.videocam, () {
                             showDialog(
