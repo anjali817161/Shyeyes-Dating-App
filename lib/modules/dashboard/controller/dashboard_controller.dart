@@ -196,55 +196,68 @@ class ActiveUsersController extends GetxController {
   // LIKE / UNLIKE HANDLING
   // -----------------------
   Future<void> toggleFavorite(String userId) async {
-    try {
-      final token = await SharedPrefHelper.getToken() ?? '';
+  try {
+    final token = await SharedPrefHelper.getToken() ?? '';
+    final uri = Uri.parse("https://shyeyes-b.onrender.com/api/likes/$userId/like");
 
-      // Toggle API URL
-      final uri = Uri.parse(
-        "https://shyeyes-b.onrender.com/api/likes/$userId/like",
-      );
+    // ✅ Check current liked state
+    final bool isCurrentlyLiked = likedUsers.contains(userId);
 
-      final response = await http.post(
-        uri,
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
+    // ✅ Instantly update UI (optimistic)
+    if (isCurrentlyLiked) {
+      likedUsers.remove(userId); // turn grey instantly
+    } else {
+      likedUsers.add(userId); // turn red instantly
+      recentlyLikedUsers.add(userId);
 
-      print("Toggle Favorite response code: ${response.statusCode}");
-      print("Toggle Favorite response body: ${response.body}");
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        final liked = data['liked'] ?? false;
-
-        // Update likedUsers set based on backend response
-        if (liked) {
-          likedUsers.add(userId);
-          recentlyLikedUsers.add(userId);
-
-          // Heart animation thodi der ke liye
-          Future.delayed(const Duration(seconds: 1), () {
-            recentlyLikedUsers.remove(userId);
-          });
-        } else {
-          likedUsers.remove(userId);
-        }
-
-        // Optional: Show snackbar
-        Get.snackbar(
-          "Success",
-          liked ? "Profile liked" : "Profile unliked",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      } else {
-        print("Toggle failed: ${response.statusCode} ${response.body}");
-      }
-    } catch (e) {
-      print("Error in toggleFavorite: $e");
+      // Heart animation for a second
+      Future.delayed(const Duration(seconds: 1), () {
+        recentlyLikedUsers.remove(userId);
+      });
     }
+
+    // ✅ Hit like/unlike API
+    final response = await http.post(
+      uri,
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    print("Like/Unlike response: ${response.statusCode} => ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final liked = data['liked'] ?? !isCurrentlyLiked;
+
+      // ✅ Sync with backend (in case mismatch)
+      if (liked) {
+        likedUsers.add(userId);
+      } else {
+        likedUsers.remove(userId);
+      }
+
+      Get.snackbar(
+        "Success",
+        liked ? "Profile liked ❤️" : "Profile unliked 💔",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      // ❌ Revert if API fails
+      if (isCurrentlyLiked) {
+        likedUsers.add(userId);
+      } else {
+        likedUsers.remove(userId);
+      }
+      Get.snackbar("Error", "Failed to update like status");
+    }
+  } catch (e) {
+    print("Error in toggleFavorite: $e");
+    Get.snackbar("Error", "Something went wrong while liking");
   }
+}
+
 
   bool isLiked(String userId) {
     return likedUsers.contains(userId);
