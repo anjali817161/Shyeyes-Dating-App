@@ -226,6 +226,7 @@ class _DashboardPageState extends State<DashboardPage> {
           separatorBuilder: (context, index) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
             final profile = usersController.matches[index];
+            final selectedUser = usersController.users[index];
             final userId = profile.id ?? ""; // User ID get karo
 
             return GestureDetector(
@@ -558,14 +559,25 @@ class _DashboardPageState extends State<DashboardPage> {
                             );
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
+                            final fullName = selectedUser.name != null
+                                ? "${selectedUser.name!.firstName} ${selectedUser.name!.lastName}"
+                                : "Unknown";
+
+                            final imageUrl =
+                                (profile.profilePic != null &&
+                                    profile.profilePic!.isNotEmpty)
+                                ? profile.profilePic!
+                                : "assets/images/profile_image2.png";
+
                             Get.to(
                               () => ChatScreen(
                                 receiverId: profile.id ?? "",
                                 receiverName: profile.name ?? "",
-                                receiverImage: profile.profilePic ?? "na",
+                                receiverImage: imageUrl,
                               ),
                             );
                           }),
+
                           _iconCircle(Icons.videocam, () {
                             showDialog(
                               context: context,

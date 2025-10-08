@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shyeyes/modules/chats/controller/chat_controller.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
@@ -13,17 +12,76 @@ class ChatLobbyPage extends StatefulWidget {
 }
 
 class _ChatLobbyPageState extends State<ChatLobbyPage> {
-  final ChatController controller = Get.put(ChatController());
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = "";
 
-  @override
-  void initState() {
-    super.initState();
-    controller.loadChatList(); // ✅ load previous conversations
-  }
+  // 🔹 Dummy active users list
+  final List<Map<String, String>> activeUsers = [
+    {
+      "name": "Amit",
+      "profilePic": "https://randomuser.me/api/portraits/men/31.jpg",
+    },
+    {
+      "name": "Sneha",
+      "profilePic": "https://randomuser.me/api/portraits/women/44.jpg",
+    },
+    {
+      "name": "Ravi",
+      "profilePic": "https://randomuser.me/api/portraits/men/56.jpg",
+    },
+    {
+      "name": "Neha",
+      "profilePic": "https://randomuser.me/api/portraits/women/21.jpg",
+    },
+  ];
+
+  // 🔹 Dummy chat list
+  final List<Map<String, dynamic>> chats = [
+    {
+      "userName": "Amit Sharma",
+      "userId": "1",
+      "profilePic": "https://randomuser.me/api/portraits/men/31.jpg",
+      "lastMessage": "Hey! How are you?",
+      "lastMessageTime": "10:20 AM",
+      "isRead": false,
+    },
+    {
+      "userName": "Sneha Kapoor",
+      "userId": "2",
+      "profilePic": "https://randomuser.me/api/portraits/women/44.jpg",
+      "lastMessage": "Let's meet tomorrow.",
+      "lastMessageTime": "9:50 AM",
+      "isRead": true,
+    },
+    {
+      "userName": "Ravi Verma",
+      "userId": "3",
+      "profilePic": "https://randomuser.me/api/portraits/men/56.jpg",
+      "lastMessage": "Did you check my message?",
+      "lastMessageTime": "Yesterday",
+      "isRead": false,
+    },
+    {
+      "userName": "Neha Singh",
+      "userId": "4",
+      "profilePic": "https://randomuser.me/api/portraits/women/21.jpg",
+      "lastMessage": "See you soon 💬",
+      "lastMessageTime": "Monday",
+      "isRead": true,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final filteredChats = chats
+        .where(
+          (chat) => chat["userName"].toString().toLowerCase().contains(
+            searchQuery.toLowerCase(),
+          ),
+        )
+        .toList();
+
     return Scaffold(
       backgroundColor: theme.colorScheme.secondaryContainer,
       appBar: AppBar(
@@ -46,6 +104,7 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search chats...",
                 prefixIcon: const Icon(Icons.search),
@@ -56,145 +115,133 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
                   borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: controller.searchChats,
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
             ),
           ),
 
           // 🟢 Active users row
-          Obx(() {
-            final activeUsers = controller.onlineUsers;
-            if (activeUsers.isEmpty) {
-              return const SizedBox(height: 0);
-            }
-
-            return SizedBox(
-              height: 100,
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 12),
-                scrollDirection: Axis.horizontal,
-                itemCount: activeUsers.length,
-                itemBuilder: (context, index) {
-                  final user = activeUsers[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Column(
-                      children: [
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: theme.colorScheme.primary,
-                                  width: 1,
-                                ),
-                                color: Colors.white,
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              padding: const EdgeInsets.only(left: 12),
+              scrollDirection: Axis.horizontal,
+              itemCount: activeUsers.length,
+              itemBuilder: (context, index) {
+                final user = activeUsers[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Column(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: theme.colorScheme.primary,
+                                width: 1,
                               ),
-                              child: CircleAvatar(
-                                radius: 28,
-                                backgroundImage: NetworkImage(user.avatarUrl),
+                              color: Colors.white,
+                            ),
+                            child: CircleAvatar(
+                              radius: 28,
+                              backgroundImage: NetworkImage(
+                                user["profilePic"]!,
                               ),
                             ),
-                            // 💚 Blinking online dot
-                            Positioned(
-                              bottom: 4,
-                              right: 4,
-                              child: BlinkingDot(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          user.name.split(" ").first,
-                          style: const TextStyle(fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            );
-          }),
+                          ),
+                          // 💚 Blinking online dot
+                          Positioned(bottom: 4, right: 4, child: BlinkingDot()),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        user["name"]!,
+                        style: const TextStyle(fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
 
           const SizedBox(height: 8),
 
           // 💬 Chat list
           Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final chatList = controller.filteredChats.isNotEmpty
-                  ? controller.filteredChats
-                  : controller.chats;
-
-              if (chatList.isEmpty) {
-                return const Center(child: Text("No chats yet."));
-              }
-
-              return ListView.builder(
-                itemCount: chatList.length,
-                itemBuilder: (context, index) {
-                  final chat = chatList[index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 26,
-                        backgroundImage: NetworkImage(chat.avatarUrl),
-                      ),
-                      title: Text(
-                        chat.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        chat.lastMessage,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: chat.isRead ? Colors.grey : Colors.black,
-                          fontWeight: chat.isRead
-                              ? FontWeight.normal
-                              : FontWeight.bold,
+            child: filteredChats.isEmpty
+                ? const Center(child: Text("No chats yet."))
+                : ListView.builder(
+                    itemCount: filteredChats.length,
+                    itemBuilder: (context, index) {
+                      final chat = filteredChats[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(chat.time, style: const TextStyle(fontSize: 12)),
-                          if (!chat.isRead)
-                            const Icon(
-                              Icons.circle,
-                              color: Colors.blue,
-                              size: 10,
-                            ),
-                        ],
-                      ),
-                      onTap: () {
-                        // ✅ Navigate to ChatScreen
-                        Get.to(
-                          () => ChatScreen(
-                            receiverId: chat.receiverId,
-                            receiverName: chat.name,
-                            receiverImage: chat.avatarUrl,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            radius: 26,
+                            backgroundImage: NetworkImage(chat["profilePic"]!),
                           ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              );
-            }),
+                          title: Text(
+                            chat["userName"],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            chat["lastMessage"],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: chat["isRead"]
+                                  ? Colors.grey
+                                  : Colors.black,
+                              fontWeight: chat["isRead"]
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
+                            ),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                chat["lastMessageTime"],
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              if (!chat["isRead"])
+                                const Icon(
+                                  Icons.circle,
+                                  color: Colors.blue,
+                                  size: 10,
+                                ),
+                            ],
+                          ),
+                          onTap: () {
+                            // ✅ Navigate to ChatScreen (dummy)
+                            Get.to(
+                              () => ChatScreen(
+                                receiverId: chat["userId"],
+                                receiverName: chat["userName"],
+                                receiverImage: chat["profilePic"],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

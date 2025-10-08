@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/chat_controller.dart';
+import '../../profile/controller/profile_controller.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverId;
@@ -20,24 +21,43 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final ChatController controller = Get.put(ChatController());
+  final ProfileController profileController =
+      Get.find(); // ✅ Get logged-in user
   final TextEditingController msgCtrl = TextEditingController();
   final ScrollController scrollCtrl = ScrollController();
+
+  late String currentUserId;
+  late String receiverId;
+  late String receiverName;
+  late String receiverImage;
 
   @override
   void initState() {
     super.initState();
+
+    // Get current user ID from ProfileController
+    currentUserId = profileController.profile2?.value?.data?.user?.id ?? "";
+    receiverId = widget.receiverId;
+    receiverName = widget.receiverName;
+    receiverImage = widget.receiverImage;
+
+    // Initialize chat
     controller.initChat(
-      receiverId: widget.receiverId,
-      receiverName: widget.receiverName,
-      receiverImage: widget.receiverImage,
+      receiverId: receiverId,
+      receiverName: receiverName,
+      receiverImage: receiverImage,
     );
   }
 
   void _sendMessage() {
     final text = msgCtrl.text.trim();
     if (text.isEmpty) return;
+
+    // Send message using controller
     controller.sendMessage(text);
     msgCtrl.clear();
+
+    // Scroll to bottom
     Future.delayed(const Duration(milliseconds: 200), () {
       if (scrollCtrl.hasClients) {
         scrollCtrl.jumpTo(scrollCtrl.position.maxScrollExtent);
@@ -53,9 +73,14 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            CircleAvatar(backgroundImage: NetworkImage(widget.receiverImage)),
+            CircleAvatar(
+              backgroundImage: receiverImage.startsWith("http")
+                  ? NetworkImage(receiverImage)
+                  : AssetImage(receiverImage) as ImageProvider,
+            ),
+
             const SizedBox(width: 10),
-            Text(widget.receiverName),
+            Text(receiverName),
           ],
         ),
       ),
@@ -66,12 +91,18 @@ class _ChatScreenState extends State<ChatScreen> {
               if (controller.isLoading.value) {
                 return const Center(child: CircularProgressIndicator());
               }
+
+              if (controller.messages.isEmpty) {
+                return const Center(child: Text("No messages yet"));
+              }
+
               return ListView.builder(
                 controller: scrollCtrl,
                 itemCount: controller.messages.length,
                 itemBuilder: (context, index) {
                   final msg = controller.messages[index];
-                  final isMe = msg.from == controller.currentUserId;
+                  final isMe = msg.from == currentUserId;
+
                   return Align(
                     alignment: isMe
                         ? Alignment.centerRight
