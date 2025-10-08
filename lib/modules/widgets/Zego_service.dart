@@ -51,7 +51,7 @@ class ZegoService {
   }
 
   // ----------------------------------------------------------------
-  // 🚀 Outgoing Call using Zego Call Invitation (v4.x compatible)
+  //  Outgoing Call using Zego Call Invitation (v4.x compatible)
   // ----------------------------------------------------------------
 static Future<void> startCall({
   required dynamic targetUser,
