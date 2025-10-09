@@ -5,8 +5,8 @@ class MessageModel {
   final String message;
   final DateTime timestamp;
   final String status;
-  final dynamic remainingMessages; // can be int or String
-  final int? messagesUsedTotal;
+  final dynamic? remainingMessages;
+  final dynamic? messagesUsedTotal;
 
   MessageModel({
     required this.id,
@@ -20,34 +20,97 @@ class MessageModel {
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
-    // Handle message as String or Map
-    String msgText = '';
-    DateTime? msgTimestamp;
+    // -------------------------------
+    // Parse from / to fields
+    // -------------------------------
+    String fromId = '';
+    String toId = '';
 
-    final msgData = json['message'] ?? json['sentMessage'] ?? '';
-    if (msgData is String) {
-      msgText = msgData;
-    } else if (msgData is Map<String, dynamic>) {
-      msgText = msgData['text'] ?? '';
-      msgTimestamp = DateTime.tryParse(msgData['timestamp'] ?? '');
+    final fromData = json['from'];
+    if (fromData is String) {
+      fromId = fromData;
+    } else if (fromData is Map) {
+      fromId = fromData['_id']?.toString() ?? '';
+    }
+
+    final toData = json['to'];
+    if (toData is String) {
+      toId = toData;
+    } else if (toData is Map) {
+      toId = toData['_id']?.toString() ?? '';
+    }
+
+    // -------------------------------
+    // Parse message text
+    // -------------------------------
+    String msgText = '';
+    if (json['message'] != null) {
+      if (json['message'] is String) {
+        msgText = json['message'];
+      } else if (json['message'] is Map) {
+        msgText = json['message']['text'] ?? '';
+      }
+    } else if (json['sentMessage'] != null) {
+      msgText = json['sentMessage']?.toString() ?? '';
+    }
+
+    // -------------------------------
+    // Parse timestamp
+    // -------------------------------
+    DateTime timestamp = DateTime.now();
+    if (json['createdAt'] != null) {
+      timestamp =
+          DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now();
+    }
+
+    // -------------------------------
+    // Parse status
+    // -------------------------------
+    String status =
+        json['status']?.toString() ??
+        json['deliveryStatus']?.toString() ??
+        'pending';
+
+    // -------------------------------
+    // Parse remainingMessages
+    // -------------------------------
+    dynamic remaining;
+    final rm = json['remainingMessages'];
+    if (rm != null) {
+      if (rm is int)
+        remaining = rm;
+      else if (rm is String)
+        remaining = rm; // Keep "Unlimited" string
+    }
+
+    // -------------------------------
+    // Parse messagesUsedTotal
+    // -------------------------------
+    dynamic usedTotal;
+    final rawUsed = json['messagesUsedTotal'];
+    if (rawUsed != null) {
+      if (rawUsed is int)
+        usedTotal = rawUsed;
+      else if (rawUsed is String)
+        usedTotal = int.tryParse(rawUsed);
     }
 
     return MessageModel(
-      id: json['petitionId'] ?? json['_id'] ?? json['id'] ?? '',
-      from: json['from'] ?? json['senderId'] ?? '',
-      to: json['to'] ?? json['receiverId'] ?? '',
+      id:
+          json['petitionId']?.toString() ??
+          json['_id']?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
+      from: fromId,
+      to: toId,
       message: msgText,
-      timestamp:
-          msgTimestamp ??
-          DateTime.tryParse(json['createdAt'] ?? '') ??
-          DateTime.now(),
-      status: json['status'] ?? json['deliveryStatus'] ?? 'pending',
-      remainingMessages: json['remainingMessages'], // dynamic
-      messagesUsedTotal: json['messagesUsedTotal'] is int
-          ? json['messagesUsedTotal']
-          : int.tryParse(json['messagesUsedTotal']?.toString() ?? ''),
+      timestamp: timestamp,
+      status: status,
+      remainingMessages: remaining,
+      messagesUsedTotal: usedTotal,
     );
   }
+
+  bool isMe(String currentUserId) => from == currentUserId;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -59,8 +122,4 @@ class MessageModel {
     'remainingMessages': remainingMessages,
     'messagesUsedTotal': messagesUsedTotal,
   };
-
-  bool get isMe => from == currentUserId;
 }
-
-String currentUserId = "";

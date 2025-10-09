@@ -93,7 +93,9 @@ class _ChatScreenState extends State<ChatScreen> {
               }
 
               if (controller.messages.isEmpty) {
-                return const Center(child: Text("No messages yet"));
+                return const Center(
+                  child: Text("Let's break the ice by saying hii👋"),
+                );
               }
 
               return ListView.builder(

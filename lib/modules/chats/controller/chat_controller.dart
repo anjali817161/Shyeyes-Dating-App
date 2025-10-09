@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
@@ -30,6 +31,8 @@ class ChatController extends GetxController {
   var receiverName = "".obs;
   var receiverImage = "".obs;
   var remainingMessages = 0.obs;
+
+  final _box = GetStorage();
 
   late String currentUserId;
   late String token;
@@ -68,77 +71,80 @@ class ChatController extends GetxController {
 
     socket.connect();
 
-    socket.onConnect((_) {
-      print("✅ Socket connected to /chat namespace");
-    });
+    socket.onConnect((_) => print("✅ Socket connected to /chat namespace"));
+    socket.onDisconnect((_) => print("❌ Socket disconnected"));
+    socket.on("error", (data) => print("⚠️ Socket error: $data"));
 
-    socket.onDisconnect((_) {
-      print("❌ Socket disconnected");
-    });
-
-    socket.on("error", (data) {
-      print("⚠️ Socket error: $data");
-      Get.snackbar("Chat Error", data['message'] ?? "Unknown error");
-    });
-
-    // 🧹 Remove old listener before adding new one
+    // 🧹 Prevent duplicate listeners
     socket.off("new_message");
-    socket.on("new_message", (data) {
-      print("📩 New message received: $data");
+    socket.on("new_message", (rawData) {
+      try {
+        // ✅ Safely convert to Map<String, dynamic>
+        final Map<String, dynamic> data = {};
+        (rawData as Map).forEach((key, value) {
+          data[key.toString()] = value;
+        });
 
-      // ✅ Safely cast data to Map<String, dynamic>
-      final Map<String, dynamic> dataMap = Map<String, dynamic>.from(
-        data as Map,
-      );
+        // ✅ Handle message as string or map
+        final msgData = data['message'];
+        final safeMessage = msgData is Map
+            ? msgData['text'] ?? ''
+            : msgData?.toString() ?? '';
 
-      // ✅ Handle case where 'message' may be a Map or String
-      final safeMessage = dataMap['message'] is Map
-          ? (dataMap['message'] as Map)['text']
-          : dataMap['message'];
+        data['message'] = safeMessage;
 
-      // ✅ Build safe data Map
-      final Map<String, dynamic> safeData = {
-        ...dataMap,
-        'message': safeMessage,
-      };
+        final msg = MessageModel.fromJson(data);
 
-      // ✅ Convert to model safely
-      final msg = MessageModel.fromJson(safeData);
+        // ✅ Prevent duplicates
+        if (!messages.any((m) => m.id == msg.id && m.message == msg.message)) {
+          messages.add(msg);
+          saveMessagesToLocal(); // 💾 Save locally
+        }
 
-      // ✅ Prevent duplicates
-      addUniqueMessage(msg);
+        print("📩 New message received: ${msg.message}");
+      } catch (e, st) {
+        print("🔥 Error in new_message listener: $e");
+        print(st);
+      }
     });
 
     socket.off("message_sent");
     socket.on("message_sent", (data) {
       print("✅ Message sent confirmed: $data");
-      remainingMessages.value =
-          data["remainingMessages"] ?? remainingMessages.value;
-    });
+      final rm = data["remainingMessages"];
 
-    socket.off("user_online");
-    socket.on("user_online", (data) {
-      onlineUsers.add(data['userId']);
-    });
-
-    socket.off("user_offline");
-    socket.on("user_offline", (data) {
-      onlineUsers.remove(data['userId']);
-    });
-
-    socket.off("user_typing");
-    socket.on("user_typing", (data) {
-      if (data["userId"] == receiverId.value) {
-        isTyping.value = data["isTyping"] ?? false;
+      if (rm is int) {
+        remainingMessages.value = rm;
+      } else if (rm is String) {
+        // Try to parse if it's a number string
+        final parsed = int.tryParse(rm);
+        if (parsed != null) {
+          remainingMessages.value = parsed;
+        } else {
+          // handle non-numeric gracefully (keep old value or reset)
+          print("⚠️ Unexpected string for remainingMessages: $rm");
+        }
+      } else if (rm == null) {
+        print("⚠️ remainingMessages is null, keeping old value");
       }
     });
   }
 
-  void addUniqueMessage(MessageModel message) {
-    if (!messages.any(
-      (m) => m.id == message.id && m.message == message.message,
-    )) {
-      messages.add(message);
+  //SAVE MSG LOCALLY//
+
+  void saveMessagesToLocal() {
+    final msgList = messages.map((m) => m.toJson()).toList();
+    _box.write('chat_${receiverId.value}', msgList);
+  }
+
+  void loadMessagesFromLocal(String rid) {
+    final data = _box.read('chat_$rid');
+    if (data != null) {
+      messages.assignAll(
+        (data as List)
+            .map((e) => MessageModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+      );
     }
   }
 
@@ -164,8 +170,10 @@ class ChatController extends GetxController {
       this.receiverId.value = receiverId;
       this.receiverName.value = receiverName;
       this.receiverImage.value = receiverImage;
-
       await initSocket();
+      loadMessagesFromLocal(receiverId);
+      socket.emit("join_chat", {"receiverId": receiverId});
+      await fetchMessages(receiverId);
 
       // Join chat room
       socket.emit("join_chat", {"receiverId": receiverId});
@@ -190,6 +198,8 @@ class ChatController extends GetxController {
           "Accept": "application/json",
         },
       );
+      print("body:-------${response.body}");
+      print("status code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -240,10 +250,25 @@ class ChatController extends GetxController {
         },
         body: jsonEncode({"to": receiverId.value, "message": text}),
       );
+      print("body:-------${response.body}");
+      print("status code: ${response.statusCode}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        remainingMessages.value = data["remainingMessages"] ?? 0;
+        final rm = data["remainingMessages"];
+        if (rm is int) {
+          remainingMessages.value = rm;
+        } else if (rm is String) {
+          final parsed = int.tryParse(rm);
+          if (parsed != null) {
+            remainingMessages.value = parsed;
+          } else {
+            print("⚠️ Unexpected string for remainingMessages: $rm");
+            remainingMessages.value = 999999; // or keep previous value
+          }
+        } else {
+          remainingMessages.value = 0;
+        }
 
         // update status in message list
         final index = messages.indexWhere((m) => m.id == tempMsg.id);

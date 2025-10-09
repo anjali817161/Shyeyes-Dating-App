@@ -6,6 +6,7 @@ import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/controller/block_controller.dart';
 import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
 import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
+import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/profile/widget/get_profiles_slider.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
@@ -498,14 +499,37 @@ class _AboutViewState extends State<AboutView> {
     );
   }
 
+  String getValidImage(String? url) {
+    if (url == null || !url.startsWith("http")) {
+      return "assets/images/placeholder.png"; // local placeholder
+    }
+    return url;
+  }
+
   Widget _bottomActions(ThemeData theme) {
+    final profileData = controller.aboutModel.value?.user;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Close button
         buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
-          // Navigate to chat
+          if (profileData != null) {
+            Get.to(
+              () => ChatScreen(
+                receiverId: widget.userId,
+                receiverName:
+                    "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
+                receiverImage: getValidImage(
+                  profileData.photos != null && profileData.photos!.isNotEmpty
+                      ? profileData.photos!.first
+                      : profileData.profilePic,
+                ),
+              ),
+            );
+          }
         }),
+
         const SizedBox(width: 16),
 
         // Like button with animation

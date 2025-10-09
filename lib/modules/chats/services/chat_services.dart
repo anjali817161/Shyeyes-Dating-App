@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,11 +12,16 @@ class ChatService extends GetxService {
   String baseUrl = 'https://shyeyes-b.onrender.com/api/chats';
   String? _token;
 
+  final profileController = Get.find<ProfileController>();
+
   Future<ChatService> init({String? baseUrlOverride}) async {
     if (baseUrlOverride != null) baseUrl = baseUrlOverride;
     final prefs = await SharedPreferences.getInstance();
     _token = await SharedPrefHelper.getToken();
-    currentUserId = prefs.getString('user_id') ?? '';
+    // Get current user ID from profileController
+    final currentUserId =
+        profileController.profile2.value?.data?.user?.id ?? '';
+    print('✅ Current user id: $currentUserId');
     return this;
   }
 

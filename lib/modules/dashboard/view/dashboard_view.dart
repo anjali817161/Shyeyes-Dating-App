@@ -226,7 +226,7 @@ class _DashboardPageState extends State<DashboardPage> {
           separatorBuilder: (context, index) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
             final profile = usersController.matches[index];
-            final selectedUser = usersController.users[index];
+            // final selectedUser = usersController.users[index];
             final userId = profile.id ?? ""; // User ID get karo
 
             return GestureDetector(
@@ -559,9 +559,9 @@ class _DashboardPageState extends State<DashboardPage> {
                             );
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
-                            final fullName = selectedUser.name != null
-                                ? "${selectedUser.name!.firstName} ${selectedUser.name!.lastName}"
-                                : "Unknown";
+                            // final fullName = selectedUser.name != null
+                            //     ? "${selectedUser.name!.firstName} ${selectedUser.name!.lastName}"
+                            //     : "Unknown";
 
                             final imageUrl =
                                 (profile.profilePic != null &&
@@ -756,9 +756,9 @@ class _DashboardPageState extends State<DashboardPage> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             scrollDirection: Axis.horizontal,
-            itemCount: controller.users.length > 8
-                ? 8
-                : controller.users.length,
+            itemCount: controller.users.length,
+            // ? 8
+            // : controller.users.length,
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final profile = controller.users[index];
