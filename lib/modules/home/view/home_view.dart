@@ -327,10 +327,9 @@ class _HomeViewState extends State<HomeView> {
 
   // 🔈 AUDIO CALL
    Future<void> _makeAudioCall(dynamic user, String userId, String userName) async {
-    try {
-bool isFriend = friendController.friends.any(
-  (f) => f.userId?.toLowerCase() == userId.toLowerCase(),
-);
+   try {
+bool isFriend = friendController.friends.any((f) => f.userId == userId);
+
       if (!isFriend) {
         Get.snackbar('Warning', '⚠️ You are not a friend!');
         return;
@@ -345,9 +344,8 @@ bool isFriend = friendController.friends.any(
   /// ✅ VIDEO CALL FUNCTION
   Future<void> _makeVideoCall(dynamic user, String userId, String userName) async {
     try {
-bool isFriend = friendController.friends.any(
-  (f) => f.userId?.toLowerCase() == userId.toLowerCase(),
-);
+    bool isFriend = friendController.friends.any((f) => f.userId == userId);
+
       if (!isFriend) {
         Get.snackbar('Warning', '⚠️ You are not a friend!');
         return;
