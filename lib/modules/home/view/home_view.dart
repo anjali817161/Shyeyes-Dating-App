@@ -5,6 +5,7 @@ import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
@@ -30,6 +31,8 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   late final AboutController controller;
   late final ActiveUsersController usersController;
+    final FriendController friendController = Get.put(FriendController(), permanent: true); // ✅ Added
+
   final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
   int _currentIndex = 0;
 
@@ -256,6 +259,7 @@ class _HomeViewState extends State<HomeView> {
                             Colors.teal[400]!,
                             30,
                             () async =>
+
                                 await _makeAudioCall(user, userId, name),
                           ),
 
@@ -322,38 +326,32 @@ class _HomeViewState extends State<HomeView> {
   }
 
   // 🔈 AUDIO CALL
-  Future<void> _makeAudioCall(dynamic user, String userId, String userName) async {
-    try {
-      final profileController = Get.find<ProfileController>();
-      final editUser = profileController.profile2.value?.data?.edituser;
-      if (editUser == null || userId.isEmpty) {
-        Get.snackbar('Error', 'User not found');
+   Future<void> _makeAudioCall(dynamic user, String userId, String userName) async {
+   try {
+bool isFriend = friendController.friends.any((f) => f.userId == userId);
+
+      if (!isFriend) {
+        Get.snackbar('Warning', '⚠️ You are not a friend!');
         return;
       }
 
-      await ZegoService.startCall(
-        targetUser: user,
-        isVideoCall: false,
-      );
+      await ZegoService.startCall(targetUser: user, isVideoCall: false);
     } catch (e) {
       Get.snackbar('Error', 'Failed to start audio call: $e');
     }
   }
 
-  // 🎥 VIDEO CALL
+  /// ✅ VIDEO CALL FUNCTION
   Future<void> _makeVideoCall(dynamic user, String userId, String userName) async {
     try {
-      final profileController = Get.find<ProfileController>();
-      final editUser = profileController.profile2.value?.data?.edituser;
-      if (editUser == null || userId.isEmpty) {
-        Get.snackbar('Error', 'User not found');
+    bool isFriend = friendController.friends.any((f) => f.userId == userId);
+
+      if (!isFriend) {
+        Get.snackbar('Warning', '⚠️ You are not a friend!');
         return;
       }
 
-      await ZegoService.startCall(
-        targetUser: user,
-        isVideoCall: true,
-      );
+      await ZegoService.startCall(targetUser: user, isVideoCall: true);
     } catch (e) {
       Get.snackbar('Error', 'Failed to start video call: $e');
     }

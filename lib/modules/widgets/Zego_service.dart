@@ -9,9 +9,9 @@ import 'package:zego_zimkit/zego_zimkit.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 class ZegoService {
-  static const int appID = 1855474960;
+  static const int appID = 1618366162;
   static const String appSign =
-      'dffcc3933e01e9debe08f228e3ac8e2f17bcdf8c7556e5f59062d94b6e9d2ffa';
+      '62bc696112b7f6da9caeb1db9fbbc34a8597e6d57848989adb62af720f27db52';
 
   static ZegoExpressEngine? engine;
   static String? currentUserId;
@@ -51,7 +51,7 @@ class ZegoService {
   }
 
   // ----------------------------------------------------------------
-  // 🚀 Outgoing Call using Zego Call Invitation (v4.x compatible)
+  //  Outgoing Call using Zego Call Invitation (v4.x compatible)
   // ----------------------------------------------------------------
 static Future<void> startCall({
   required dynamic targetUser,
