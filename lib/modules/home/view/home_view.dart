@@ -10,6 +10,7 @@ import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
+import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
@@ -500,75 +501,86 @@ class _HomeViewState extends State<HomeView> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          // Obx(() {
+                          //   // Determine users list based on viewType
+                          //   final users =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? usersController.users
+                          //       : usersController.matches;
+
+                          //   if (users.isEmpty) return const SizedBox.shrink();
+
+                          //   // Clamp _currentIndex to valid range
+                          //   final currentIndexSafe =
+                          //       (_currentIndex < users.length)
+                          //       ? _currentIndex
+                          //       : users.length - 1;
+
+                          //   // Get current user safely
+                          //   final currentUser =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? (users[currentIndexSafe] as Users)
+                          //       : (users[currentIndexSafe] as BestmatchModel);
+
+                          //   final String userId =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? (currentUser as Users).id ?? ""
+                          //       : (currentUser as BestmatchModel).id ?? "";
+
+                          //   // Determine if user is liked (API likedByMe or recently liked locally)
+                          //   final bool isLiked =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? ((currentUser as Users).likedByMe ?? false) ||
+                          //             usersController.recentlyLikedUsers
+                          //                 .contains(userId)
+                          //       : ((currentUser as BestmatchModel).likedByMe ??
+                          //                 false) ||
+                          //             usersController.recentlyLikedUsers
+                          //                 .contains(userId);
+
+                          //   return buildActionButton(
+                          //     isLiked ? Icons.favorite : Icons.favorite_border,
+                          //     isLiked ? Colors.red : Colors.grey,
+                          //     30,
+                          //     () async {
+                          //       // Optimistic toggle
+                          //       if (isLiked) {
+                          //         usersController.recentlyLikedUsers.remove(
+                          //           userId,
+                          //         );
+                          //       } else {
+                          //         usersController.recentlyLikedUsers.add(
+                          //           userId,
+                          //         );
+                          //       }
+
+                          //       // Call API after local update
+                          //       try {
+                          //         await usersController.toggleFavorite(userId);
+                          //       } catch (e) {
+                          //         // Rollback if API fails
+                          //         if (isLiked) {
+                          //           usersController.recentlyLikedUsers.add(
+                          //             userId,
+                          //           );
+                          //         } else {
+                          //           usersController.recentlyLikedUsers.remove(
+                          //             userId,
+                          //           );
+                          //         }
+                          //       }
+                          //     },
+                          //   );
+                          // }),
                           Obx(() {
-                            // Determine users list based on viewType
-                            final users =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? usersController.users
-                                : usersController.matches;
-
-                            if (users.isEmpty) return const SizedBox.shrink();
-
-                            // Clamp _currentIndex to valid range
-                            final currentIndexSafe =
-                                (_currentIndex < users.length)
-                                ? _currentIndex
-                                : users.length - 1;
-
-                            // Get current user safely
-                            final currentUser =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? (users[currentIndexSafe] as Users)
-                                : (users[currentIndexSafe] as BestmatchModel);
-
-                            final String userId =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? (currentUser as Users).id ?? ""
-                                : (currentUser as BestmatchModel).id ?? "";
-
-                            // Determine if user is liked (API likedByMe or recently liked locally)
-                            final bool isLiked =
-                                widget.viewType == HomeViewType.activeUsers
-                                ? ((currentUser as Users).likedByMe ?? false) ||
-                                      usersController.recentlyLikedUsers
-                                          .contains(userId)
-                                : ((currentUser as BestmatchModel).likedByMe ??
-                                          false) ||
-                                      usersController.recentlyLikedUsers
-                                          .contains(userId);
-
+                            final bool isLiked = usersController.isLiked(
+                              userId,
+                            );
                             return buildActionButton(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              Icons.favorite,
                               isLiked ? Colors.red : Colors.grey,
                               30,
-                              () async {
-                                // Optimistic toggle
-                                if (isLiked) {
-                                  usersController.recentlyLikedUsers.remove(
-                                    userId,
-                                  );
-                                } else {
-                                  usersController.recentlyLikedUsers.add(
-                                    userId,
-                                  );
-                                }
-
-                                // Call API after local update
-                                try {
-                                  await usersController.toggleFavorite(userId);
-                                } catch (e) {
-                                  // Rollback if API fails
-                                  if (isLiked) {
-                                    usersController.recentlyLikedUsers.add(
-                                      userId,
-                                    );
-                                  } else {
-                                    usersController.recentlyLikedUsers.remove(
-                                      userId,
-                                    );
-                                  }
-                                }
-                              },
+                              () => usersController.toggleFavorite(userId),
                             );
                           }),
 
@@ -590,14 +602,63 @@ class _HomeViewState extends State<HomeView> {
                               //_showSubscriptionDialog(context, theme, false);
                             },
                           ),
-                          buildActionButton(
-                            Icons.chat,
-                            Colors.blueAccent,
-                            26,
-                            () {
-                              // Navigate to chat
-                            },
-                          ),
+                          buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
+                            final currentUser = users[_currentIndex];
+
+                            String userId;
+                            String userName;
+                            String userImage;
+                            String status;
+
+                            if (widget.viewType == HomeViewType.activeUsers) {
+                              final Users u = currentUser as Users;
+                              userId = u.id ?? '';
+                              userName =
+                                  "${u.name?.firstName ?? ''} ${u.name?.lastName ?? ''}";
+                              userImage =
+                                  (u.profilePic != null &&
+                                      u.profilePic!.isNotEmpty)
+                                  ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
+                                  : "https://picsum.photos/seed/0/600/800";
+                              status = (u.friendshipStatus ?? 'none')
+                                  .toLowerCase();
+                            } else {
+                              final BestmatchModel u =
+                                  currentUser as BestmatchModel;
+                              userId = u.id ?? '';
+                              userName = u.name ?? '';
+                              userImage =
+                                  (u.profilePic != null &&
+                                      u.profilePic!.isNotEmpty)
+                                  ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
+                                  : "https://picsum.photos/seed/0/600/800";
+                              status = (u.status ?? 'none').toLowerCase();
+                            }
+
+                            if (status == 'friend' || status == 'accepted') {
+                              // ✅ Navigate to ChatScreen
+                              Get.to(
+                                () => ChatScreen(
+                                  receiverId: userId.toString(),
+                                  receiverName: userName,
+                                  receiverImage: userImage,
+                                ),
+                              );
+                            } else {
+                              // ❌ Show popup
+                              Get.defaultDialog(
+                                title: 'Not Friends Yet',
+                                middleText:
+                                    'You are not friends yet. Please send a friend request first.',
+                                textConfirm: 'Send Request',
+                                textCancel: 'Cancel',
+                                onConfirm: () async {
+                                  await usersController.sendRequest(userId);
+                                  Get.back();
+                                },
+                              );
+                            }
+                          }),
                         ],
                       ),
                     ),

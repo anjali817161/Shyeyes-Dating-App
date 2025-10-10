@@ -55,6 +55,7 @@ class LoginController extends GetxController {
           await SharedPrefHelper.saveUserName(user['name'] ?? '');
           await SharedPrefHelper.saveUserPic(user['profilePic'] ?? '');
           print("User saved: ${user['name']}");
+          print("saved:   ${user['id']}");
         }
 
         Get.snackbar(

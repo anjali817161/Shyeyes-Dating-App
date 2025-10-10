@@ -95,7 +95,7 @@ class BestmatchModel {
     }
 
     return BestmatchModel(
-      id: json["_id"],
+      id: json["_id"].toString(),
       age: json["age"],
       bio: json["bio"],
       profilePic: json["profilePic"],

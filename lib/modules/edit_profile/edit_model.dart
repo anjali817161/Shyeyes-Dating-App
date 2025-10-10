@@ -15,11 +15,7 @@ class EditProfileModel {
   String? message;
   Data? data;
 
-  EditProfileModel({
-    this.success,
-    this.message,
-    this.data,
-  });
+  EditProfileModel({this.success, this.message, this.data});
 
   factory EditProfileModel.fromJson(Map<String, dynamic> json) =>
       EditProfileModel(
@@ -29,26 +25,21 @@ class EditProfileModel {
       );
 
   Map<String, dynamic> toJson() => {
-        "success": success,
-        "message": message,
-        "data": data?.toJson(),
-      };
+    "success": success,
+    "message": message,
+    "data": data?.toJson(),
+  };
 }
 
 class Data {
   User? user;
 
-  Data({
-    this.user,
-  });
+  Data({this.user});
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-        user: json["user"] != null ? User.fromJson(json["user"]) : null,
-      );
+  factory Data.fromJson(Map<String, dynamic> json) =>
+      Data(user: json["user"] != null ? User.fromJson(json["user"]) : null);
 
-  Map<String, dynamic> toJson() => {
-        "user": user?.toJson(),
-      };
+  Map<String, dynamic> toJson() => {"user": user?.toJson()};
 }
 
 class User {
@@ -99,70 +90,70 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
-        location:
-            json["location"] != null ? Location.fromJson(json["location"]) : null,
-        usage: json["usage"] != null ? Usage.fromJson(json["usage"]) : null,
-        matchCount: json["matchCount"],
-        id: json["_id"],
-        email: json["email"],
-        phoneNo: json["phoneNo"],
-        dob: json["dob"] != null ? DateTime.tryParse(json["dob"]) : null,
-        age: json["age"],
-        gender: json["gender"],
-        bio: json["bio"],
-        hobbies: json["hobbies"] != null
-            ? List<String>.from(json["hobbies"].map((x) => x))
-            : [],
-        photos: json["photos"] != null
-            ? List<dynamic>.from(json["photos"].map((x) => x))
-            : [],
-        profilePic: json["profilePic"],
-        status: json["status"],
-        emailVerified: json["emailVerified"],
-        membership: json["membership"],
-        createdAt: json["createdAt"] != null
-            ? DateTime.tryParse(json["createdAt"])
-            : null,
-        updatedAt: json["updatedAt"] != null
-            ? DateTime.tryParse(json["updatedAt"])
-            : null,
-        friends: json["friends"] != null
-            ? List<String>.from(json["friends"].map((x) => x))
-            : [],
-        likeCount: json["likeCount"],
-      );
+    name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
+    location: json["location"] != null
+        ? Location.fromJson(json["location"])
+        : null,
+    usage: json["usage"] != null ? Usage.fromJson(json["usage"]) : null,
+    matchCount: json["matchCount"],
+    id: json["_id"],
+    email: json["email"],
+    phoneNo: json["phoneNo"],
+    dob: json["dob"] != null ? DateTime.tryParse(json["dob"]) : null,
+    age: json["age"],
+    gender: json["gender"],
+    bio: json["bio"],
+    hobbies: json["hobbies"] != null
+        ? List<String>.from(json["hobbies"].map((x) => x))
+        : [],
+    photos: json["photos"] != null
+        ? List<dynamic>.from(json["photos"].map((x) => x))
+        : [],
+    profilePic: json["profilePic"],
+    status: json["status"],
+    emailVerified: json["emailVerified"],
+    membership: json["membership"],
+    createdAt: json["createdAt"] != null
+        ? DateTime.tryParse(json["createdAt"])
+        : null,
+    updatedAt: json["updatedAt"] != null
+        ? DateTime.tryParse(json["updatedAt"])
+        : null,
+    friends: json["friends"] != null
+        ? List<String>.from(json["friends"].map((x) => x))
+        : [],
+    likeCount: json["likeCount"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "Name": name?.toJson(),
-        "location": location?.toJson(),
-        "usage": usage?.toJson(),
-        "matchCount": matchCount,
-        "_id": id,
-        "email": email,
-        "phoneNo": phoneNo,
-        "dob": dob != null
-            ? "${dob!.year.toString().padLeft(4, '0')}-${dob!.month.toString().padLeft(2, '0')}-${dob!.day.toString().padLeft(2, '0')}"
-            : null,
-        "age": age,
-        "gender": gender,
-        "bio": bio,
-        "hobbies": hobbies != null
-            ? List<dynamic>.from(hobbies!.map((x) => x))
-            : [],
-        "photos": photos != null
-            ? List<dynamic>.from(photos!.map((x) => x))
-            : [],
-        "profilePic": profilePic,
-        "status": status,
-        "emailVerified": emailVerified,
-        "membership": membership,
-        "createdAt": createdAt?.toIso8601String(),
-        "updatedAt": updatedAt?.toIso8601String(),
-        "friends":
-            friends != null ? List<dynamic>.from(friends!.map((x) => x)) : [],
-        "likeCount": likeCount,
-      };
+    "Name": name?.toJson(),
+    "location": location?.toJson(),
+    "usage": usage?.toJson(),
+    "matchCount": matchCount,
+    "_id": id,
+    "email": email,
+    "phoneNo": phoneNo,
+    "dob": dob != null
+        ? "${dob!.year.toString().padLeft(4, '0')}-${dob!.month.toString().padLeft(2, '0')}-${dob!.day.toString().padLeft(2, '0')}"
+        : null,
+    "age": age,
+    "gender": gender,
+    "bio": bio,
+    "hobbies": hobbies != null
+        ? List<dynamic>.from(hobbies!.map((x) => x))
+        : [],
+    "photos": photos != null ? List<dynamic>.from(photos!.map((x) => x)) : [],
+    "profilePic": profilePic,
+    "status": status,
+    "emailVerified": emailVerified,
+    "membership": membership,
+    "createdAt": createdAt?.toIso8601String(),
+    "updatedAt": updatedAt?.toIso8601String(),
+    "friends": friends != null
+        ? List<dynamic>.from(friends!.map((x) => x))
+        : [],
+    "likeCount": likeCount,
+  };
 }
 
 class Location {
@@ -187,9 +178,9 @@ class Name {
       Name(firstName: json["firstName"], lastName: json["lastName"]);
 
   Map<String, dynamic> toJson() => {
-        "firstName": firstName,
-        "lastName": lastName,
-      };
+    "firstName": firstName,
+    "lastName": lastName,
+  };
 }
 
 class Usage {
@@ -206,16 +197,16 @@ class Usage {
   });
 
   factory Usage.fromJson(Map<String, dynamic> json) => Usage(
-        chatSecondsUsed: json["chatSecondsUsed"],
-        audioCallsMade: json["audioCallsMade"],
-        videoCallsMade: json["videoCallsMade"],
-        requestsSent: json["requestsSent"],
-      );
+    chatSecondsUsed: json["chatSecondsUsed"],
+    audioCallsMade: json["audioCallsMade"],
+    videoCallsMade: json["videoCallsMade"],
+    requestsSent: json["requestsSent"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "chatSecondsUsed": chatSecondsUsed,
-        "audioCallsMade": audioCallsMade,
-        "videoCallsMade": videoCallsMade,
-        "requestsSent": requestsSent,
-      };
+    "chatSecondsUsed": chatSecondsUsed,
+    "audioCallsMade": audioCallsMade,
+    "videoCallsMade": videoCallsMade,
+    "requestsSent": requestsSent,
+  };
 }

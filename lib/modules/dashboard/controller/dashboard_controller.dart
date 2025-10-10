@@ -200,12 +200,27 @@ class ActiveUsersController extends GetxController {
   Future<void> toggleFavorite(String userId) async {
     try {
       final token = await SharedPrefHelper.getToken() ?? '';
-
-      // Toggle API URL
       final uri = Uri.parse(
         "https://shyeyes-b.onrender.com/api/likes/$userId/like",
       );
 
+      // ✅ Check current liked state
+      final bool isCurrentlyLiked = likedUsers.contains(userId);
+
+      // ✅ Instantly update UI (optimistic)
+      if (isCurrentlyLiked) {
+        likedUsers.remove(userId); // turn grey instantly
+      } else {
+        likedUsers.add(userId); // turn red instantly
+        recentlyLikedUsers.add(userId);
+
+        // Heart animation for a second
+        Future.delayed(const Duration(seconds: 1), () {
+          recentlyLikedUsers.remove(userId);
+        });
+      }
+
+      // ✅ Hit like/unlike API
       final response = await http.post(
         uri,
         headers: {
@@ -214,37 +229,36 @@ class ActiveUsersController extends GetxController {
         },
       );
 
-      print("Toggle Favorite response code: ${response.statusCode}");
-      print("Toggle Favorite response body: ${response.body}");
+      print("Like/Unlike response: ${response.statusCode} => ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        final liked = data['liked'] ?? false;
+        final liked = data['liked'] ?? !isCurrentlyLiked;
 
-        // Update likedUsers set based on backend response
+        // ✅ Sync with backend (in case mismatch)
         if (liked) {
           likedUsers.add(userId);
-          recentlyLikedUsers.add(userId);
-
-          // Heart animation thodi der ke liye
-          Future.delayed(const Duration(seconds: 1), () {
-            recentlyLikedUsers.remove(userId);
-          });
         } else {
           likedUsers.remove(userId);
         }
 
-        // Optional: Show snackbar
         Get.snackbar(
           "Success",
-          liked ? "Profile liked" : "Profile unliked",
+          liked ? "Profile liked ❤️" : "Profile unliked 💔",
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
-        print("Toggle failed: ${response.statusCode} ${response.body}");
+        // ❌ Revert if API fails
+        if (isCurrentlyLiked) {
+          likedUsers.add(userId);
+        } else {
+          likedUsers.remove(userId);
+        }
+        Get.snackbar("Error", "Failed to update like status");
       }
     } catch (e) {
       print("Error in toggleFavorite: $e");
+      Get.snackbar("Error", "Something went wrong while liking");
     }
   }
 

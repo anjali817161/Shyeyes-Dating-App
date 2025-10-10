@@ -25,7 +25,9 @@ class _MainScaffoldState extends State<MainScaffold> {
     super.initState();
     _currentIndex = widget.initialIndex;
 
-    _screens = [DashboardPage(), ChatLobbyPage(),  LikesPage()];
+    _screens = [DashboardPage(),
+     ChatLobbyPage(),
+       LikesPage()];
   }
 
   void _onTabTapped(int index) {
