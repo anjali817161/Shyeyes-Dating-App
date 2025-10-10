@@ -51,26 +51,11 @@ class LoginController extends GetxController {
         // ✅ Save user details safely
         final user = data['user'];
         if (user != null) {
-          final userId = user['_id'] ?? user['id'] ?? '';
-          final userName = user['Name'] != null
-              ? "${user['Name']['firstName'] ?? ''} ${user['Name']['lastName'] ?? ''}".trim()
-              : (user['name'] ?? '');
-          final profilePic = user['profilePic'] ?? '';
-
-          if (userId.isEmpty) {
-            print("⚠️ Warning: userId is empty, check backend response!");
-          }
-
-          await SharedPrefHelper.saveUserId(userId);
-          await SharedPrefHelper.saveUserName(userName);
-          await SharedPrefHelper.saveUserPic(profilePic);
-
-          print("✅ User saved in SharedPref:");
-          print("   ID: $userId");
-          print("   Name: $userName");
-          print("   Pic: $profilePic");
-        } else {
-          print("⚠️ No user object found in response");
+          await SharedPrefHelper.saveUserId(user['id'] ?? '');
+          await SharedPrefHelper.saveUserName(user['name'] ?? '');
+          await SharedPrefHelper.saveUserPic(user['profilePic'] ?? '');
+          print("User saved: ${user['name']}");
+          print("saved:   ${user['id']}");
         }
 
         Get.snackbar(

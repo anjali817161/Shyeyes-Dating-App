@@ -1,29 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:math' as math;
-import 'package:shyeyes/modules/chats/controller/chat_controller.dart';
-import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
 
-class ChatLobbyPage extends StatelessWidget {
-  final ChatController controller = Get.put(ChatController());
+class ChatLobbyPage extends StatefulWidget {
+  const ChatLobbyPage({super.key});
 
-  ChatLobbyPage({super.key});
+  @override
+  State<ChatLobbyPage> createState() => _ChatLobbyPageState();
+}
 
-  // Dummy user for ChatScreen
-  UserModel dummyUser = UserModel(
-    name: 'Shaan',
-    imageUrl: 'https://i.pravatar.cc/150?img=65',
-    lastMessage: "Hey, how are you?🥰",
-  );
+class _ChatLobbyPageState extends State<ChatLobbyPage> {
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = "";
+
+  // 🔹 Dummy active users list
+  final List<Map<String, String>> activeUsers = [
+    {
+      "name": "Amit",
+      "profilePic": "https://randomuser.me/api/portraits/men/31.jpg",
+    },
+    {
+      "name": "Sneha",
+      "profilePic": "https://randomuser.me/api/portraits/women/44.jpg",
+    },
+    {
+      "name": "Ravi",
+      "profilePic": "https://randomuser.me/api/portraits/men/56.jpg",
+    },
+    {
+      "name": "Neha",
+      "profilePic": "https://randomuser.me/api/portraits/women/21.jpg",
+    },
+  ];
+
+  // 🔹 Dummy chat list
+  final List<Map<String, dynamic>> chats = [
+    {
+      "userName": "Amit Sharma",
+      "userId": "1",
+      "profilePic": "https://randomuser.me/api/portraits/men/31.jpg",
+      "lastMessage": "Hey! How are you?",
+      "lastMessageTime": "10:20 AM",
+      "isRead": false,
+    },
+    {
+      "userName": "Sneha Kapoor",
+      "userId": "2",
+      "profilePic": "https://randomuser.me/api/portraits/women/44.jpg",
+      "lastMessage": "Let's meet tomorrow.",
+      "lastMessageTime": "9:50 AM",
+      "isRead": true,
+    },
+    {
+      "userName": "Ravi Verma",
+      "userId": "3",
+      "profilePic": "https://randomuser.me/api/portraits/men/56.jpg",
+      "lastMessage": "Did you check my message?",
+      "lastMessageTime": "Yesterday",
+      "isRead": false,
+    },
+    {
+      "userName": "Neha Singh",
+      "userId": "4",
+      "profilePic": "https://randomuser.me/api/portraits/women/21.jpg",
+      "lastMessage": "See you soon 💬",
+      "lastMessageTime": "Monday",
+      "isRead": true,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final filteredChats = chats
+        .where(
+          (chat) => chat["userName"].toString().toLowerCase().contains(
+            searchQuery.toLowerCase(),
+          ),
+        )
+        .toList();
+
     return Scaffold(
-      backgroundColor: theme.colorScheme.secondary,
+      backgroundColor: theme.colorScheme.secondaryContainer,
       appBar: AppBar(
         title: const Text(
           "Chats",
@@ -33,50 +93,45 @@ class ChatLobbyPage extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
-            icon: GestureDetector(
-              onTap: () {
-                Get.to(() => NotificationsPage());
-              },
-              child: const Icon(Icons.notifications, color: Colors.white),
-            ),
-            onPressed: () {},
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () => Get.to(() => NotificationsPage()),
           ),
-          // IconButton(
-          //   icon: const Icon(Icons.edit_outlined, color: Colors.white),
-          //   onPressed: () {},
-          // ),
         ],
       ),
       body: Column(
         children: [
-          // Search bar
+          // 🔍 Search bar
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
-                hintText: "Search",
+                hintText: "Search chats...",
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
               ),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
             ),
           ),
 
-          // Stories / Active users
-          // Stories / Active users
+          // 🟢 Active users row
           SizedBox(
             height: 100,
             child: ListView.builder(
               padding: const EdgeInsets.only(left: 12),
               scrollDirection: Axis.horizontal,
-              itemCount: controller.chats.length,
+              itemCount: activeUsers.length,
               itemBuilder: (context, index) {
-                final user = controller.chats[index];
+                final user = activeUsers[index];
                 return Padding(
                   padding: const EdgeInsets.only(right: 16),
                   child: Column(
@@ -95,17 +150,18 @@ class ChatLobbyPage extends StatelessWidget {
                             ),
                             child: CircleAvatar(
                               radius: 28,
-                              backgroundImage: NetworkImage(user.avatarUrl),
+                              backgroundImage: NetworkImage(
+                                user["profilePic"]!,
+                              ),
                             ),
                           ),
-
-                          //  Add blinking green dot
+                          // 💚 Blinking online dot
                           Positioned(bottom: 4, right: 4, child: BlinkingDot()),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        user.name.split(" ").first,
+                        user["name"]!,
                         style: const TextStyle(fontSize: 12),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -118,106 +174,77 @@ class ChatLobbyPage extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // Chat list
+          // 💬 Chat list
           Expanded(
-            child: Obx(() {
-              return ListView.builder(
-                itemCount: controller.chats.length,
-                itemBuilder: (context, index) {
-                  final chat = controller.chats[index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 26,
-                        backgroundImage: NetworkImage(chat.avatarUrl),
-                      ),
-                      title: Text(
-                        chat.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        chat.message,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: chat.isRead ? Colors.grey : Colors.black,
-                          fontWeight: chat.isRead
-                              ? FontWeight.normal
-                              : FontWeight.bold,
+            child: filteredChats.isEmpty
+                ? const Center(child: Text("No chats yet."))
+                : ListView.builder(
+                    itemCount: filteredChats.length,
+                    itemBuilder: (context, index) {
+                      final chat = filteredChats[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(chat.time, style: const TextStyle(fontSize: 12)),
-                          if (!chat.isRead)
-                            const Icon(
-                              Icons.circle,
-                              color: Colors.blue,
-                              size: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            radius: 26,
+                            backgroundImage: NetworkImage(chat["profilePic"]!),
+                          ),
+                          title: Text(
+                            chat["userName"],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            chat["lastMessage"],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: chat["isRead"]
+                                  ? Colors.grey
+                                  : Colors.black,
+                              fontWeight: chat["isRead"]
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
                             ),
-                        ],
-                      ),
-                      onTap: () {
-                        // Navigate to chat screen
-                      //  Get.to(() => ChatScreen(user: dummyUser));
-                      },
-                    ),
-                  );
-                },
-              );
-            }),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                chat["lastMessageTime"],
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              if (!chat["isRead"])
+                                const Icon(
+                                  Icons.circle,
+                                  color: Colors.blue,
+                                  size: 10,
+                                ),
+                            ],
+                          ),
+                          onTap: () {
+                            // ✅ Navigate to ChatScreen (dummy)
+                            Get.to(
+                              () => ChatScreen(
+                                receiverId: chat["userId"],
+                                receiverName: chat["userName"],
+                                receiverImage: chat["profilePic"],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 }
-
-// // Green Pulse Effect Widget
-// class ActivePulse extends StatefulWidget {
-//   @override
-//   _ActivePulseState createState() => _ActivePulseState();
-// }
-
-// class _ActivePulseState extends State<ActivePulse>
-//     with SingleTickerProviderStateMixin {
-//   late AnimationController _controller;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller = AnimationController(
-//       vsync: this,
-//       duration: const Duration(seconds: 3),
-//     )..repeat();
-//   }
-
-//   @override
-//   void dispose() {
-//     _controller.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SizedBox(
-//       width: 70,
-//       height: 70,
-//       child: AnimatedBuilder(
-//         animation: _controller,
-//         builder: (context, child) {
-//           return CustomPaint(painter: PulsePainter(_controller.value));
-//         },
-//       ),
-//     );
-//   }
-// }

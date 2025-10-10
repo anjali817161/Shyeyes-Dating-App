@@ -11,12 +11,6 @@ class SuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy user for ChatScreen
-    UserModel dummyUser = UserModel(
-      name: 'Shaan',
-      imageUrl: 'https://i.pravatar.cc/150?img=65',
-      lastMessage: "Hey, how are you?🥰",
-    );
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFFFF1F3),

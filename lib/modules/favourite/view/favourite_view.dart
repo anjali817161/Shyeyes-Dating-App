@@ -191,23 +191,23 @@ class FavouritePage extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    // _buildCircleIcon(
-                                    //   icon: Icons.chat_bubble,
-                                    //   theme: theme,
-                                    //   onPressed: () {
-                                    //     Get.to(
-                                    //       () => ChatScreen(
-                                    //         receiverId: userId,
-                                    //         receiverName: fullName,
-                                    //         receiverImage: profilePicUrl,
-                                    //       ),
-                                    //       transition: Transition.rightToLeft,
-                                    //       duration: const Duration(
-                                    //         milliseconds: 400,
-                                    //       ),
-                                    //     );
-                                    //   },
-                                    // ),
+                                    _buildCircleIcon(
+                                      icon: Icons.chat_bubble,
+                                      theme: theme,
+                                      onPressed: () {
+                                        Get.to(
+                                          () => ChatScreen(
+                                            receiverId: userId,
+                                            receiverName: fullName,
+                                            receiverImage: profilePicUrl,
+                                          ),
+                                          transition: Transition.rightToLeft,
+                                          duration: const Duration(
+                                            milliseconds: 400,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                     _buildCircleIcon(
                                       icon: Icons.call,
                                       theme: theme,

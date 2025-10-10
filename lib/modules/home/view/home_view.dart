@@ -9,6 +9,9 @@ import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
+
+import 'package:shyeyes/modules/chats/view/chats_view.dart';
+import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
@@ -31,7 +34,10 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   late final AboutController controller;
   late final ActiveUsersController usersController;
-    final FriendController friendController = Get.put(FriendController(), permanent: true); // ✅ Added
+  final FriendController friendController = Get.put(
+    FriendController(),
+    permanent: true,
+  ); // ✅ Added
 
   final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
   int _currentIndex = 0;
@@ -115,10 +121,9 @@ class _HomeViewState extends State<HomeView> {
                   userId = m.id ?? '';
                   name = m.name ?? '';
                   age = m.age ?? 0;
-                  imageUrl =
-                      (m.profilePic != null && m.profilePic!.isNotEmpty)
-                          ? "https://shyeyes-b.onrender.com/uploads/${m.profilePic}"
-                          : "https://picsum.photos/seed/$index/600/800";
+                  imageUrl = (m.profilePic != null && m.profilePic!.isNotEmpty)
+                      ? "https://shyeyes-b.onrender.com/uploads/${m.profilePic}"
+                      : "https://picsum.photos/seed/$index/600/800";
                   location = m.location != null
                       ? "${m.location!.city ?? ''}, ${m.location!.country ?? ''}"
                       : "N/A";
@@ -130,15 +135,17 @@ class _HomeViewState extends State<HomeView> {
                   children: [
                     // 👆 Double-tap image to like/unlike
                     GestureDetector(
-  onDoubleTap: () => usersController.toggleFavorite(userId),
-  child: Image.network(
-    imageUrl,
-    fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) =>
-        Image.asset("assets/images/profile_image1.png", fit: BoxFit.cover),
-  ),
-),
-
+                      onDoubleTap: () => usersController.toggleFavorite(userId),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                              "assets/images/profile_image1.png",
+                              fit: BoxFit.cover,
+                            ),
+                      ),
+                    ),
 
                     // ❤️ Heart animation
                     Obx(() {
@@ -188,8 +195,11 @@ class _HomeViewState extends State<HomeView> {
                                       const SizedBox(height: 8),
                                       Row(
                                         children: [
-                                          const Icon(Icons.location_on,
-                                              color: Colors.white, size: 18),
+                                          const Icon(
+                                            Icons.location_on,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
                                           const SizedBox(width: 6),
                                           Flexible(
                                             child: Text(
@@ -211,17 +221,21 @@ class _HomeViewState extends State<HomeView> {
                                           backgroundColor:
                                               theme.colorScheme.primary,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
                                           ),
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 24, vertical: 12),
+                                            horizontal: 24,
+                                            vertical: 12,
+                                          ),
                                         ),
                                         child: const Text(
                                           "View Profile",
                                           style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16),
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -243,15 +257,89 @@ class _HomeViewState extends State<HomeView> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           // ❤️ Like Button (Toggle Like/Unlike)
-                        Obx(() {
-  final bool isLiked = usersController.isLiked(userId);
-  return buildActionButton(
-    Icons.favorite,
-    isLiked ? Colors.red : Colors.grey,
-    30,
-    () => usersController.toggleFavorite(userId),
-  );
-}),
+                          Obx(() {
+                            final bool isLiked = usersController.isLiked(
+                              userId,
+                            );
+                            return buildActionButton(
+                              Icons.favorite,
+                              isLiked ? Colors.red : Colors.grey,
+                              30,
+                              () => usersController.toggleFavorite(userId),
+                            );
+                          }),
+
+                          // Obx(() {
+                          //   // Determine users list based on viewType
+                          //   final users =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? usersController.users
+                          //       : usersController.matches;
+
+                          //   if (users.isEmpty) return const SizedBox.shrink();
+
+                          //   // Clamp _currentIndex to valid range
+                          //   final currentIndexSafe =
+                          //       (_currentIndex < users.length)
+                          //       ? _currentIndex
+                          //       : users.length - 1;
+
+                          //   // Get current user safely
+                          //   final currentUser =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? (users[currentIndexSafe] as Users)
+                          //       : (users[currentIndexSafe] as BestmatchModel);
+
+                          //   final String userId =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? (currentUser as Users).id ?? ""
+                          //       : (currentUser as BestmatchModel).id ?? "";
+
+                          //   // Determine if user is liked (API likedByMe or recently liked locally)
+                          //   final bool isLiked =
+                          //       widget.viewType == HomeViewType.activeUsers
+                          //       ? ((currentUser as Users).likedByMe ?? false) ||
+                          //             usersController.recentlyLikedUsers
+                          //                 .contains(userId)
+                          //       : ((currentUser as BestmatchModel).likedByMe ??
+                          //                 false) ||
+                          //             usersController.recentlyLikedUsers
+                          //                 .contains(userId);
+
+                          //   return buildActionButton(
+                          //     isLiked ? Icons.favorite : Icons.favorite_border,
+                          //     isLiked ? Colors.red : Colors.grey,
+                          //     30,
+                          //     () async {
+                          //       // Optimistic toggle
+                          //       if (isLiked) {
+                          //         usersController.recentlyLikedUsers.remove(
+                          //           userId,
+                          //         );
+                          //       } else {
+                          //         usersController.recentlyLikedUsers.add(
+                          //           userId,
+                          //         );
+                          //       }
+
+                          //       // Call API after local update
+                          //       try {
+                          //         await usersController.toggleFavorite(userId);
+                          //       } catch (e) {
+                          //         // Rollback if API fails
+                          //         if (isLiked) {
+                          //           usersController.recentlyLikedUsers.add(
+                          //             userId,
+                          //           );
+                          //         } else {
+                          //           usersController.recentlyLikedUsers.remove(
+                          //             userId,
+                          //           );
+                          //         }
+                          //       }
+                          //     },
+                          //   );
+                          // }),
 
                           // 🎧 Audio Call
                           buildActionButton(
@@ -259,7 +347,6 @@ class _HomeViewState extends State<HomeView> {
                             Colors.teal[400]!,
                             30,
                             () async =>
-
                                 await _makeAudioCall(user, userId, name),
                           ),
 
@@ -273,12 +360,69 @@ class _HomeViewState extends State<HomeView> {
                           ),
 
                           // 💬 Chat Button
-                          buildActionButton(
-                            Icons.chat,
-                            Colors.blueAccent,
-                            26,
-                            () {},
-                          ),
+                          // buildActionButton(
+                          //   Icons.chat,
+                          //   Colors.blueAccent,
+                          //   26,
+                          //   () {},
+                          // ),
+                          buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
+                            final currentUser = users[_currentIndex];
+
+                            String userId;
+                            String userName;
+                            String userImage;
+                            String status;
+
+                            if (widget.viewType == HomeViewType.activeUsers) {
+                              final Users u = currentUser as Users;
+                              userId = u.id ?? '';
+                              userName =
+                                  "${u.name?.firstName ?? ''} ${u.name?.lastName ?? ''}";
+                              userImage =
+                                  (u.profilePic != null &&
+                                      u.profilePic!.isNotEmpty)
+                                  ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
+                                  : "https://picsum.photos/seed/0/600/800";
+                              status = (u.friendshipStatus ?? 'none')
+                                  .toLowerCase();
+                            } else {
+                              final BestmatchModel u =
+                                  currentUser as BestmatchModel;
+                              userId = u.id ?? '';
+                              userName = u.name ?? '';
+                              userImage =
+                                  (u.profilePic != null &&
+                                      u.profilePic!.isNotEmpty)
+                                  ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
+                                  : "https://picsum.photos/seed/0/600/800";
+                              status = (u.status ?? 'none').toLowerCase();
+                            }
+
+                            if (status == 'friend' || status == 'accepted') {
+                              // ✅ Navigate to ChatScreen
+                              Get.to(
+                                () => ChatScreen(
+                                  receiverId: userId.toString(),
+                                  receiverName: userName,
+                                  receiverImage: userImage,
+                                ),
+                              );
+                            } else {
+                              // ❌ Show popup
+                              Get.defaultDialog(
+                                title: 'Not Friends Yet',
+                                middleText:
+                                    'You are not friends yet. Please send a friend request first.',
+                                textConfirm: 'Send Request',
+                                textCancel: 'Cancel',
+                                onConfirm: () async {
+                                  await usersController.sendRequest(userId);
+                                  Get.back();
+                                },
+                              );
+                            }
+                          }),
                         ],
                       ),
                     ),
@@ -299,21 +443,23 @@ class _HomeViewState extends State<HomeView> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.share,
-                            color: Colors.teal, size: 24),
+                        icon: const Icon(
+                          Icons.share,
+                          color: Colors.teal,
+                          size: 24,
+                        ),
                         onPressed: () {
                           if (users.isEmpty) return;
                           final currentUser = users[_currentIndex];
                           final String shareText =
                               widget.viewType == HomeViewType.activeUsers
-                                  ? "${(currentUser as Users).name?.firstName ?? ''}, ${currentUser.age}\nCheck out this profile on ShyEyes!"
-                                  : "${(currentUser as BestmatchModel).name ?? ''}, ${currentUser.age}\nCheck out this profile on ShyEyes!";
+                              ? "${(currentUser as Users).name?.firstName ?? ''}, ${currentUser.age}\nCheck out this profile on ShyEyes!"
+                              : "${(currentUser as BestmatchModel).name ?? ''}, ${currentUser.age}\nCheck out this profile on ShyEyes!";
                           Share.share(shareText);
                         },
                       ),
                       const SizedBox(width: 18),
-                      const Icon(Icons.flash_on,
-                          color: Colors.amber, size: 24),
+                      const Icon(Icons.flash_on, color: Colors.amber, size: 24),
                     ],
                   ),
                 ],
@@ -326,9 +472,13 @@ class _HomeViewState extends State<HomeView> {
   }
 
   // 🔈 AUDIO CALL
-   Future<void> _makeAudioCall(dynamic user, String userId, String userName) async {
-   try {
-bool isFriend = friendController.friends.any((f) => f.userId == userId);
+  Future<void> _makeAudioCall(
+    dynamic user,
+    String userId,
+    String userName,
+  ) async {
+    try {
+      bool isFriend = friendController.friends.any((f) => f.userId == userId);
 
       if (!isFriend) {
         Get.snackbar('Warning', '⚠️ You are not a friend!');
@@ -342,9 +492,13 @@ bool isFriend = friendController.friends.any((f) => f.userId == userId);
   }
 
   /// ✅ VIDEO CALL FUNCTION
-  Future<void> _makeVideoCall(dynamic user, String userId, String userName) async {
+  Future<void> _makeVideoCall(
+    dynamic user,
+    String userId,
+    String userName,
+  ) async {
     try {
-    bool isFriend = friendController.friends.any((f) => f.userId == userId);
+      bool isFriend = friendController.friends.any((f) => f.userId == userId);
 
       if (!isFriend) {
         Get.snackbar('Warning', '⚠️ You are not a friend!');

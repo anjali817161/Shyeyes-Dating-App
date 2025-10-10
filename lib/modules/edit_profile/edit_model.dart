@@ -15,11 +15,7 @@ class EditProfileModel {
   String? message;
   Data? data;
 
-  EditProfileModel({
-    this.success,
-    this.message,
-    this.data,
-  });
+  EditProfileModel({this.success, this.message, this.data});
 
   factory EditProfileModel.fromJson(Map<String, dynamic> json) =>
       EditProfileModel(
@@ -29,10 +25,10 @@ class EditProfileModel {
       );
 
   Map<String, dynamic> toJson() => {
-        "success": success,
-        "message": message,
-        "data": data?.toJson(),
-      };
+    "success": success,
+    "message": message,
+    "data": data?.toJson(),
+  };
 }
 
 class Data {
@@ -136,35 +132,34 @@ class EditUser {
 
 
   Map<String, dynamic> toJson() => {
-        "Name": name?.toJson(),
-        "location": location?.toJson(),
-        "usage": usage?.toJson(),
-        "matchCount": matchCount,
-        "_id": id,
-        "email": email,
-        "phoneNo": phoneNo,
-        "dob": dob != null
-            ? "${dob!.year.toString().padLeft(4, '0')}-${dob!.month.toString().padLeft(2, '0')}-${dob!.day.toString().padLeft(2, '0')}"
-            : null,
-        "age": age,
-        "gender": gender,
-        "bio": bio,
-        "hobbies": hobbies != null
-            ? List<dynamic>.from(hobbies!.map((x) => x))
-            : [],
-        "photos": photos != null
-            ? List<dynamic>.from(photos!.map((x) => x))
-            : [],
-        "profilePic": profilePic,
-        "status": status,
-        "emailVerified": emailVerified,
-        "membership": membership,
-        "createdAt": createdAt?.toIso8601String(),
-        "updatedAt": updatedAt?.toIso8601String(),
-        "friends":
-            friends != null ? List<dynamic>.from(friends!.map((x) => x)) : [],
-        "likeCount": likeCount,
-      };
+    "Name": name?.toJson(),
+    "location": location?.toJson(),
+    "usage": usage?.toJson(),
+    "matchCount": matchCount,
+    "_id": id,
+    "email": email,
+    "phoneNo": phoneNo,
+    "dob": dob != null
+        ? "${dob!.year.toString().padLeft(4, '0')}-${dob!.month.toString().padLeft(2, '0')}-${dob!.day.toString().padLeft(2, '0')}"
+        : null,
+    "age": age,
+    "gender": gender,
+    "bio": bio,
+    "hobbies": hobbies != null
+        ? List<dynamic>.from(hobbies!.map((x) => x))
+        : [],
+    "photos": photos != null ? List<dynamic>.from(photos!.map((x) => x)) : [],
+    "profilePic": profilePic,
+    "status": status,
+    "emailVerified": emailVerified,
+    "membership": membership,
+    "createdAt": createdAt?.toIso8601String(),
+    "updatedAt": updatedAt?.toIso8601String(),
+    "friends": friends != null
+        ? List<dynamic>.from(friends!.map((x) => x))
+        : [],
+    "likeCount": likeCount,
+  };
 }
 
 class Location {
@@ -189,9 +184,9 @@ class Name {
       Name(firstName: json["firstName"], lastName: json["lastName"]);
 
   Map<String, dynamic> toJson() => {
-        "firstName": firstName,
-        "lastName": lastName,
-      };
+    "firstName": firstName,
+    "lastName": lastName,
+  };
 }
 
 class Usage {
@@ -208,16 +203,16 @@ class Usage {
   });
 
   factory Usage.fromJson(Map<String, dynamic> json) => Usage(
-        chatSecondsUsed: json["chatSecondsUsed"],
-        audioCallsMade: json["audioCallsMade"],
-        videoCallsMade: json["videoCallsMade"],
-        requestsSent: json["requestsSent"],
-      );
+    chatSecondsUsed: json["chatSecondsUsed"],
+    audioCallsMade: json["audioCallsMade"],
+    videoCallsMade: json["videoCallsMade"],
+    requestsSent: json["requestsSent"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "chatSecondsUsed": chatSecondsUsed,
-        "audioCallsMade": audioCallsMade,
-        "videoCallsMade": videoCallsMade,
-        "requestsSent": requestsSent,
-      };
+    "chatSecondsUsed": chatSecondsUsed,
+    "audioCallsMade": audioCallsMade,
+    "videoCallsMade": videoCallsMade,
+    "requestsSent": requestsSent,
+  };
 }
