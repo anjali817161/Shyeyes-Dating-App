@@ -32,17 +32,22 @@ class EditProfileModel {
 }
 
 class Data {
-  User? user;
+  EditUser? edituser;
 
-  Data({this.user});
+  Data({
+    this.edituser,
+  });
 
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      Data(user: json["user"] != null ? User.fromJson(json["user"]) : null);
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+        edituser: json["user"] != null ? EditUser.fromJson(json["user"]) : null,
+      );
 
-  Map<String, dynamic> toJson() => {"user": user?.toJson()};
+  Map<String, dynamic> toJson() => {
+        "user": edituser?.toJson(),
+      };
 }
 
-class User {
+class EditUser {
   Name? name;
   Location? location;
   Usage? usage;
@@ -65,7 +70,7 @@ class User {
   List<String>? friends;
   int? likeCount;
 
-  User({
+  EditUser({
     this.name,
     this.location,
     this.usage,
@@ -89,14 +94,13 @@ class User {
     this.likeCount,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
+ factory EditUser.fromJson(Map<String, dynamic> json) {
+  return EditUser(
     name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
-    location: json["location"] != null
-        ? Location.fromJson(json["location"])
-        : null,
+    location: json["location"] != null ? Location.fromJson(json["location"]) : null,
     usage: json["usage"] != null ? Usage.fromJson(json["usage"]) : null,
     matchCount: json["matchCount"],
-    id: json["_id"],
+    id: (json["_id"] ?? json["id"] ?? "").toString().trim(), // ✅ fix here
     email: json["email"],
     phoneNo: json["phoneNo"],
     dob: json["dob"] != null ? DateTime.tryParse(json["dob"]) : null,
@@ -124,6 +128,8 @@ class User {
         : [],
     likeCount: json["likeCount"],
   );
+}
+
 
   Map<String, dynamic> toJson() => {
     "Name": name?.toJson(),

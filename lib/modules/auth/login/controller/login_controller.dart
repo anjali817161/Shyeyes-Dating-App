@@ -43,12 +43,12 @@ class LoginController extends GetxController {
       if (response.statusCode == 200) {
         // ✅ Save token
         final token = data['token'];
-        if (token != null) {
+        if (token != null && token.toString().isNotEmpty) {
           await SharedPrefHelper.saveToken(token);
-          print("Token saved: $token");
+          print("🔑 Token saved: $token");
         }
 
-        // ✅ Save user details
+        // ✅ Save user details safely
         final user = data['user'];
         if (user != null) {
           await SharedPrefHelper.saveUserId(user['id'] ?? '');
@@ -68,7 +68,6 @@ class LoginController extends GetxController {
         // ✅ Navigate to main screen
         Get.offAll(() => MainScaffold());
       } else {
-        // Non-200 response
         Get.snackbar(
           "Login Failed",
           data["message"] ?? "Invalid credentials",

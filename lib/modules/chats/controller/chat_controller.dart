@@ -160,7 +160,8 @@ class ChatController extends GetxController {
     try {
       isLoading.value = true;
 
-      currentUserId = profileController.profile2.value?.data?.user?.id ?? "";
+      currentUserId =
+          profileController.profile2.value?.data?.edituser?.id ?? "";
       if (currentUserId.isEmpty) {
         Get.snackbar("Error", "User ID not found. Please login again.");
         print("currentUserId: ${currentUserId}");
@@ -176,11 +177,9 @@ class ChatController extends GetxController {
       await fetchMessages(receiverId);
 
       // Join chat room
-      socket.emit("join_chat", {"receiverId": receiverId});
       print("📥 Joined chat with $receiverId");
 
       // Load old messages
-      await fetchMessages(receiverId);
     } finally {
       isLoading.value = false;
     }
@@ -204,11 +203,17 @@ class ChatController extends GetxController {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         if (jsonData["success"] == true) {
-          messages.assignAll(
-            (jsonData["messages"] as List)
-                .map((e) => MessageModel.fromJson(e))
-                .toList(),
-          );
+          final fetchedMessages = (jsonData["messages"] as List)
+              .map((e) => MessageModel.fromJson(e))
+              .toList();
+
+          // Prevent duplicates based on id
+          final uniqueMessages = [
+            ...messages,
+            ...fetchedMessages.where((f) => !messages.any((m) => m.id == f.id)),
+          ];
+
+          messages.assignAll(uniqueMessages);
         }
       } else {
         print("Failed to fetch messages: ${response.body}");

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "771116931125",
+    "project_id": "shyeyes-55006",
+    "storage_bucket": "shyeyes-55006.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771116931125:android:7f800deaf0682b300bf97c",
+        "android_client_info": {
+          "package_name": "com.playzelo.shyeyes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5BglrJYPeYf5dXy--4JEI_lYx6KEe00M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

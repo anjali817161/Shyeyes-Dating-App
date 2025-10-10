@@ -34,9 +34,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    // _connectUser();
 
     // Get current user ID from ProfileController
-    currentUserId = profileController.profile2?.value?.data?.user?.id ?? "";
+    currentUserId = profileController.profile2?.value?.data?.edituser?.id ?? "";
     receiverId = widget.receiverId;
     receiverName = widget.receiverName;
     receiverImage = widget.receiverImage;

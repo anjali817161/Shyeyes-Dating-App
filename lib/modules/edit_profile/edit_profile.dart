@@ -31,7 +31,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     final ProfileController controller = Get.find<ProfileController>();
-    final user = controller.profile2.value?.data?.user;
+    final user = controller.profile2.value?.data?.edituser;
 
     if (user != null) {
       // Name
@@ -135,7 +135,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Widget _buildProfileImage() {
     final ProfileController controller = Get.find<ProfileController>();
-    final user = controller.profile2.value?.data?.user;
+    final user = controller.profile2.value?.data?.edituser;
 
     String imageUrl = "https://via.placeholder.com/150";
 

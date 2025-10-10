@@ -41,11 +41,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
           return Center(child: Text("Error: ${controller.errorMessage}"));
         }
         if (controller.profile2.value == null ||
-            controller.profile2.value!.data!.user == null) {
+            controller.profile2.value!.data!.edituser == null) {
           return const Center(child: Text("No profile data"));
         }
 
-        final profileData = controller.profile2.value!.data!.user!;
+        final profileData = controller.profile2.value!.data!.edituser!;
 
         // ✅ DOB ko safe string me convert karna
         String dobText = profileData.dob != null
@@ -117,11 +117,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
             clipBehavior: Clip.none,
             children: [
               // ✅ Conditional: show slider if photos exist
-              if (controller.profile2.value!.data!.user!.photos != null &&
-                  controller.profile2.value!.data!.user!.photos!.isNotEmpty)
+              if (controller.profile2.value!.data!.edituser!.photos != null &&
+                  controller.profile2.value!.data!.edituser!.photos!.isNotEmpty)
                 PhotoSliderBanner(
                   height: 200,
-                  photos: (controller.profile2.value!.data!.user!.photos ?? [])
+                  photos: (controller.profile2.value!.data!.edituser!.photos ?? [])
                       .map((e) => e.toString())
                       .toList(),
                 )

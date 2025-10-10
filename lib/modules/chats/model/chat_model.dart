@@ -5,7 +5,7 @@ class MessageModel {
   final String message;
   final DateTime timestamp;
   final String status;
-  final dynamic? remainingMessages;
+  final int? remainingMessages;
   final dynamic? messagesUsedTotal;
 
   MessageModel({
@@ -71,17 +71,19 @@ class MessageModel {
         json['deliveryStatus']?.toString() ??
         'pending';
 
+    int remaining = int.tryParse(json['remainingMessages'].toString()) ?? 0;
+
     // -------------------------------
     // Parse remainingMessages
     // -------------------------------
-    dynamic remaining;
-    final rm = json['remainingMessages'];
-    if (rm != null) {
-      if (rm is int)
-        remaining = rm;
-      else if (rm is String)
-        remaining = rm; // Keep "Unlimited" string
-    }
+    // dynamic remaining;
+    // final rm = json['remainingMessages'];
+    // if (rm != null) {
+    //   if (rm is int)
+    //     remaining = rm;
+    //   else if (rm is String)
+    //     remaining = rm; // Keep "Unlimited" string
+    // }
 
     // -------------------------------
     // Parse messagesUsedTotal

@@ -20,7 +20,7 @@ class ChatService extends GetxService {
     _token = await SharedPrefHelper.getToken();
     // Get current user ID from profileController
     final currentUserId =
-        profileController.profile2.value?.data?.user?.id ?? '';
+        profileController.profile2.value?.data?.edituser?.id ?? '';
     print('✅ Current user id: $currentUserId');
     return this;
   }
