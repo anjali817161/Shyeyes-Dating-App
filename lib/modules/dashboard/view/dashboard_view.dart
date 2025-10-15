@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
@@ -13,8 +14,10 @@ import 'package:shyeyes/modules/dashboard/controller/search_controller.dart';
 import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/widgets/Zego_service.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/widgets/music_controller.dart';
 import 'package:shyeyes/modules/widgets/permission_handler.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
@@ -30,12 +33,18 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final MusicController musicController = Get.find<MusicController>();
   final searchController = Get.put(SearchFilterController());
   final TextEditingController searchTextController = TextEditingController();
-  final ActiveUsersController usersController = Get.put(ActiveUsersController());
+  final ActiveUsersController usersController = Get.put(
+    ActiveUsersController(),
+  );
   final ProfileController controller = Get.find<ProfileController>();
+  final FriendController friendController = Get.put(FriendController());
+  final ActivePlanController activePlanController = Get.put(
+    ActivePlanController(),
+  );
 
   @override
   void initState() {
@@ -216,6 +225,68 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // 🔈 AUDIO CALL
+  // Future<void> _makeAudioCall(
+  //   dynamic user,
+  //   String userId,
+  //   String userName,
+  // ) async {
+  //   try {
+  //     bool isFriend = friendController.friends.any((f) => f.userId == userId);
+
+  //     if (!isFriend) {
+  //       Get.snackbar('Warning', '⚠️ You are not a friend!');
+  //       return;
+  //     }
+
+  //     // 🔍 Check user plan limits
+  //     final plan = activePlanController.activePlan.value;
+  //     final audioLimit = plan?.limits?.audioTimeSeconds ?? 0;
+
+  //     if (audioLimit <= 0) {
+  //       // ❌ No valid plan → show subscription popup
+  //       _showSubscriptionDialog("Audio");
+  //       return;
+  //     }
+
+  //     // ✅ Valid plan → start the call
+  //     await ZegoService.startCall(targetUser: user, isVideoCall: false);
+  //   } catch (e) {
+  //     Get.snackbar('Error', 'Failed to start audio call: $e');
+  //   }
+  // }
+
+  // /// ✅ VIDEO CALL FUNCTION
+  // Future<void> _makeVideoCall(
+  //   dynamic user,
+  //   String userId,
+  //   String userName,
+  // ) async {
+  //   try {
+  //     bool isFriend = friendController.friends.any((f) => f.userId == userId);
+
+  //     if (!isFriend) {
+  //       Get.snackbar('Warning', '⚠️ You are not a friend!');
+  //       return;
+  //     }
+
+  //     // 🔍 Check user plan limits
+  //     final plan = activePlanController.activePlan.value;
+  //     final videoLimit = plan?.limits?.videoTimeSeconds ?? 0;
+
+  //     if (videoLimit <= 0) {
+  //       // ❌ No valid plan → show subscription popup
+  //       _showSubscriptionDialog("Video");
+  //       return;
+  //     }
+
+  //     // ✅ Valid plan → start the call
+  //     await ZegoService.startCall(targetUser: user, isVideoCall: true);
+  //   } catch (e) {
+  //     Get.snackbar('Error', 'Failed to start video call: $e');
+  //   }
+  // }
+
   void showSuccessSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -295,7 +366,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       child: profile.profilePic != null
                           ? Image.network(
-                              "https://shyeyes-b.onrender.com/uploads/${profile.profilePic!}",
+                              "${ApiEndpoints.imgUrl}${profile.profilePic!}",
                               height: 140,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -515,90 +586,14 @@ class _DashboardPageState extends State<DashboardPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _iconCircle(Icons.call, () {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (ctx) => Dialog(
-                                shape: HeartShapeBorder(),
-                                backgroundColor: theme.colorScheme.secondary,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.warning_amber_rounded,
-                                        color: theme.colorScheme.primary,
-                                        size: 50,
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        'Subscription Required',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        'To Proceed with Audio call, You have to Subscribe your Plan.',
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: 20),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          showModalBottomSheet(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                    top: Radius.circular(20),
-                                                  ),
-                                            ),
-                                            builder: (context) =>
-                                                const SubscriptionBottomSheet(),
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              theme.colorScheme.primary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              30,
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 32,
-                                            vertical: 12,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Subscribe Now',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
+                            final status = profile.status ?? "none";
+                            _handleAudioCall(profile, status);
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
-                            // final fullName = selectedUser.name != null
-                            //     ? "${selectedUser.name!.firstName} ${selectedUser.name!.lastName}"
-                            //     : "Unknown";
-
                             final imageUrl =
                                 (profile.profilePic != null &&
                                     profile.profilePic!.isNotEmpty)
-                                ? profile.profilePic!
+                                ? "${ApiEndpoints.imgUrl}${profile.profilePic!}"
                                 : "assets/images/profile_image2.png";
 
                             Get.to(
@@ -609,86 +604,273 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                             );
                           }),
-
                           _iconCircle(Icons.videocam, () {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (ctx) => Dialog(
-                                shape: HeartShapeBorder(),
-                                backgroundColor: theme.colorScheme.secondary,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.warning_amber_rounded,
-                                        color: theme.colorScheme.primary,
-                                        size: 50,
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        'Subscription Required',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        'To Proceed with Video call, You have to Subscribe your Plan.',
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: 20),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          showModalBottomSheet(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                    top: Radius.circular(20),
-                                                  ),
-                                            ),
-                                            builder: (context) =>
-                                                const SubscriptionBottomSheet(),
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              theme.colorScheme.primary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              30,
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 32,
-                                            vertical: 12,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Subscribe Now',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
+                            final status = profile.status ?? "none";
+                            _handleVideoCall(profile, status);
+
+                            // _showSubscriptionDialog(type);
+                            // showDialog(
+                            //   context: context,
+                            //   barrierDismissible: false,
+                            //   builder: (ctx) => Dialog(
+                            //     shape: HeartShapeBorder(),
+                            //     backgroundColor: theme.colorScheme.secondary,
+                            //     child: Padding(
+                            //       padding: const EdgeInsets.all(20),
+                            //       child: Column(
+                            //         mainAxisSize: MainAxisSize.min,
+                            //         children: [
+                            //           Icon(
+                            //             Icons.warning_amber_rounded,
+                            //             color: theme.colorScheme.primary,
+                            //             size: 50,
+                            //           ),
+                            //           SizedBox(height: 10),
+                            //           Text(
+                            //             'Subscription Required',
+                            //             style: TextStyle(
+                            //               fontSize: 20,
+                            //               fontWeight: FontWeight.bold,
+                            //               color: theme.colorScheme.primary,
+                            //             ),
+                            //             textAlign: TextAlign.center,
+                            //           ),
+                            //           SizedBox(height: 10),
+                            //           Text(
+                            //             'To Proceed with Video call, You have to Subscribe your Plan.',
+                            //             style: TextStyle(fontSize: 16),
+                            //             textAlign: TextAlign.center,
+                            //           ),
+                            //           SizedBox(height: 20),
+                            //           ElevatedButton(
+                            //             onPressed: () {
+                            //               showModalBottomSheet(
+                            //                 context: context,
+                            //                 isScrollControlled: true,
+                            //                 shape: RoundedRectangleBorder(
+                            //                   borderRadius:
+                            //                       BorderRadius.vertical(
+                            //                         top: Radius.circular(20),
+                            //                       ),
+                            //                 ),
+                            //                 builder: (context) =>
+                            //                     const SubscriptionBottomSheet(),
+                            //               );
+                            //             },
+                            //             style: ElevatedButton.styleFrom(
+                            //               backgroundColor:
+                            //                   theme.colorScheme.primary,
+                            //               shape: RoundedRectangleBorder(
+                            //                 borderRadius: BorderRadius.circular(
+                            //                   30,
+                            //                 ),
+                            //               ),
+                            //               padding: EdgeInsets.symmetric(
+                            //                 horizontal: 32,
+                            //                 vertical: 12,
+                            //               ),
+                            //             ),
+                            //             child: Text(
+                            //               'Subscribe Now',
+                            //               style: TextStyle(
+                            //                 fontSize: 16,
+                            //                 color: Colors.white,
+                            //               ),
+                            //             ),
+                            //           ),
+                            //         ],
+                            //       ),
+                            //     ),
+                            //   ),
+                            // );
                           }),
                         ],
                       ),
                     ),
+
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 12.0),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    //     children: [
+                    //       _iconCircle(Icons.call, () {
+                    //         _makeAudioCall(user, userId, userName)
+
+                    //         // showDialog(
+                    //         //   context: context,
+                    //         //   barrierDismissible: false,
+                    //         //   builder: (ctx) => Dialog(
+                    //         //     shape: HeartShapeBorder(),
+                    //         //     backgroundColor: theme.colorScheme.secondary,
+                    //         //     child: Padding(
+                    //         //       padding: const EdgeInsets.all(20),
+                    //         //       child: Column(
+                    //         //         mainAxisSize: MainAxisSize.min,
+                    //         //         children: [
+                    //         //           Icon(
+                    //         //             Icons.warning_amber_rounded,
+                    //         //             color: theme.colorScheme.primary,
+                    //         //             size: 50,
+                    //         //           ),
+                    //         //           SizedBox(height: 10),
+                    //         //           Text(
+                    //         //             'Subscription Required',
+                    //         //             style: TextStyle(
+                    //         //               fontSize: 20,
+                    //         //               fontWeight: FontWeight.bold,
+                    //         //               color: theme.colorScheme.primary,
+                    //         //             ),
+                    //         //             textAlign: TextAlign.center,
+                    //         //           ),
+                    //         //           SizedBox(height: 10),
+                    //         //           Text(
+                    //         //             'To Proceed with Audio call, You have to Subscribe your Plan.',
+                    //         //             style: TextStyle(fontSize: 16),
+                    //         //             textAlign: TextAlign.center,
+                    //         //           ),
+                    //         //           SizedBox(height: 20),
+                    //         //           ElevatedButton(
+                    //         //             onPressed: () {
+                    //         //               showModalBottomSheet(
+                    //         //                 context: context,
+                    //         //                 isScrollControlled: true,
+                    //         //                 shape: RoundedRectangleBorder(
+                    //         //                   borderRadius:
+                    //         //                       BorderRadius.vertical(
+                    //         //                         top: Radius.circular(20),
+                    //         //                       ),
+                    //         //                 ),
+                    //         //                 builder: (context) =>
+                    //         //                     const SubscriptionBottomSheet(),
+                    //         //               );
+                    //         //             },
+                    //         //             style: ElevatedButton.styleFrom(
+                    //         //               backgroundColor:
+                    //         //                   theme.colorScheme.primary,
+                    //         //               shape: RoundedRectangleBorder(
+                    //         //                 borderRadius: BorderRadius.circular(
+                    //         //                   30,
+                    //         //                 ),
+                    //         //               ),
+                    //         //               padding: EdgeInsets.symmetric(
+                    //         //                 horizontal: 32,
+                    //         //                 vertical: 12,
+                    //         //               ),
+                    //         //             ),
+                    //         //             child: Text(
+                    //         //               'Subscribe Now',
+                    //         //               style: TextStyle(
+                    //         //                 fontSize: 16,
+                    //         //                 color: Colors.white,
+                    //         //               ),
+                    //         //             ),
+                    //         //           ),
+                    //         //         ],
+                    //         //       ),
+                    //         //     ),
+                    //         //   ),
+                    //         // );
+                    //       }),
+                    //       _iconCircle(Icons.chat_bubble_outline, () {
+                    //         // final fullName = selectedUser.name != null
+                    //         //     ? "${selectedUser.name!.firstName} ${selectedUser.name!.lastName}"
+                    //         //     : "Unknown";
+
+                    //         final imageUrl =
+                    //             (profile.profilePic != null &&
+                    //                 profile.profilePic!.isNotEmpty)
+                    //             ? profile.profilePic!
+                    //             : "assets/images/profile_image2.png";
+
+                    //         Get.to(
+                    //           () => ChatScreen(
+                    //             receiverId: profile.id ?? "",
+                    //             receiverName: profile.name ?? "",
+                    //             receiverImage: imageUrl,
+                    //           ),
+                    //         );
+                    //       }),
+
+                    //       _iconCircle(Icons.videocam, () {
+                    //         _makeVideoCall(user, userId, userName)
+                    //         // showDialog(
+                    //         //   context: context,
+                    //         //   barrierDismissible: false,
+                    //         //   builder: (ctx) => Dialog(
+                    //         //     shape: HeartShapeBorder(),
+                    //         //     backgroundColor: theme.colorScheme.secondary,
+                    //         //     child: Padding(
+                    //         //       padding: const EdgeInsets.all(20),
+                    //         //       child: Column(
+                    //         //         mainAxisSize: MainAxisSize.min,
+                    //         //         children: [
+                    //         //           Icon(
+                    //         //             Icons.warning_amber_rounded,
+                    //         //             color: theme.colorScheme.primary,
+                    //         //             size: 50,
+                    //         //           ),
+                    //         //           SizedBox(height: 10),
+                    //         //           Text(
+                    //         //             'Subscription Required',
+                    //         //             style: TextStyle(
+                    //         //               fontSize: 20,
+                    //         //               fontWeight: FontWeight.bold,
+                    //         //               color: theme.colorScheme.primary,
+                    //         //             ),
+                    //         //             textAlign: TextAlign.center,
+                    //         //           ),
+                    //         //           SizedBox(height: 10),
+                    //         //           Text(
+                    //         //             'To Proceed with Video call, You have to Subscribe your Plan.',
+                    //         //             style: TextStyle(fontSize: 16),
+                    //         //             textAlign: TextAlign.center,
+                    //         //           ),
+                    //         //           SizedBox(height: 20),
+                    //         //           ElevatedButton(
+                    //         //             onPressed: () {
+                    //         //               showModalBottomSheet(
+                    //         //                 context: context,
+                    //         //                 isScrollControlled: true,
+                    //         //                 shape: RoundedRectangleBorder(
+                    //         //                   borderRadius:
+                    //         //                       BorderRadius.vertical(
+                    //         //                         top: Radius.circular(20),
+                    //         //                       ),
+                    //         //                 ),
+                    //         //                 builder: (context) =>
+                    //         //                     const SubscriptionBottomSheet(),
+                    //         //               );
+                    //         //             },
+                    //         //             style: ElevatedButton.styleFrom(
+                    //         //               backgroundColor:
+                    //         //                   theme.colorScheme.primary,
+                    //         //               shape: RoundedRectangleBorder(
+                    //         //                 borderRadius: BorderRadius.circular(
+                    //         //                   30,
+                    //         //                 ),
+                    //         //               ),
+                    //         //               padding: EdgeInsets.symmetric(
+                    //         //                 horizontal: 32,
+                    //         //                 vertical: 12,
+                    //         //               ),
+                    //         //             ),
+                    //         //             child: Text(
+                    //         //               'Subscribe Now',
+                    //         //               style: TextStyle(
+                    //         //                 fontSize: 16,
+                    //         //                 color: Colors.white,
+                    //         //               ),
+                    //         //             ),
+                    //         //           ),
+                    //         //         ],
+                    //         //       ),
+                    //         //     ),
+                    //         //   ),
+                    //         // );
+                    //       }),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -697,6 +879,188 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       );
     });
+  }
+
+  void _showSubscriptionDialog(String type) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: theme.colorScheme.secondary,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.lock_outline,
+                color: theme.colorScheme.primary,
+                size: 50,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Subscription Required',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'To make $type calls, please upgrade your plan.',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (context) => const SubscriptionBottomSheet(),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Subscribe Now',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNotFriendPopup(String userName) {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.pink.shade100, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Heart icon
+                Icon(
+                  Icons.favorite_border,
+                  color: Colors.pink.shade400,
+                  size: 40,
+                ),
+                const SizedBox(height: 16),
+
+                // Title
+                Text(
+                  "Connect with $userName 💝",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.pink,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  "You need to be friends first to start a call.\nSend a friend request to begin your journey!",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // OK button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade400,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      "OK, I Understand",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleAudioCall(dynamic user, String status) async {
+    final name = user.name ?? "User"; // Safe fallback
+
+    if (status.toLowerCase() == "accepted" ||
+        status.toLowerCase() == "friend") {
+      try {
+        await ZegoService.startCall(targetUser: user, isVideoCall: false);
+      } catch (e) {
+        Get.snackbar("Error", "Failed to start audio call: $e");
+      }
+    } else {
+      _showNotFriendPopup(name);
+    }
+  }
+
+  Future<void> _handleVideoCall(dynamic user, String status) async {
+    final name = user.name ?? "User"; // Safe fallback
+
+    if (status.toLowerCase() == "accepted" ||
+        status.toLowerCase() == "friend") {
+      try {
+        await ZegoService.startCall(targetUser: user, isVideoCall: true);
+      } catch (e) {
+        Get.snackbar("Error", "Failed to start video call: $e");
+      }
+    } else {
+      _showNotFriendPopup(name);
+    }
   }
 
   // Icon with circular background
@@ -835,7 +1199,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 profile.profilePic != null &&
                                     profile.profilePic!.isNotEmpty
                                 ? Image.network(
-                                    "https://shyeyes-b.onrender.com/uploads/${profile.profilePic!}",
+                                    "${ApiEndpoints.imgUrl}${profile.profilePic!}",
                                     fit: BoxFit.cover,
                                     errorBuilder:
                                         (
@@ -859,13 +1223,15 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 6),
                     SizedBox(
                       width: 72,
-                      child: Text(
-                        "${profile.name?.firstName ?? ''} ${profile.name?.lastName ?? ''}",
-                        style: TextStyle(
-                          fontSize: 11,
-                          overflow: TextOverflow.ellipsis,
+                      child: Center(
+                        child: Text(
+                          "${profile.name?.firstName ?? ''} ${profile.name?.lastName ?? ''}",
+                          style: TextStyle(
+                            fontSize: 11,
+                            overflow: TextOverflow.ellipsis,
 
-                          fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -879,7 +1245,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
- // final ProfileController controller = Get.find<ProfileController>();
+  // final ProfileController controller = Get.find<ProfileController>();
 
   @override
   Widget build(BuildContext context) {
@@ -894,6 +1260,7 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         title: Image.asset('assets/images/logo.png', height: 40),
         backgroundColor: primary,
+
         actions: [
           Obx(
             () => IconButton(
@@ -942,7 +1309,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             // agar profilePic hai toh url banayenge
             final profilePicUrl = hasProfilePic
-                ? "https://shyeyes-b.onrender.com/uploads/${user.profilePic}"
+                ? "${ApiEndpoints.imgUrl}${user.profilePic}"
                 : null;
 
             return GestureDetector(
@@ -952,7 +1319,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
                 child: CircleAvatar(
-                  radius: 29,
+                  radius: 30,
                   backgroundImage: hasProfilePic
                       ? NetworkImage(profilePicUrl!)
                       : null,

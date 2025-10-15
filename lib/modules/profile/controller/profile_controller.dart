@@ -17,11 +17,11 @@ class ProfileController extends GetxController {
   /// Getter for easier access
   EditProfileModel? get editProfileModel => profile2.value;
 
-  @override
-  void onInit() {
-    super.onInit();
-    fetchProfile(); // auto load
-  }
+  // @override
+  // void onInit() {
+  //   super.onInit();
+  //   fetchProfile(); // auto load
+  // }
 
   /// Fetch profile from API
   Future<void> fetchProfile() async {
@@ -41,9 +41,9 @@ class ProfileController extends GetxController {
   }
 
   /// Called explicitly in main.dart
-  Future<void> loadProfile() async {
-    await fetchProfile();
-  }
+  // Future<void> loadProfile() async {
+  //   await fetchProfile();
+  // }
 
   /// Manually set profile
   void setProfile(EditProfileModel profileData) {

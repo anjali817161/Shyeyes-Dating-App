@@ -18,31 +18,40 @@ class _PersonalInfoState extends State<PersonalInfo> {
 
   final _formKey = GlobalKey<FormState>();
   void pickDob(BuildContext context) async {
-    final now = DateTime.now();
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime(now.year - 18),
-      firstDate: DateTime(1900),
-      lastDate: now,
-    );
-    if (pickedDate != null) {
-      // ✅ enforce English month names
-      controller.dobCtrl.text = DateFormat(
-        'dd MMMM yyyy',
-        'en_US',
-      ).format(pickedDate);
+  final now = DateTime.now();
+  final pickedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime(now.year - 18),
+    firstDate: DateTime(1900),
+    lastDate: now,
+  );
 
-      print("📤 DOB sending => ${controller.dobCtrl.text}");
+  if (pickedDate != null) {
+    // ✅ Format DOB
+    controller.dobCtrl.text = DateFormat('dd MMMM yyyy', 'en_US').format(pickedDate);
 
-      // Auto calculate age
-      int age = now.year - pickedDate.year;
-      if (now.month < pickedDate.month ||
-          (now.month == pickedDate.month && now.day < pickedDate.day)) {
-        age--;
-      }
-      controller.ageCtrl.text = age.toString();
+    // Calculate age
+    int age = now.year - pickedDate.year;
+    if (now.month < pickedDate.month || (now.month == pickedDate.month && now.day < pickedDate.day)) {
+      age--;
+    }
+    controller.ageCtrl.text = age.toString();
+
+    // 🔹 Check if age < 18
+    if (age < 18) {
+      controller.ageCtrl.text = ""; // clear invalid age
+      Get.defaultDialog(
+        title: "Invalid Age",
+        middleText: "You must be 18+ to signup.",
+        confirm: ElevatedButton(
+          onPressed: () => Get.back(),
+          child: const Text("OK"),
+        ),
+      );
     }
   }
+}
+
 
   Future<void> pickProfileImage() async {
     final ImagePicker picker = ImagePicker();
@@ -51,7 +60,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
       imageQuality: 80,
     );
     if (pickedFile != null) {
-      controller.pickedImage.value = File(pickedFile.path); // ✅ use controller
+      controller.profileImage.value = File(pickedFile.path); // ✅ use controller
     }
   }
 
@@ -63,7 +72,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
     controller.cityCtrl.dispose();
     controller.stateCtrl.dispose();
     controller.countryCtrl.dispose();
-    controller.bioCtrl.dispose();
+    controller.aboutCtrl.dispose();
     controller.hobbiesCtrl.dispose();
     // super.onclose();
   }
@@ -113,10 +122,10 @@ class _PersonalInfoState extends State<PersonalInfo> {
                             radius: 50,
                             backgroundColor: primary.withOpacity(0.3),
                             backgroundImage:
-                                controller.pickedImage.value != null
-                                ? FileImage(controller.pickedImage.value!)
+                                controller.profileImage.value != null
+                                ? FileImage(controller.profileImage.value!)
                                 : null,
-                            child: controller.pickedImage.value == null
+                            child: controller.profileImage.value == null
                                 ? Icon(
                                     Icons.camera_alt,
                                     color: primary,
@@ -141,12 +150,19 @@ class _PersonalInfoState extends State<PersonalInfo> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    _buildTextField(
-                      context,
-                      controller: controller.ageCtrl,
-                      label: "Age",
-                      readOnly: true,
-                    ),
+                   _buildTextField(
+  context,
+  controller: controller.ageCtrl,
+  label: "Age",
+  readOnly: true,
+  validator: (value) {
+    if (value == null || value.isEmpty) return "Age is required";
+    final age = int.tryParse(value);
+    if (age == null || age < 18) return "You must be 18+";
+    return null;
+  },
+),
+
                     const SizedBox(height: 15),
                     Text(
                       "Gender",
@@ -235,7 +251,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                     const SizedBox(height: 8),
                     _buildTextField(
                       context,
-                      controller: controller.bioCtrl,
+                      controller: controller.aboutCtrl,
                       label: "Tell us about yourselfs",
                       maxLines: 4,
                     ),

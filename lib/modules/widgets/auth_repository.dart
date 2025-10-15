@@ -114,7 +114,6 @@ class AuthRepository {
 
     request.headers.addAll({
       "Accept": "application/json",
-      "Content-Type": "application/json",
       "Authorization": "Bearer $token",
     });
 

@@ -9,6 +9,8 @@ class FriendController extends GetxController {
   var friends = <Friend>[].obs;
   var filteredFriends = <Friend>[].obs;
   var isLoading = false.obs;
+  var isOnline = "".obs;
+  var lastSeen = "".obs;
 
   final searchController = "".obs;
   var isSearching = false.obs; // ✅ Add this for UI state management
@@ -28,6 +30,9 @@ class FriendController extends GetxController {
 
   Future<void> fetchFriends() async {
     final String token = await SharedPrefHelper.getToken() ?? "NULL";
+    print("Fetching friends with token: $token");
+    print(apiUrl);
+
     try {
       isLoading.value = true;
       final response = await http.get(
@@ -39,7 +44,6 @@ class FriendController extends GetxController {
         },
       );
 
-      print(apiUrl);
       print("body:----------${response.body}");
       print("status code:--------${response.statusCode}");
 
@@ -49,6 +53,9 @@ class FriendController extends GetxController {
 
         friends.assignAll(model.data?.friends ?? []);
         filteredFriends.assignAll(friends);
+        print(
+          "Friends count: ${friends.length}, Filtered: ${filteredFriends.length}",
+        );
       } else {
         Get.snackbar("Error", "Failed to fetch friends");
       }

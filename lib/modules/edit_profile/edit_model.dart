@@ -34,17 +34,13 @@ class EditProfileModel {
 class Data {
   EditUser? edituser;
 
-  Data({
-    this.edituser,
-  });
+  Data({this.edituser});
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-        edituser: json["user"] != null ? EditUser.fromJson(json["user"]) : null,
-      );
+    edituser: json["user"] != null ? EditUser.fromJson(json["user"]) : null,
+  );
 
-  Map<String, dynamic> toJson() => {
-        "user": edituser?.toJson(),
-      };
+  Map<String, dynamic> toJson() => {"user": edituser?.toJson()};
 }
 
 class EditUser {
@@ -94,42 +90,58 @@ class EditUser {
     this.likeCount,
   });
 
- factory EditUser.fromJson(Map<String, dynamic> json) {
-  return EditUser(
-    name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
-    location: json["location"] != null ? Location.fromJson(json["location"]) : null,
-    usage: json["usage"] != null ? Usage.fromJson(json["usage"]) : null,
-    matchCount: json["matchCount"],
-    id: (json["_id"] ?? json["id"] ?? "").toString().trim(), // ✅ fix here
-    email: json["email"],
-    phoneNo: json["phoneNo"],
-    dob: json["dob"] != null ? DateTime.tryParse(json["dob"]) : null,
-    age: json["age"],
-    gender: json["gender"],
-    bio: json["bio"],
-    hobbies: json["hobbies"] != null
-        ? List<String>.from(json["hobbies"].map((x) => x))
-        : [],
-    photos: json["photos"] != null
-        ? List<dynamic>.from(json["photos"].map((x) => x))
-        : [],
-    profilePic: json["profilePic"],
-    status: json["status"],
-    emailVerified: json["emailVerified"],
-    membership: json["membership"],
-    createdAt: json["createdAt"] != null
-        ? DateTime.tryParse(json["createdAt"])
-        : null,
-    updatedAt: json["updatedAt"] != null
-        ? DateTime.tryParse(json["updatedAt"])
-        : null,
-    friends: json["friends"] != null
-        ? List<String>.from(json["friends"].map((x) => x))
-        : [],
-    likeCount: json["likeCount"],
-  );
-}
+  factory EditUser.fromJson(Map<String, dynamic> json) {
+    DateTime? _parseCustomDate(String dateStr) {
+      try {
+        final parts = dateStr.split(RegExp(r'[-/]'));
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          return DateTime(year, month, day);
+        }
+      } catch (_) {}
+      return null;
+    }
 
+    return EditUser(
+      name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
+      location: json["location"] != null
+          ? Location.fromJson(json["location"])
+          : null,
+      usage: json["usage"] != null ? Usage.fromJson(json["usage"]) : null,
+      matchCount: json["matchCount"],
+      id: (json["_id"] ?? json["id"] ?? "").toString().trim(), // ✅ fix here
+      email: json["email"],
+      phoneNo: json["phoneNo"],
+      dob: json["dob"] != null
+          ? DateTime.tryParse(json["dob"]) ?? _parseCustomDate(json["dob"])
+          : null,
+      age: json["age"],
+      gender: json["gender"],
+      bio: json["bio"],
+      hobbies: json["hobbies"] != null
+          ? List<String>.from(json["hobbies"].map((x) => x))
+          : [],
+      photos: json["photos"] != null
+          ? List<dynamic>.from(json["photos"].map((x) => x))
+          : [],
+      profilePic: json["profilePic"],
+      status: json["status"],
+      emailVerified: json["emailVerified"],
+      membership: json["membership"],
+      createdAt: json["createdAt"] != null
+          ? DateTime.tryParse(json["createdAt"])
+          : null,
+      updatedAt: json["updatedAt"] != null
+          ? DateTime.tryParse(json["updatedAt"])
+          : null,
+      friends: json["friends"] != null
+          ? List<String>.from(json["friends"].map((x) => x))
+          : [],
+      likeCount: json["likeCount"],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "Name": name?.toJson(),

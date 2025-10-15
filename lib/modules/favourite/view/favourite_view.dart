@@ -7,6 +7,7 @@ import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/favourite/controller/favorite_controller.dart';
 import 'package:shyeyes/modules/favourite/model.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class FavouritePage extends StatelessWidget {
   FavouritePage({Key? key}) : super(key: key);
@@ -63,7 +64,7 @@ class FavouritePage extends StatelessWidget {
                 final profilePicUrl =
                     (likedUser.profilePic != null &&
                         likedUser.profilePic!.isNotEmpty)
-                    ? "https://shyeyes-b.onrender.com/uploads/${likedUser.profilePic!}"
+                    ? "${ApiEndpoints.imgUrl}${likedUser.profilePic!}"
                     : "";
 
                 final fullName =

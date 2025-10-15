@@ -93,27 +93,45 @@ class ForgetPasswordController extends GetxController {
   // forgetotp api
 
   // OTP Verify
+  // OTP Verify
   Future<void> verifyOtp(String otp, BuildContext context) async {
     if (otp.isEmpty || otp.length < 6) {
       Get.snackbar("Error", "Please enter a valid OTP");
       return;
     }
 
+    String email = emailCtrl.text.trim();
+    if (email.isEmpty) {
+      final savedEmail = await SharedPrefHelper.getEmail();
+      if (savedEmail == null || savedEmail.isEmpty) {
+        Get.snackbar("Error", "Email not found. Please restart the process.");
+        return;
+      }
+      email = savedEmail;
+      print("📧 Using saved email from SharedPref: $email");
+    }
+
+    // final token = await SharedPrefHelper.getToken();
+    // if (token == null || token.isEmpty) {
+    //   Get.snackbar("Error", "Authorization token missing.");
+    //   return;
+    // }
+
     isLoading.value = true;
     try {
-      final token = await SharedPrefHelper.getToken(); // Token from SharedPref
-      final response = await AuthRepository().forgetOtpVerify(otp, token ?? "");
+      final response = await AuthRepository().forgetOtpVerify(
+        otp.trim(), // ✅ correct 1st parameter
+        email.trim(), // ✅ correct 3rd parameter
+      );
 
       print("Status Code: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("print data $data");
-
         Get.snackbar("Success", data['message'] ?? "OTP Verified Successfully");
 
-        //  BottomSheet close + New Password BottomSheet open safely
+        // ✅ Close OTP sheet and open New Password sheet
         Navigator.pop(context);
         Future.delayed(const Duration(milliseconds: 300), () {
           CreatePasswordBottomSheet.show(Get.context!);

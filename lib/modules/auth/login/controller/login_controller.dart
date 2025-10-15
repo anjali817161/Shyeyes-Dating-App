@@ -38,6 +38,7 @@ class LoginController extends GetxController {
       );
 
       print("Raw Response: ${response.body}");
+      print("Status Code: ${response.statusCode}");
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
@@ -58,12 +59,12 @@ class LoginController extends GetxController {
           print("saved:   ${user['id']}");
         }
 
-        Get.snackbar(
-          "Success",
-          data["message"] ?? "You are logged in successfully",
-          backgroundColor: Colors.green.shade100,
-          snackPosition: SnackPosition.TOP,
-        );
+        // Get.snackbar(
+        //   "Success",
+        //   data["message"] ?? "You are logged in successfully",
+        //   backgroundColor: Colors.green.shade100,
+        //   snackPosition: SnackPosition.TOP,
+        // );
 
         // ✅ Navigate to main screen
         Get.offAll(() => MainScaffold());

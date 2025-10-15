@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
+import 'package:shyeyes/modules/chats/model/chat_model.dart';
+import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
+import 'package:shyeyes/modules/widgets/Zego_service.dart';
 import '../controller/chat_controller.dart';
 import '../../profile/controller/profile_controller.dart';
 
@@ -7,46 +12,93 @@ class ChatScreen extends StatefulWidget {
   final String receiverId;
   final String receiverName;
   final String receiverImage;
+  final bool isOnline;
+  final DateTime? lastSeen;
 
   const ChatScreen({
     Key? key,
     required this.receiverId,
     required this.receiverName,
     required this.receiverImage,
+    this.isOnline = false,
+    this.lastSeen,
   }) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final ChatController controller = Get.put(ChatController());
-  final ProfileController profileController =
-      Get.find(); // ✅ Get logged-in user
+  final ProfileController profileController = Get.find();
   final TextEditingController msgCtrl = TextEditingController();
   final ScrollController scrollCtrl = ScrollController();
+  final ActivePlanController activePlanController = Get.find();
+  final FriendController friendController = Get.put(FriendController());
 
   late String currentUserId;
   late String receiverId;
   late String receiverName;
   late String receiverImage;
+  late bool isOnline;
+  late DateTime? lastSeen;
+
+  // Light animation controllers
+  late AnimationController _bubbleController;
+  late AnimationController _floatingController;
+  late Animation<double> _bubbleAnimation;
+  late Animation<double> _floatingAnimation;
+
+  late dynamic receiverUser;
 
   @override
   void initState() {
     super.initState();
-    // _connectUser();
 
-    // Get current user ID from ProfileController
     currentUserId = profileController.profile2?.value?.data?.edituser?.id ?? "";
     receiverId = widget.receiverId;
     receiverName = widget.receiverName;
     receiverImage = widget.receiverImage;
+    isOnline = widget.isOnline;
+    lastSeen = widget.lastSeen;
+
+    receiverUser = {
+      "id": receiverId,
+      "name": receiverName,
+      "profilePic": receiverImage,
+    };
+
+    // Initialize light animations
+    _initializeAnimations();
 
     // Initialize chat
     controller.initChat(
       receiverId: receiverId,
       receiverName: receiverName,
       receiverImage: receiverImage,
+      receiverUser: receiverUser,
+    );
+  }
+
+  void _initializeAnimations() {
+    // Bubble floating animation
+    _bubbleController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _bubbleAnimation = Tween<double>(begin: -10, end: 10).animate(
+      CurvedAnimation(parent: _bubbleController, curve: Curves.easeInOut),
+    );
+
+    // Floating element animation
+    _floatingController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _floatingAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
     );
   }
 
@@ -67,6 +119,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   @override
+  void dispose() {
+    _bubbleController.dispose();
+    _floatingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -74,89 +133,504 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Row(
           children: [
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 25, // optional
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage:
+                      (receiverImage != null &&
+                          receiverImage.isNotEmpty &&
+                          receiverImage.startsWith("http"))
+                      ? NetworkImage(receiverImage)
+                      : null, // no image if empty
+                  child: (receiverImage == null || receiverImage.isEmpty)
+                      ? Icon(Icons.person, size: 25, color: Colors.grey[600])
+                      : null,
+                ),
+
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: isOnline ? Colors.green : Colors.grey,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(receiverName, style: TextStyle(fontSize: 18)),
+                const SizedBox(height: 2),
+                Text(
+                  isOnline
+                      ? "Online"
+                      : "Last seen ${_formatLastSeen(lastSeen)}",
+                  style: TextStyle(fontSize: 12, color: Colors.grey[300]),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: () {
+              _handleAudioCall(receiverUser, "friend");
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam),
+            onPressed: () {
+              _handleVideoCall(receiverUser, "friend");
+            },
+          ),
+        ],
+      ),
+
+      body: Stack(
+        children: [
+          // Background image
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/chat_back.jpeg"),
+                fit: BoxFit.cover, // fills entire container
+              ),
+            ),
+          ),
+
+          Column(
+            children: [
+              Expanded(
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (controller.messages.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _floatingAnimation,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _floatingAnimation.value,
+                                child: Icon(
+                                  Icons.chat_bubble_outline,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Let's break the ice by saying hii👋",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: scrollCtrl,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = controller.messages[index];
+                      final isMe = msg.from == currentUserId;
+
+                      return _buildMessageBubble(msg, isMe, theme);
+                    },
+                  );
+                }),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 10,
+                ),
+                color: Colors.white,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: msgCtrl,
+                        decoration: InputDecoration(
+                          hintText: 'Type a message...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      color: theme.colorScheme.primary,
+                      onPressed: _sendMessage,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLightBackgroundAnimation() {
+    final theme = Theme.of(context);
+
+    return IgnorePointer(
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          children: [
+            // Floating circles
+            for (int i = 0; i < 8; i++)
+              Positioned(
+                left: (i * 50) % MediaQuery.of(context).size.width,
+                top: (i * 70) % MediaQuery.of(context).size.height,
+                child: AnimatedBuilder(
+                  animation: _bubbleAnimation,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, _bubbleAnimation.value),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[100]?.withOpacity(0.3),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            // Floating dots
+            for (int i = 0; i < 12; i++)
+              Positioned(
+                left: (i * 40 + 20) % MediaQuery.of(context).size.width,
+                top: (i * 60 + 40) % MediaQuery.of(context).size.height,
+                child: AnimatedBuilder(
+                  animation: _floatingController,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: 0.1 + 0.1 * _floatingAnimation.value,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: theme.colorScheme.primary.withOpacity(0.2),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(MessageModel msg, bool isMe, ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.all(8),
+      child: Row(
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMe) ...[
             CircleAvatar(
               backgroundImage: receiverImage.startsWith("http")
                   ? NetworkImage(receiverImage)
                   : AssetImage(receiverImage) as ImageProvider,
+              radius: 16,
             ),
-
-            const SizedBox(width: 10),
-            Text(receiverName),
+            const SizedBox(width: 8),
           ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (controller.messages.isEmpty) {
-                return const Center(
-                  child: Text("Let's break the ice by saying hii👋"),
-                );
-              }
-
-              return ListView.builder(
-                controller: scrollCtrl,
-                itemCount: controller.messages.length,
-                itemBuilder: (context, index) {
-                  final msg = controller.messages[index];
-                  final isMe = msg.from == currentUserId;
-
-                  return Align(
-                    alignment: isMe
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.all(8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isMe
-                            ? theme.colorScheme.primary
-                            : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        msg.message,
-                        style: TextStyle(
-                          color: isMe ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            color: Colors.white,
-            child: Row(
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: msgCtrl,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? theme.colorScheme.primary
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft: isMe
+                          ? const Radius.circular(16)
+                          : const Radius.circular(4),
+                      bottomRight: isMe
+                          ? const Radius.circular(4)
+                          : const Radius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    msg.message,
+                    style: TextStyle(
+                      color: isMe ? Colors.white : Colors.black87,
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  color: theme.colorScheme.primary,
-                  onPressed: _sendMessage,
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTime(msg.timestamp),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      ),
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          msg.status == "read" ? Icons.done_all : Icons.done,
+                          size: 12,
+                          color: msg.status == "read"
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          if (isMe) const SizedBox(width: 8),
         ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime timestamp) {
+    return '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatLastSeen(DateTime? lastSeen) {
+    if (lastSeen == null) return 'unknown';
+
+    final now = DateTime.now();
+    final difference = now.difference(lastSeen);
+
+    if (difference.inMinutes < 1) return 'just now';
+    if (difference.inMinutes < 60) return '${difference.inMinutes}m ago';
+    if (difference.inHours < 24) return '${difference.inHours}h ago';
+    return '${difference.inDays}d ago';
+  }
+
+  Future<void> _handleAudioCall(dynamic user, String status) async {
+    final name = user["name"] ?? "User";
+
+    if (status.toLowerCase() == "accepted" ||
+        status.toLowerCase() == "friend") {
+      try {
+        await ZegoService.startCall(targetUser: user, isVideoCall: false);
+      } catch (e) {
+        Get.snackbar("Error", "Failed to start audio call: $e");
+      }
+    } else {
+      _showNotFriendPopup(name);
+    }
+  }
+
+  Future<void> _handleVideoCall(dynamic user, String status) async {
+    final name = user["name"] ?? "User";
+
+    if (status.toLowerCase() == "accepted" ||
+        status.toLowerCase() == "friend") {
+      try {
+        await ZegoService.startCall(targetUser: user, isVideoCall: true);
+      } catch (e) {
+        Get.snackbar("Error", "Failed to start video call: $e");
+      }
+    } else {
+      _showNotFriendPopup(name);
+    }
+  }
+
+  void _showNotFriendPopup(String userName) {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.pink.shade100, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Heart icon
+                Icon(
+                  Icons.favorite_border,
+                  color: Colors.pink.shade400,
+                  size: 40,
+                ),
+                const SizedBox(height: 16),
+
+                // Title
+                Text(
+                  "Connect with $userName 💝",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.pink,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  "You need to be friends first to start a call.\nSend a friend request to begin your journey!",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // OK button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade400,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      "OK, I Understand",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSubscriptionDialog(String type) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: theme.colorScheme.secondary,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.lock_outline,
+                color: theme.colorScheme.primary,
+                size: 50,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Subscription Required',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'To make $type calls, please upgrade your plan.',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (context) => const SubscriptionBottomSheet(),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Subscribe Now',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,11 +1,12 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://shyeyes-b.onrender.com/api/user/";
+  static const String baseUrl = "https://shyeyes-backend.onrender.com/api/user/";
 
-  static const String baseUrl2 = "https://shyeyes-b.onrender.com/api/friends/";
+  static const String baseUrl2 = "https://shyeyes-backend.onrender.com/api/friends/";
 
-  static const String imgUrl = "https://shyeyes-b.onrender.com/uploads/";
+  static const String imgUrl =
+      "https://res.cloudinary.com/dlhp3v3fd/image/upload/";
 
-  static const String likes = "https://shyeyes-b.onrender.com/api/likes/";
+  static const String likes = "https://shyeyes-backend.onrender.com/api/likes/";
 
   // Auth
   static const String report = "report";

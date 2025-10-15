@@ -14,7 +14,7 @@ class MessageModel {
     required this.to,
     required this.message,
     required this.timestamp,
-    required this.status,
+    this.status = 'sent',
     this.remainingMessages,
     this.messagesUsedTotal,
   });
@@ -124,4 +124,25 @@ class MessageModel {
     'remainingMessages': remainingMessages,
     'messagesUsedTotal': messagesUsedTotal,
   };
+  MessageModel copyWith({
+    String? id,
+    String? from,
+    String? to,
+    String? message,
+    DateTime? timestamp,
+    String? status,
+    int? remainingMessages,
+    dynamic messagesUsedTotal,
+  }) {
+    return MessageModel(
+      id: id ?? this.id,
+      from: from ?? this.from,
+      to: to ?? this.to,
+      message: message ?? this.message,
+      timestamp: timestamp ?? this.timestamp,
+      status: status ?? this.status,
+      remainingMessages: remainingMessages ?? this.remainingMessages,
+      messagesUsedTotal: messagesUsedTotal ?? this.messagesUsedTotal,
+    );
+  }
 }

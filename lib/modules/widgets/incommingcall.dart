@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
@@ -9,21 +10,47 @@ Future<void> showIncomingCallDialog({
   required String callerId,
   required String roomId,
   required bool isVideoCall,
+  required String friendshipStatus,
 }) async {
+  final ActivePlanController planController = Get.put(
+    ActivePlanController(),
+    permanent: true,
+  );
+
+  // --- Force fresh fetch ---
+  await planController.fetchActivePlan();
+
+  // --- Safe check ---
+  final bool hasPlan = planController.hasActivePaidPlan;
+  final bool isFriend =
+      friendshipStatus.toLowerCase() == "friend" ||
+      friendshipStatus.toLowerCase() == "accepted";
+
+  // --- Block if no active paid plan OR not friend ---
+  if (!hasPlan) {
+    debugPrint("❌ Incoming call blocked: user has no active paid plan.");
+    return; // <--- completely block incoming call
+  }
+
+  if (!isFriend) {
+    debugPrint("❌ Incoming call blocked: not friends.");
+    return; // <--- block
+  }
+
+  // ✅ Only show dialog if checks passed
   return Get.dialog(
     AlertDialog(
       backgroundColor: Colors.black87,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      title: const Text(
-        "Incoming Call",
-        style: TextStyle(color: Colors.white),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      title: const Text("Incoming Call", style: TextStyle(color: Colors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.call, size: 60, color: Colors.greenAccent),
+          Icon(
+            isVideoCall ? Icons.videocam : Icons.call,
+            size: 60,
+            color: Colors.greenAccent,
+          ),
           const SizedBox(height: 10),
           Text(
             "$callerName is calling...",
@@ -33,21 +60,16 @@ Future<void> showIncomingCallDialog({
         ],
       ),
       actions: [
-        /// Reject Button
         TextButton(
-          onPressed: () {
-            Get.back(); // Close the dialog
-          },
+          onPressed: () => Get.back(),
           child: const Text(
             "Reject",
             style: TextStyle(color: Colors.redAccent),
           ),
         ),
-
-        /// Accept Button
         TextButton(
           onPressed: () async {
-            Get.back(); // Close the dialog
+            Get.back();
 
             final myUserId = await SharedPrefHelper.getUserId() ?? "";
             final myUserName = await SharedPrefHelper.getUserName() ?? "";
@@ -58,23 +80,25 @@ Future<void> showIncomingCallDialog({
             }
 
             if (isVideoCall) {
-              /// ✅ Navigate to Video Call Screen
-              Get.to(() => VideoCallPage(
-                    roomID: roomId,
-                    userID: myUserId,       // Current user (receiver)
-                    userName: myUserName,   // Current user's name
-                    receiverId: callerId,   // ✅ Caller ID (opposite user)
-                    receiverName: callerName,
-                  ));
+              Get.to(
+                () => VideoCallPage(
+                  roomID: roomId,
+                  userID: myUserId,
+                  userName: myUserName,
+                  receiverId: callerId,
+                  receiverName: callerName,
+                ),
+              );
             } else {
-              /// ✅ Navigate to Voice Call Screen
-              Get.to(() => AudioCallPage(
-                    roomID: roomId,
-                    userID: myUserId,
-                    userName: myUserName,
-                    receiverId: callerId,   // ✅ Add here also if your VoiceCallPage supports it
-                    receiverName: callerName,
-                  ));
+              Get.to(
+                () => AudioCallPage(
+                  roomID: roomId,
+                  userID: myUserId,
+                  userName: myUserName,
+                  receiverId: callerId,
+                  receiverName: callerName,
+                ),
+              );
             }
           },
           child: const Text(

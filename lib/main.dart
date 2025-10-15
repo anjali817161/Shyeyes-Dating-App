@@ -22,10 +22,7 @@ Future<void> main() async {
 
   /// 🔹 Initialize ZEGO Engine + ZIMKit
   await ZegoService.initZegoEngine();
-  await ZIMKit().init(
-    appID: ZegoService.appID,
-    appSign: ZegoService.appSign,
-  );
+  await ZIMKit().init(appID: ZegoService.appID, appSign: ZegoService.appSign);
 
   /// 🔹 Initialize Controllers
   final profileController = Get.put(ProfileController());
@@ -68,9 +65,7 @@ class MyApp extends StatelessWidget {
         return Stack(
           children: [
             child!,
-            ZegoUIKitPrebuiltCallMiniOverlayPage(
-              contextQuery: () => context,
-            ),
+            ZegoUIKitPrebuiltCallMiniOverlayPage(contextQuery: () => context),
           ],
         );
       },
