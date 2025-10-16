@@ -1033,6 +1033,81 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  void _showLimitDialog(String callType, int limitMinutes) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: theme.colorScheme.secondary,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.timer_off,
+                color: theme.colorScheme.primary,
+                size: 50,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Call Limit Reached',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'You have reached your $limitMinutes-minute $callType call limit for this plan.',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (context) => const SubscriptionBottomSheet(),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Upgrade Plan',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleAudioCall(dynamic user, String status) async {
     final name = user.name ?? "User"; // Safe fallback
 
@@ -1053,6 +1128,28 @@ class _DashboardPageState extends State<DashboardPage> {
 
     if (status.toLowerCase() == "accepted" ||
         status.toLowerCase() == "friend") {
+      // Check plan limits before starting call
+      final plan = activePlanController.activePlan.value;
+      if (plan == null) {
+        _showSubscriptionDialog("video");
+        return;
+      }
+
+      // Check video call limits
+      if (plan.planType?.toLowerCase() == 'free') {
+        // Free plan: Assume no video calls allowed or limited
+        _showSubscriptionDialog("video");
+        return;
+      } else {
+        // Paid plans: Check usage against limits
+        final videoUsage = plan.usage?.video?.used ?? 0;
+        final videoLimit = plan.limits?.videoTimeSeconds ?? 0;
+        if (videoLimit > 0 && videoUsage >= videoLimit) {
+          _showLimitDialog('video', videoLimit ~/ 60); // Convert seconds to minutes
+          return;
+        }
+      }
+
       try {
         await ZegoService.startCall(targetUser: user, isVideoCall: true);
       } catch (e) {

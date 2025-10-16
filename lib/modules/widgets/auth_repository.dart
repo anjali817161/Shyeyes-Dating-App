@@ -614,7 +614,7 @@ class AuthRepository {
 
   // otp verify
 
-  Future<http.Response> forgetOtpVerify(String otp, String token) {
+  Future<http.Response> forgetOtpVerify(String otp,  String email) {
     print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetotp}");
 
     return http.post(
@@ -622,9 +622,8 @@ class AuthRepository {
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer $token", // ✅ Token add
       },
-      body: jsonEncode({'otp': otp}),
+      body: jsonEncode({'otp': otp, 'email': email}),
     );
   }
 
@@ -633,7 +632,7 @@ class AuthRepository {
   Future<http.Response> CreateNewPass(
     String Newpass,
     String Confrimpass,
-    String token,
+    String email,
   ) {
     print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword}");
 
@@ -642,11 +641,11 @@ class AuthRepository {
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer $token", // ✅ Token add
       },
       body: jsonEncode({
         'newPassword': Newpass,
         'confirmPassword': Confrimpass,
+        'email': email,
       }),
     );
   }

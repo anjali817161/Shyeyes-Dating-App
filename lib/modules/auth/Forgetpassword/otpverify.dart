@@ -168,7 +168,8 @@ class OtpVerifyBottomSheet {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           controller.verifyOtp(
-                            controller.otpCtrl.text, // ✅ Fixed here
+                            controller.otpCtrl.text,
+                            controller.emailCtrl.text, // ✅ Fixed here
                             context,
                           );
                         }

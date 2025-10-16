@@ -24,6 +24,18 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
   void initState() {
     super.initState();
     chatController.fetchConversations();
+    // Update online status periodically
+    _updateOnlineStatus();
+  }
+
+  void _updateOnlineStatus() {
+    // Update online status every 30 seconds
+    Future.delayed(const Duration(seconds: 30), () {
+      if (mounted) {
+        friendsController.fetchFriends();
+        _updateOnlineStatus();
+      }
+    });
   }
 
   @override

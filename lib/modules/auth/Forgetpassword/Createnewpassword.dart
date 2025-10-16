@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class CreatePasswordBottomSheet {
   static void show(BuildContext context) {
@@ -107,11 +108,31 @@ class CreatePasswordBottomSheet {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
+                        final email = controller.emailCtrl.text.trim();
+                        String finalEmail = email.isNotEmpty
+                            ? email
+                            : await SharedPrefHelper.getEmail() ?? '';
                         if (_formKey.currentState!.validate()) {
+                          // Safely get email
+                          final emailFromCtrl = controller.emailCtrl.text
+                              .trim();
+                          final savedEmail = await SharedPrefHelper.getEmail();
+                          final finalEmail = emailFromCtrl.isNotEmpty
+                              ? emailFromCtrl
+                              : savedEmail ?? '';
+
+                          if (finalEmail.isEmpty) {
+                            Get.snackbar(
+                              "Error",
+                              "Email not found. Please restart the process.",
+                            );
+                            return;
+                          }
                           controller.createNewPassword(
                             newPassCtrl.text.trim(),
                             confirmPassCtrl.text.trim(),
+                            finalEmail,
                             context,
                           );
                         }

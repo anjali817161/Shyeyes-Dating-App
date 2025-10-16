@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
+import 'package:shyeyes/modules/chats/view/heart_shape.dart';
+import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
 import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
@@ -34,7 +36,6 @@ class ChatController extends GetxController {
   var receiverName = "".obs;
   var receiverImage = "".obs;
   var remainingMessages = 0.obs;
-  
 
   final _addedMessageIds = <String>{};
 
@@ -111,11 +112,12 @@ class ChatController extends GetxController {
 
         final msg = MessageModel.fromJson(data);
 
-        // ✅ deduplicate using message id
+        // Add message if not already added (deduplication by ID)
         if (!_addedMessageIds.contains(msg.id)) {
           _addedMessageIds.add(msg.id);
           messages.add(msg);
           saveMessagesToLocal();
+          print("✅ Added message: ${msg.id}");
         } else {
           print("⚠️ Duplicate message ignored: ${msg.id}");
         }
@@ -133,13 +135,18 @@ class ChatController extends GetxController {
       if (rm is int) {
         remainingMessages.value = rm;
       } else if (rm is String) {
-        // Try to parse if it's a number string
-        final parsed = int.tryParse(rm);
-        if (parsed != null) {
-          remainingMessages.value = parsed;
+        if (rm == "Unlimited") {
+          remainingMessages.value =
+              999999; // Set to a large number for unlimited
         } else {
-          // handle non-numeric gracefully (keep old value or reset)
-          print("⚠️ Unexpected string for remainingMessages: $rm");
+          // Try to parse if it's a number string
+          final parsed = int.tryParse(rm);
+          if (parsed != null) {
+            remainingMessages.value = parsed;
+          } else {
+            // handle non-numeric gracefully (keep old value or reset)
+            print("⚠️ Unexpected string for remainingMessages: $rm");
+          }
         }
       } else if (rm == null) {
         print("⚠️ remainingMessages is null, keeping old value");
@@ -157,11 +164,14 @@ class ChatController extends GetxController {
   void loadMessagesFromLocal(String rid) {
     final data = _box.read('chat_$rid');
     if (data != null) {
-      messages.assignAll(
-        (data as List)
-            .map((e) => MessageModel.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-      );
+      final loadedMessages = (data as List)
+          .map((e) => MessageModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      messages.assignAll(loadedMessages);
+      // Add IDs to prevent duplicates
+      for (var msg in loadedMessages) {
+        _addedMessageIds.add(msg.id);
+      }
     }
   }
 
@@ -278,15 +288,20 @@ class ChatController extends GetxController {
       return;
     }
 
-    // Message limits for free plan
+    // Check plan limits based on plan type
     if (plan.planType?.toLowerCase() == 'free') {
+      // Free plan: 50 messages limit
       final totalMsgs = messages.length;
       if (totalMsgs >= 50) {
-        Get.snackbar(
-          'Message Limit Reached',
-          'Free plan allows only 50 messages. Please upgrade.',
-          duration: const Duration(seconds: 3),
-        );
+        _showLimitDialog('message', 50);
+        return;
+      }
+    } else {
+      // Paid plans: Check usage against limits
+      final messageUsage = plan.usage?.messages?.used ?? 0;
+      final messageLimit = plan.limits?.messagesPerDay ?? 0;
+      if (messageLimit > 0 && messageUsage >= messageLimit) {
+        _showLimitDialog('message', messageLimit);
         return;
       }
     }
@@ -308,60 +323,13 @@ class ChatController extends GetxController {
 
     messages.add(tempMsg);
     _addedMessageIds.add(tempMsg.id);
-
-    // Save to local storage immediately
     saveMessagesToLocal();
 
-    // Send via socket
+    // Send via socket - message will be updated when received back via new_message event
     socket.emit("send_message", {
       "receiverId": receiverId.value,
       "message": sanitizedText,
     });
-
-    // REST fallback
-    await _sendRest(sanitizedText, tempMsg);
-  }
-
-  Future<void> _sendRest(String text, MessageModel tempMsg) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/send"),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({"to": receiverId.value, "message": text}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-
-        // ✅ If API returns remaining messages
-        final rm = data["remainingMessages"];
-        remainingMessages.value = rm is int
-            ? rm
-            : int.tryParse(rm.toString()) ?? remainingMessages.value;
-
-        // ✅ Mark message as sent
-        final index = messages.indexWhere((m) => m.id == tempMsg.id);
-        if (index != -1) {
-          messages[index] = messages[index].copyWith(status: "sent");
-        }
-      } else if (response.statusCode == 403) {
-        final error = jsonDecode(response.body);
-        Get.snackbar(
-          "Limit Reached",
-          error["message"] ?? "Your subscription has expired.",
-        );
-      } else {
-        Get.snackbar(
-          "Error",
-          "Failed to send message (${response.statusCode})",
-        );
-      }
-    } catch (e) {
-      print("❌ Error sending message via REST: $e");
-    }
   }
 
   void markMessageAsRead(String messageId) {
@@ -434,6 +402,79 @@ class ChatController extends GetxController {
     } catch (e) {
       print("Error clearing chat: $e");
     }
+  }
+
+  // -------------------------------------------------
+  // 📊 Show Limit Dialog
+  // -------------------------------------------------
+  void _showLimitDialog(String type, int limit) {
+    Get.dialog(
+      Dialog(
+        shape: HeartShapeBorder(),
+        backgroundColor: Get.theme.colorScheme.secondary,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Get.theme.colorScheme.primary,
+                size: 50,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Limit Reached',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Get.theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                type == 'message'
+                    ? 'You have reached the $limit message limit for your plan. Upgrade to continue chatting!'
+                    : 'You have reached the $limit minute limit for your plan. Upgrade to continue calling!',
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                  Get.bottomSheet(
+                    const SubscriptionBottomSheet(),
+                    isScrollControlled: true,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Get.theme.colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Upgrade Now',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   @override

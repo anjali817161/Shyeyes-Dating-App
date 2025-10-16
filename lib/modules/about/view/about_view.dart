@@ -265,14 +265,29 @@ class _AboutViewState extends State<AboutView> {
                 // Share Button
                 GestureDetector(
                   onTap: () {
+                    final profileName =
+                        profileData.name?.firstName ?? "someone special";
+
+                    final shareText =
+                        '''
+✨ Discover ${profileName}'s profile on ShyEyes! 💖
+
+ShyEyes connects you with genuine people looking for meaningful relationships. 
+Explore profiles, match based on your vibe, and start your story today! 🌸
+
+View ${profileName}'s profile here:
+https://www.shyeyes.com/profile/${profileData.id ?? ''}
+
+Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.vercel.app/shyeyes/
+''';
+
                     Share.share(
-                      'Check out ${profileData.name?.firstName ?? ""}\'s profile!',
-                      subject: 'Profile from ShyEyes',
+                      shareText,
+                      subject: 'Check out ${profileName} on ShyEyes 💘',
                     );
                   },
                   child: Container(
-                    width:
-                        double.infinity, // ✅ Make width same as other buttons
+                    width: double.infinity,
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
@@ -280,8 +295,7 @@ class _AboutViewState extends State<AboutView> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center, // ✅ Center icon + text
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.share, color: Colors.blueAccent),
                         const SizedBox(width: 8),

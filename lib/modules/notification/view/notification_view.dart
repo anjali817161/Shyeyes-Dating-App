@@ -4,6 +4,7 @@ import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/invitation/controller/invitation_controller.dart';
 import 'package:shyeyes/modules/likes/showlikescontroller.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
+import 'package:intl/intl.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -53,6 +54,32 @@ class _NotificationsPageState extends State<NotificationsPage>
     unreadLikes.addAll(
       likesController.likesList.map((e) => e.liker!.sId.toString()).toList(),
     );
+  }
+
+  String formatIndianTime(String? dateTimeString) {
+    if (dateTimeString == null || dateTimeString.isEmpty) {
+      return "Just now";
+    }
+
+    try {
+      final dateTime = DateTime.parse(dateTimeString);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inSeconds < 60) {
+        return "Just now";
+      } else if (difference.inMinutes < 60) {
+        return "${difference.inMinutes}m ago";
+      } else if (difference.inHours < 24) {
+        return "${difference.inHours}h ago";
+      } else if (difference.inDays < 7) {
+        return "${difference.inDays}d ago";
+      } else {
+        return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+      }
+    } catch (e) {
+      return "Just now";
+    }
   }
 
   @override
@@ -146,15 +173,13 @@ class _NotificationsPageState extends State<NotificationsPage>
 
   String getFullImageUrl(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) {
-      return "https://via.placeholder.com/150"; // fallback image
+      return "https://via.placeholder.com/150";
     }
 
-    // Check if it's already a complete URL
     if (imagePath.startsWith("http")) {
       return imagePath;
     }
 
-    // Otherwise, append your base URL
     return "$imageUrl$imagePath";
   }
 
@@ -173,7 +198,11 @@ class _NotificationsPageState extends State<NotificationsPage>
       ];
 
       if (allNotifications.isEmpty) {
-        return const Center(child: Text("No notifications yet"));
+        return _buildEmptyState(
+          theme,
+          "No notifications yet",
+          Icons.notifications_off,
+        );
       }
 
       return _buildNotificationList(theme, allNotifications);
@@ -189,7 +218,11 @@ class _NotificationsPageState extends State<NotificationsPage>
 
       final items = _mapInvitations(invitationController);
       if (items.isEmpty) {
-        return const Center(child: Text("No new requests"));
+        return _buildEmptyState(
+          theme,
+          "No new requests",
+          Icons.person_add_disabled,
+        );
       }
 
       return _buildNotificationList(theme, items);
@@ -205,11 +238,35 @@ class _NotificationsPageState extends State<NotificationsPage>
 
       final items = _mapLikes(likesController);
       if (items.isEmpty) {
-        return const Center(child: Text("No likes yet"));
+        return _buildEmptyState(theme, "No likes yet", Icons.favorite_border);
       }
 
       return _buildNotificationList(theme, items);
     });
+  }
+
+  /// 🔸 Empty State Widget
+  Widget _buildEmptyState(ThemeData theme, String message, IconData icon) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 64,
+            color: theme.colorScheme.onSurface.withOpacity(0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 🔸 Map Invitations -> Unified format
@@ -219,10 +276,10 @@ class _NotificationsPageState extends State<NotificationsPage>
       final lastName = inv.user1?.name?.lastName ?? "";
       final fullName = "$firstName $lastName".trim();
 
-      // ✅ Safely build avatar URL
       final avatarUrl = getFullImageUrl(inv.user1?.profilePic);
 
       return {
+        "id": inv.id.toString(),
         "name": fullName.isNotEmpty ? fullName : "Someone",
         "avatar": avatarUrl,
         "message": "sent you a friend request",
@@ -230,6 +287,7 @@ class _NotificationsPageState extends State<NotificationsPage>
         "time": inv.createdAt ?? "",
         "icon": Icons.person_add,
         "iconColor": Colors.blue,
+        "rawData": inv,
       };
     }).toList();
   }
@@ -241,10 +299,10 @@ class _NotificationsPageState extends State<NotificationsPage>
       final lastName = like.liker?.name?.lastName ?? "";
       final fullName = "$firstName $lastName".trim();
 
-      // ✅ Safely build avatar URL
       final avatarUrl = getFullImageUrl(like.liker?.profilePic);
 
       return {
+        "id": like.liker?.sId.toString() ?? like.sId.toString(),
         "name": fullName.isNotEmpty ? fullName : "Unknown",
         "avatar": avatarUrl,
         "message": "liked your profile",
@@ -252,6 +310,7 @@ class _NotificationsPageState extends State<NotificationsPage>
         "time": like.createdAt ?? "",
         "icon": Icons.favorite,
         "iconColor": Colors.red,
+        "rawData": like,
       };
     }).toList();
   }
@@ -261,9 +320,10 @@ class _NotificationsPageState extends State<NotificationsPage>
     ThemeData theme,
     List<Map<String, dynamic>> notifications,
   ) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
       itemCount: notifications.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final notif = notifications[index];
 
@@ -273,78 +333,18 @@ class _NotificationsPageState extends State<NotificationsPage>
             ? unreadRequests.contains(id)
             : unreadLikes.contains(id);
 
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            color: isUnread
-                ? theme.colorScheme.primary.withOpacity(0.1)
-                : theme.colorScheme.surface,
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            leading: Stack(
-              children: [
-                CircleAvatar(
-                  backgroundImage: NetworkImage(notif["avatar"]),
-                  radius: 26,
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: CircleAvatar(
-                    radius: 10,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      notif["icon"],
-                      color: notif["iconColor"],
-                      size: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            title: Text.rich(
-              TextSpan(
-                text: notif["name"],
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                children: [TextSpan(text: " ${notif["message"]}")],
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-            subtitle: Text(
-              notif["time"].toString().isEmpty
-                  ? "Just now"
-                  : notif["time"].toString(),
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-                fontSize: 12,
-              ),
-            ),
-            trailing: Icon(
-              Icons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
-            ),
-
-            // ✅ HERE is your onTap
             onTap: () {
               print("Tapped on ${notif["name"]}");
 
               if (notif["type"] == "request") {
                 unreadRequests.remove(notif["id"].toString());
-                // Optionally remove from list after accepting
-                invitationController.invitations.removeWhere((inv) => inv.id.toString() == notif["id"].toString());
+                invitationController.invitations.removeWhere(
+                  (inv) => inv.id.toString() == notif["id"].toString(),
+                );
               } else if (notif["type"] == "like") {
                 unreadLikes.remove(notif["id"].toString());
                 likesController.likesList.removeWhere(
@@ -352,6 +352,145 @@ class _NotificationsPageState extends State<NotificationsPage>
                 );
               }
             },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isUnread
+                    ? theme.colorScheme.primary.withOpacity(0.08)
+                    : theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: isUnread
+                    ? Border.all(
+                        color: theme.colorScheme.primary.withOpacity(0.2),
+                        width: 1,
+                      )
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Avatar with notification type indicator
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withOpacity(0.1),
+                            width: 2,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(notif["avatar"]),
+                          radius: 26,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            notif["icon"],
+                            color: notif["iconColor"],
+                            size: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: notif["name"],
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              TextSpan(
+                                text: " ${notif["message"]}",
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.7),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          formatIndianTime(notif["time"]),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Unread indicator and chevron
+                  Column(
+                    children: [
+                      if (isUnread)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 8),
+                      const SizedBox(height: 8),
+                      Icon(
+                        Icons.chevron_right,
+                        color: theme.colorScheme.onSurface.withOpacity(0.3),
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },

@@ -31,6 +31,8 @@ class ForgetPasswordController extends GetxController {
       final response = await AuthRepository().Forgetpassword(emailCtrl.text);
 
       if (response.statusCode == 200) {
+        await SharedPrefHelper.saveEmail(emailCtrl.text.trim());
+
         Get.snackbar("Success", "OTP Sent to your email");
         startTimer();
 
@@ -93,8 +95,7 @@ class ForgetPasswordController extends GetxController {
   // forgetotp api
 
   // OTP Verify
-  // OTP Verify
-  Future<void> verifyOtp(String otp, BuildContext context) async {
+  Future<void> verifyOtp(String otp, String email, BuildContext context) async {
     if (otp.isEmpty || otp.length < 6) {
       Get.snackbar("Error", "Please enter a valid OTP");
       return;
@@ -154,6 +155,8 @@ class ForgetPasswordController extends GetxController {
   Future<void> createNewPassword(
     String newPass,
     String confirmPass,
+    String email,
+
     BuildContext context,
   ) async {
     if (newPass.isEmpty || confirmPass.isEmpty) {
@@ -171,11 +174,11 @@ class ForgetPasswordController extends GetxController {
 
     isLoading.value = true;
     try {
-      final token = await SharedPrefHelper.getToken();
+      // final token = await SharedPrefHelper.getToken();
       final response = await AuthRepository().CreateNewPass(
         newPass,
         confirmPass,
-        token ?? "",
+        email,
       );
 
       print("Status Code: ${response.statusCode}");

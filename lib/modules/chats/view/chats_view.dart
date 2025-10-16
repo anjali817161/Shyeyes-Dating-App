@@ -5,6 +5,7 @@ import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:shyeyes/modules/widgets/Zego_service.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import '../controller/chat_controller.dart';
 import '../../profile/controller/profile_controller.dart';
 
@@ -78,6 +79,21 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       receiverImage: receiverImage,
       receiverUser: receiverUser,
     );
+
+    // Scroll to bottom when messages are loaded or updated
+    ever(controller.messages, (messages) {
+      if (messages.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (scrollCtrl.hasClients) {
+            scrollCtrl.animateTo(
+              scrollCtrl.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    });
   }
 
   void _initializeAnimations() {
@@ -260,11 +276,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 }),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 10,
+                padding: EdgeInsets.only(
+                  left: 8,
+                  right: 8,
+                  top: 10,
+                  bottom: 10 + MediaQuery.of(context).padding.bottom,
                 ),
-                color: Colors.white,
+                color: theme.colorScheme.secondary,
                 child: Row(
                   children: [
                     Expanded(
@@ -431,7 +449,25 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          if (isMe) const SizedBox(width: 8),
+          if (isMe) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              backgroundImage:
+                  profileController
+                          .profile2
+                          .value
+                          ?.data
+                          ?.edituser
+                          ?.profilePic !=
+                      null
+                  ? NetworkImage(
+                      "${ApiEndpoints.imgUrl}${profileController.profile2.value!.data!.edituser!.profilePic}",
+                    )
+                  : AssetImage("assets/images/default_profile.png")
+                        as ImageProvider,
+              radius: 16,
+            ),
+          ],
         ],
       ),
     );
@@ -463,8 +499,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       } catch (e) {
         Get.snackbar("Error", "Failed to start audio call: $e");
       }
-    } else {
-      _showNotFriendPopup(name);
     }
   }
 
@@ -478,160 +512,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       } catch (e) {
         Get.snackbar("Error", "Failed to start video call: $e");
       }
-    } else {
-      _showNotFriendPopup(name);
     }
-  }
-
-  void _showNotFriendPopup(String userName) {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.pink.shade100, width: 2),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Heart icon
-                Icon(
-                  Icons.favorite_border,
-                  color: Colors.pink.shade400,
-                  size: 40,
-                ),
-                const SizedBox(height: 16),
-
-                // Title
-                Text(
-                  "Connect with $userName 💝",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.pink,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-
-                // Message
-                Text(
-                  "You need to be friends first to start a call.\nSend a friend request to begin your journey!",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-
-                // OK button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Get.back(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink.shade400,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text(
-                      "OK, I Understand",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showSubscriptionDialog(String type) {
-    final theme = Theme.of(context);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: theme.colorScheme.secondary,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.lock_outline,
-                color: theme.colorScheme.primary,
-                size: 50,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Subscription Required',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'To make $type calls, please upgrade your plan.',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                    ),
-                    builder: (context) => const SubscriptionBottomSheet(),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  'Subscribe Now',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
