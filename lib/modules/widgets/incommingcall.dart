@@ -4,6 +4,7 @@ import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
 import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 Future<void> showIncomingCallDialog({
   required String callerName,
@@ -27,14 +28,9 @@ Future<void> showIncomingCallDialog({
       friendshipStatus.toLowerCase() == "accepted";
 
   // --- Block if no active paid plan OR not friend ---
-  if (!hasPlan) {
-    debugPrint("❌ Incoming call blocked: user has no active paid plan.");
+  if (!hasPlan || !isFriend) {
+    debugPrint("❌ Incoming call blocked: no active paid plan or not friends.");
     return; // <--- completely block incoming call
-  }
-
-  if (!isFriend) {
-    debugPrint("❌ Incoming call blocked: not friends.");
-    return; // <--- block
   }
 
   // ✅ Only show dialog if checks passed

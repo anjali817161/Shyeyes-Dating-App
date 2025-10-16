@@ -1047,11 +1047,7 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.timer_off,
-                color: theme.colorScheme.primary,
-                size: 50,
-              ),
+              Icon(Icons.timer_off, color: theme.colorScheme.primary, size: 50),
               const SizedBox(height: 12),
               Text(
                 'Call Limit Reached',
@@ -1111,15 +1107,29 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _handleAudioCall(dynamic user, String status) async {
     final name = user.name ?? "User"; // Safe fallback
 
-    if (status.toLowerCase() == "accepted" ||
-        status.toLowerCase() == "friend") {
-      try {
-        await ZegoService.startCall(targetUser: user, isVideoCall: false);
-      } catch (e) {
-        Get.snackbar("Error", "Failed to start audio call: $e");
+    if (!activePlanController.hasActivePaidPlan ||
+        !(status.toLowerCase() == "accepted" ||
+            status.toLowerCase() == "friend")) {
+      if (!activePlanController.hasActivePaidPlan) {
+        // Show subscription upgrade popup
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (context) => const SubscriptionBottomSheet(),
+        );
+      } else {
+        _showNotFriendPopup(name);
       }
-    } else {
-      _showNotFriendPopup(name);
+      return;
+    }
+
+    try {
+      await ZegoService.startCall(targetUser: user, isVideoCall: false);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to start audio call: $e");
     }
   }
 
@@ -1145,7 +1155,10 @@ class _DashboardPageState extends State<DashboardPage> {
         final videoUsage = plan.usage?.video?.used ?? 0;
         final videoLimit = plan.limits?.videoTimeSeconds ?? 0;
         if (videoLimit > 0 && videoUsage >= videoLimit) {
-          _showLimitDialog('video', videoLimit ~/ 60); // Convert seconds to minutes
+          _showLimitDialog(
+            'video',
+            videoLimit ~/ 60,
+          ); // Convert seconds to minutes
           return;
         }
       }

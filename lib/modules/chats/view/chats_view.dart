@@ -494,6 +494,20 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     if (status.toLowerCase() == "accepted" ||
         status.toLowerCase() == "friend") {
+      // Check if user has active paid plan
+      if (!activePlanController.hasActivePaidPlan) {
+        // Show subscription upgrade popup
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (context) => const SubscriptionBottomSheet(),
+        );
+        return;
+      }
+
       try {
         await ZegoService.startCall(targetUser: user, isVideoCall: false);
       } catch (e) {
@@ -507,6 +521,20 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     if (status.toLowerCase() == "accepted" ||
         status.toLowerCase() == "friend") {
+      // Check if user has active paid plan
+      if (!activePlanController.hasActivePaidPlan) {
+        // Show subscription upgrade popup
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (context) => const SubscriptionBottomSheet(),
+        );
+        return;
+      }
+
       try {
         await ZegoService.startCall(targetUser: user, isVideoCall: true);
       } catch (e) {
