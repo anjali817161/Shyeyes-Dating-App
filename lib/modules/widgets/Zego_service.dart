@@ -57,6 +57,9 @@ class ZegoService {
   static Future<void> startCall({
     required dynamic targetUser,
     required bool isVideoCall,
+    required String
+    currentPlan, // 👈 pass plan name here e.g. 'Free', 'Premium'
+    required bool isFriend, // 👈 pass true if already friends
   }) async {
     String? targetId;
     String? targetName;
@@ -75,6 +78,19 @@ class ZegoService {
       targetName = targetUser['name'] ?? "User";
     } else {
       print("❌ Unsupported target user type");
+      return;
+    }
+
+    // 🧠 Step 1: Block calls for Free plan if not a friend
+    if (currentPlan.toLowerCase() == 'free' && !isFriend) {
+      print("🚫 Call blocked: Free plan users cannot call non-friends.");
+      Get.snackbar(
+        "Upgrade Plan",
+        "Video/Voice call is available only for friends or premium users.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent.withOpacity(0.8),
+        colorText: Colors.white,
+      );
       return;
     }
 

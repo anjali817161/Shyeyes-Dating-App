@@ -151,14 +151,43 @@ class FavouritePage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  fullName,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFFDF314D),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                // Name row with chat icon
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        fullName,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFFDF314D),
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildCircleIcon(
+                                      icon: Icons.chat_bubble,
+                                      theme: theme,
+                                      onPressed: () {
+                                        Get.to(
+                                          () => ChatScreen(
+                                            receiverId: userId,
+                                            receiverName: fullName,
+                                            receiverImage: profilePicUrl,
+                                          ),
+                                          transition: Transition.rightToLeft,
+                                          duration: const Duration(
+                                            milliseconds: 400,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 4),
                                 Row(
@@ -187,48 +216,8 @@ class FavouritePage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 5),
 
-                                // Action buttons
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _buildCircleIcon(
-                                      icon: Icons.chat_bubble,
-                                      theme: theme,
-                                      onPressed: () {
-                                        Get.to(
-                                          () => ChatScreen(
-                                            receiverId: userId,
-                                            receiverName: fullName,
-                                            receiverImage: profilePicUrl,
-                                          ),
-                                          transition: Transition.rightToLeft,
-                                          duration: const Duration(
-                                            milliseconds: 400,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    _buildCircleIcon(
-                                      icon: Icons.call,
-                                      theme: theme,
-                                      onPressed: () => _showSubscriptionDialog(
-                                        context,
-                                        theme,
-                                        "Audio call",
-                                      ),
-                                    ),
-                                    _buildCircleIcon(
-                                      icon: Icons.videocam,
-                                      theme: theme,
-                                      onPressed: () => _showSubscriptionDialog(
-                                        context,
-                                        theme,
-                                        "Video call",
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                // Empty space where action buttons were
+                                const SizedBox(height: 20),
                               ],
                             ),
                           ),

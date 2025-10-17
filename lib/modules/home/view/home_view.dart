@@ -697,12 +697,39 @@ class _HomeViewState extends State<HomeView> {
                         onPressed: () {
                           if (users.isEmpty) return;
                           final currentUser = users[_currentIndex];
-                          final String shareText =
-                              widget.viewType == HomeViewType.activeUsers
-                              ? "${(currentUser as Users).name ?? ''}, ${(currentUser).age}\n${(currentUser).location != null ? "${(currentUser).location!.city ?? ''}, ${(currentUser).location!.country ?? ''}" : ''}\n\nCheck out this profile on ShyEyes App!"
-                              : "${(currentUser as BestmatchModel).name ?? ''}, ${(currentUser).age}\n\nCheck out this profile on ShyEyes App!";
 
-                          Share.share(shareText);
+                          final String profileName;
+                          final String id;
+
+                          if (widget.viewType == HomeViewType.activeUsers) {
+                            final Users user = currentUser as Users;
+                            profileName =
+                                user.name?.firstName ?? "someone special";
+                            id = user.id ?? '';
+                          } else {
+                            final BestmatchModel user =
+                                currentUser as BestmatchModel;
+                            profileName = user.name ?? "someone special";
+                            id = user.id ?? '';
+                          }
+
+                          final shareText =
+                              '''
+✨ Discover ${profileName}'s profile on ShyEyes! 💖
+
+ShyEyes connects you with genuine people looking for meaningful relationships. 
+Explore profiles, match based on your vibe, and start your story today! 🌸
+
+View ${profileName}'s profile here:
+https://shyeyes-frontend.vercel.app/shyeyes/profile/${id}
+
+Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.vercel.app/shyeyes/
+''';
+
+                          Share.share(
+                            shareText,
+                            subject: 'Check out ${profileName} on ShyEyes 💘',
+                          );
                         },
                       ),
                       const SizedBox(width: 18),
@@ -772,7 +799,13 @@ class _HomeViewState extends State<HomeView> {
         return;
       }
 
-      await ZegoService.startCall(targetUser: user, isVideoCall: false);
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: false,
+        currentPlan:
+            activePlanController?.activePlan?.value?.planType ?? 'Free',
+        isFriend: friendController.friends.any((f) => f.userId == userId),
+      );
     } catch (e) {
       Get.snackbar('Error', 'Failed to start audio call: $e');
     }
@@ -941,7 +974,13 @@ class _HomeViewState extends State<HomeView> {
         return;
       }
 
-      await ZegoService.startCall(targetUser: user, isVideoCall: true);
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: true,
+        currentPlan:
+            activePlanController?.activePlan?.value?.planType ?? 'Free',
+        isFriend: friendController.friends.any((f) => f.userId == userId),
+      );
     } catch (e) {
       Get.snackbar('Error', 'Failed to start video call: $e');
     }

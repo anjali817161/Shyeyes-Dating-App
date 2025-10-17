@@ -276,7 +276,7 @@ ShyEyes connects you with genuine people looking for meaningful relationships.
 Explore profiles, match based on your vibe, and start your story today! 🌸
 
 View ${profileName}'s profile here:
-https://www.shyeyes.com/profile/${profileData.id ?? ''}
+https://shyeyes-frontend.vercel.app/shyeyes/profile/${profileData.id ?? ''}
 
 Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.vercel.app/shyeyes/
 ''';

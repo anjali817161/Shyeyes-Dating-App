@@ -1127,7 +1127,14 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     try {
-      await ZegoService.startCall(targetUser: user, isVideoCall: false);
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: false,
+        currentPlan: activePlanController.activePlan.value?.planType ?? "free",
+        isFriend: friendController.friends.value.any(
+          (friend) => friend.userId == user["id"],
+        ),
+      );
     } catch (e) {
       Get.snackbar("Error", "Failed to start audio call: $e");
     }
@@ -1164,7 +1171,15 @@ class _DashboardPageState extends State<DashboardPage> {
       }
 
       try {
-        await ZegoService.startCall(targetUser: user, isVideoCall: true);
+        await ZegoService.startCall(
+          targetUser: user,
+          isVideoCall: true,
+          currentPlan:
+              activePlanController.activePlan.value?.planType ?? "free",
+          isFriend: friendController.friends.value.any(
+            (friend) => friend.userId == user["id"],
+          ),
+        );
       } catch (e) {
         Get.snackbar("Error", "Failed to start video call: $e");
       }
