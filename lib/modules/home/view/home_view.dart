@@ -703,12 +703,10 @@ class _HomeViewState extends State<HomeView> {
 
                           if (widget.viewType == HomeViewType.activeUsers) {
                             final Users user = currentUser as Users;
-                            profileName =
-                                user.name?.firstName ?? "someone special";
+                            profileName = user.name?.firstName ?? "someone special";
                             id = user.id ?? '';
                           } else {
-                            final BestmatchModel user =
-                                currentUser as BestmatchModel;
+                            final BestmatchModel user = currentUser as BestmatchModel;
                             profileName = user.name ?? "someone special";
                             id = user.id ?? '';
                           }
@@ -721,7 +719,7 @@ ShyEyes connects you with genuine people looking for meaningful relationships.
 Explore profiles, match based on your vibe, and start your story today! 🌸
 
 View ${profileName}'s profile here:
-https://shyeyes-frontend.vercel.app/shyeyes/profile/${id}
+https://www.shyeyes.com/profile/${id}
 
 Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.vercel.app/shyeyes/
 ''';

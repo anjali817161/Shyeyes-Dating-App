@@ -184,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(receiverName, style: TextStyle(fontSize: 18)),
+                Text(receiverName, style: TextStyle(fontSize: 16)),
                 const SizedBox(height: 2),
                 Text(
                   isOnline
