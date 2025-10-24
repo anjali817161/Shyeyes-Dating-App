@@ -576,32 +576,22 @@ class _HomeViewState extends State<HomeView> {
                           }),
 
                           // 🎧 Audio Call
-                          Obx(() {
-                            final disabled =
-                                activePlanController.activePlan.value == null;
-                            return buildActionButton(
-                              Icons.call,
-                              Colors.teal[400]!,
-                              30,
-                              () async =>
-                                  await _makeAudioCall(user, userId, name),
-                              disabled: disabled,
-                            );
-                          }),
+                          buildActionButton(
+                            Icons.call,
+                            Colors.teal[400]!,
+                            30,
+                            () async =>
+                                await _makeAudioCall(user, userId, name),
+                          ),
 
                           // 🎥 Video Call
-                          Obx(() {
-                            final disabled =
-                                activePlanController.activePlan.value == null;
-                            return buildActionButton(
-                              Icons.video_call,
-                              Colors.lightBlueAccent,
-                              32,
-                              () async =>
-                                  await _makeVideoCall(user, userId, name),
-                              disabled: disabled,
-                            );
-                          }),
+                          buildActionButton(
+                            Icons.video_call,
+                            Colors.lightBlueAccent,
+                            32,
+                            () async =>
+                                await _makeVideoCall(user, userId, name),
+                          ),
                           buildActionButton(
                             Icons.chat,
                             Colors.blueAccent,
@@ -788,49 +778,24 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
   ) async {
     try {
       bool isFriend = friendController.friends.any((f) => f.userId == userId);
+      bool hasActivePlan = activePlanController.activePlan.value != null;
 
-      if (!isFriend) {
-        _showNotFriendPopup(userName);
-        return;
-      }
-
-      // Check plan limits
-      final plan = activePlanController.activePlan.value;
-      if (plan == null) {
-        _showSubscriptionDialog(context, Theme.of(context), true);
-        return;
-      }
-
-      if (plan.planType?.toLowerCase() == 'free') {
-        // Free plan: Assume no audio calls allowed or limited
-        _showSubscriptionDialog(context, Theme.of(context), true);
-        return;
-      } else {
-        // Paid plans: Check usage against limits
-        final audioUsage = plan.usage?.video?.used ?? 0;
-        final audioLimit = plan.limits?.videoTimeSeconds ?? 0;
-        if (audioLimit > 0 && audioUsage >= audioLimit) {
-          _showLimitDialog(
-            'audio',
-            audioLimit ~/ 60,
-          ); // Convert seconds to minutes
-          return;
-        }
-      }
-
-      try {
-        await ZegoService.startCall(
-          targetUser: user,
-          isVideoCall: false,
-          currentPlan:
-              activePlanController.activePlan.value?.planType ?? "free",
-          isFriend: friendController.friends.value.any(
-            (friend) => friend.userId == user["id"],
-          ),
+      if (!hasActivePlan || !isFriend) {
+        _showPlanOrFriendPopup(
+          userName: userName,
+          hasPlan: hasActivePlan,
+          isFriend: isFriend,
         );
-      } catch (e) {
-        Get.snackbar("Error", "Failed to start audio call: $e");
+        return;
       }
+
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: false,
+        currentPlan:
+            activePlanController?.activePlan?.value?.planType ?? 'Free',
+        isFriend: isFriend,
+      );
     } catch (e) {
       Get.snackbar('Error', 'Failed to start audio call: $e');
     }
@@ -978,49 +943,34 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
   ) async {
     try {
       bool isFriend = friendController.friends.any((f) => f.userId == userId);
+      bool hasActivePlan = activePlanController.activePlan.value != null;
+
+      if (!hasActivePlan || !isFriend) {
+        _showPlanOrFriendPopup(
+          userName: userName,
+          hasPlan: hasActivePlan,
+          isFriend: isFriend,
+        );
+        return;
+      }
 
       if (!isFriend) {
-        _showNotFriendPopup(userName);
+        Get.snackbar('Warning', '⚠️ You are not a friend!');
         return;
       }
 
-      // Check plan limits
-      final plan = activePlanController.activePlan.value;
-      if (plan == null) {
+      if (!hasActivePlan) {
         _showSubscriptionDialog(context, Theme.of(context), false);
         return;
       }
 
-      if (plan.planType?.toLowerCase() == 'free') {
-        // Free plan: Assume no video calls allowed or limited
-        _showSubscriptionDialog(context, Theme.of(context), false);
-        return;
-      } else {
-        // Paid plans: Check usage against limits
-        final videoUsage = plan.usage?.video?.used ?? 0;
-        final videoLimit = plan.limits?.videoTimeSeconds ?? 0;
-        if (videoLimit > 0 && videoUsage >= videoLimit) {
-          _showLimitDialog(
-            'video',
-            videoLimit ~/ 60,
-          ); // Convert seconds to minutes
-          return;
-        }
-      }
-
-      try {
-        await ZegoService.startCall(
-          targetUser: user,
-          isVideoCall: true,
-          currentPlan:
-              activePlanController.activePlan.value?.planType ?? "free",
-          isFriend: friendController.friends.value.any(
-            (friend) => friend.userId == user["id"],
-          ),
-        );
-      } catch (e) {
-        Get.snackbar("Error", "Failed to start video call: $e");
-      }
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: true,
+        currentPlan:
+            activePlanController?.activePlan?.value?.planType ?? 'Free',
+        isFriend: friendController.friends.any((f) => f.userId == userId),
+      );
     } catch (e) {
       Get.snackbar('Error', 'Failed to start video call: $e');
     }
@@ -1095,142 +1045,6 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNotFriendPopup(String userName) {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.pink.shade100, width: 2),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.favorite_border,
-                  color: Colors.pink.shade400,
-                  size: 40,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Connect with $userName 💝',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.pink,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'You need to be friends first to start a call.\nSend a friend request to begin your journey!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Get.back(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink.shade400,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text(
-                      'OK, I Understand',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showLimitDialog(String callType, int limitMinutes) {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.orange.shade100, width: 2),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.timer_off, color: Colors.orange.shade400, size: 40),
-                const SizedBox(height: 16),
-                Text(
-                  'Call Limit Reached',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'You have reached your $callType call limit of $limitMinutes minutes for this plan.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Get.back(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange.shade400,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text(
-                      'OK',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
