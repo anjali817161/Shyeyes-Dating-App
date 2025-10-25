@@ -57,6 +57,7 @@ class _DashboardPageState extends State<DashboardPage> {
       showWelcomeDialog(context);
       usersController.fetchActiveUsers();
       usersController.fetchBestMatches();
+      activePlanController.fetchActivePlan();
     });
   }
 
@@ -907,7 +908,7 @@ class _DashboardPageState extends State<DashboardPage> {
           currentPlan:
               activePlanController.activePlan.value?.planType ?? "free",
           isFriend: friendController.friends.value.any(
-            (friend) => friend.userId == user["id"],
+            (friend) => friend.userId == user.id,
           ),
         );
       } catch (e) {
@@ -955,7 +956,7 @@ class _DashboardPageState extends State<DashboardPage> {
           currentPlan:
               activePlanController.activePlan.value?.planType ?? "free",
           isFriend: friendController.friends.value.any(
-            (friend) => friend.userId == user["id"],
+            (friend) => friend.userId == user.id,
           ),
         );
       } catch (e) {
