@@ -1,0 +1,8 @@
+- [x] Remove Lottie import from splash_screen.dart
+- [x] Create CustomHeart widget with Flutter animation (beating scale effect)
+- [x] Replace left heart Lottie with CustomHeart
+- [x] Replace right heart Lottie with CustomHeart
+- [x] Add multiple small heart bloating and fading animations over splash image
+- [x] Test the updated splash screen
+- [x] Add border radius and white shadow to splash image
+- [x] Move "Digital fate, real feels" text below the splash image

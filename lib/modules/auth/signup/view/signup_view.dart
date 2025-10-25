@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
+import 'package:shyeyes/modules/widgets/heart_animation.dart';
 
+/// ---------- SignUpView (form kept same, only replacing heart background) ----------
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
 
@@ -36,16 +37,13 @@ class _SignUpViewState extends State<SignUpView>
         color: theme.colorScheme.secondary,
         child: Stack(
           children: [
-            // Lottie Background
-            Positioned.fill(
-              child: Lottie.asset(
-                'assets/lotties/heart_fly.json',
-                fit: BoxFit.cover,
-                repeat: true,
-              ),
+            // <-- Full-page heart field (light pink and red). Adjust count if needed.
+            const HeartField(
+              count: 20,
+              colors: [Color(0xFFDF314D), Color(0xFFFFC0CB)],
             ),
 
-            // Sign Up Form Overlay
+            // Sign Up Form Overlay (exactly as before)
             Positioned.fill(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
