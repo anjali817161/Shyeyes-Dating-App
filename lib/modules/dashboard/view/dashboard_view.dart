@@ -226,68 +226,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // 🔈 AUDIO CALL
-  // Future<void> _makeAudioCall(
-  //   dynamic user,
-  //   String userId,
-  //   String userName,
-  // ) async {
-  //   try {
-  //     bool isFriend = friendController.friends.any((f) => f.userId == userId);
-
-  //     if (!isFriend) {
-  //       Get.snackbar('Warning', '⚠️ You are not a friend!');
-  //       return;
-  //     }
-
-  //     // 🔍 Check user plan limits
-  //     final plan = activePlanController.activePlan.value;
-  //     final audioLimit = plan?.limits?.audioTimeSeconds ?? 0;
-
-  //     if (audioLimit <= 0) {
-  //       // ❌ No valid plan → show subscription popup
-  //       _showSubscriptionDialog("Audio");
-  //       return;
-  //     }
-
-  //     // ✅ Valid plan → start the call
-  //     await ZegoService.startCall(targetUser: user, isVideoCall: false);
-  //   } catch (e) {
-  //     Get.snackbar('Error', 'Failed to start audio call: $e');
-  //   }
-  // }
-
-  // /// ✅ VIDEO CALL FUNCTION
-  // Future<void> _makeVideoCall(
-  //   dynamic user,
-  //   String userId,
-  //   String userName,
-  // ) async {
-  //   try {
-  //     bool isFriend = friendController.friends.any((f) => f.userId == userId);
-
-  //     if (!isFriend) {
-  //       Get.snackbar('Warning', '⚠️ You are not a friend!');
-  //       return;
-  //     }
-
-  //     // 🔍 Check user plan limits
-  //     final plan = activePlanController.activePlan.value;
-  //     final videoLimit = plan?.limits?.videoTimeSeconds ?? 0;
-
-  //     if (videoLimit <= 0) {
-  //       // ❌ No valid plan → show subscription popup
-  //       _showSubscriptionDialog("Video");
-  //       return;
-  //     }
-
-  //     // ✅ Valid plan → start the call
-  //     await ZegoService.startCall(targetUser: user, isVideoCall: true);
-  //   } catch (e) {
-  //     Get.snackbar('Error', 'Failed to start video call: $e');
-  //   }
-  // }
-
   void showSuccessSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -302,13 +240,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget profileList() {
     final theme = Theme.of(context);
-
-    // Dummy user for ChatScreen
-    // UserModel dummyUser = UserModel(
-    //   name: 'Shaan',
-    //   imageUrl: 'https://i.pravatar.cc/150?img=65',
-    //   lastMessage: "Hey, how are you?🥰",
-    // );
 
     return Obx(() {
       if (controller.isLoading.value) {
