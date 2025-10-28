@@ -51,6 +51,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late Animation<double> _floatingAnimation;
 
   late dynamic receiverUser;
+  late String friendshipStatus;
 
   @override
   void initState() {
@@ -68,6 +69,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       "name": receiverName,
       "profilePic": receiverImage,
     };
+
+    // Determine friendship status
+    bool isFriend = friendController.friends.value.any(
+      (friend) => friend.userId == receiverId,
+    );
+    friendshipStatus = isFriend ? "friend" : "none";
 
     // Initialize light animations
     _initializeAnimations();
@@ -200,13 +207,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.call),
             onPressed: () {
-              _handleAudioCall(receiverUser, "friend");
+              _handleAudioCall(receiverUser, friendshipStatus);
             },
           ),
           IconButton(
             icon: const Icon(Icons.videocam),
             onPressed: () {
-              _handleVideoCall(receiverUser, "friend");
+              _handleVideoCall(receiverUser, friendshipStatus);
             },
           ),
         ],
@@ -492,70 +499,90 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Future<void> _handleAudioCall(dynamic user, String status) async {
     final name = user["name"] ?? "User";
 
-    if (status.toLowerCase() == "accepted" ||
-        status.toLowerCase() == "friend") {
-      // Check if user has active paid plan
-      if (!activePlanController.hasActivePaidPlan) {
-        // Show subscription upgrade popup
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          builder: (context) => const SubscriptionBottomSheet(),
-        );
-        return;
-      }
+    // Check if user is friend
+    if (status.toLowerCase() != "friend") {
+      // Show subscription upgrade popup if not friend
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
 
-      try {
-        await ZegoService.startCall(
-          targetUser: user,
-          isVideoCall: false,
-          currentPlan:
-              activePlanController.activePlan.value?.planType ?? "free",
-          isFriend: friendController.friends.value.any(
-            (friend) => friend.userId == user["id"],
-          ),
-        );
-      } catch (e) {
-        Get.snackbar("Error", "Failed to start audio call: $e");
-      }
+    // Check if user has active paid plan
+    if (!activePlanController.hasActivePaidPlan) {
+      // Show subscription upgrade popup
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
+
+    try {
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: false,
+        currentPlan: activePlanController.activePlan.value?.planType ?? "free",
+        isFriend: friendController.friends.value.any(
+          (friend) => friend.userId == user["id"],
+        ),
+      );
+    } catch (e) {
+      Get.snackbar("Error", "Failed to start audio call: $e");
     }
   }
 
   Future<void> _handleVideoCall(dynamic user, String status) async {
     final name = user["name"] ?? "User";
 
-    if (status.toLowerCase() == "accepted" ||
-        status.toLowerCase() == "friend") {
-      // Check if user has active paid plan
-      if (!activePlanController.hasActivePaidPlan) {
-        // Show subscription upgrade popup
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          builder: (context) => const SubscriptionBottomSheet(),
-        );
-        return;
-      }
+    // Check if user is friend
+    if (status.toLowerCase() != "friend") {
+      // Show subscription upgrade popup if not friend
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
 
-      try {
-        await ZegoService.startCall(
-          targetUser: user,
-          isVideoCall: true,
-          currentPlan:
-              activePlanController.activePlan.value?.planType ?? "free",
-          isFriend: friendController.friends.value.any(
-            (friend) => friend.userId == user["id"],
-          ),
-        );
-      } catch (e) {
-        Get.snackbar("Error", "Failed to start video call: $e");
-      }
+    // Check if user has active paid plan
+    if (!activePlanController.hasActivePaidPlan) {
+      // Show subscription upgrade popup
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
+
+    try {
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: true,
+        currentPlan: activePlanController.activePlan.value?.planType ?? "free",
+        isFriend: friendController.friends.value.any(
+          (friend) => friend.userId == user["id"],
+        ),
+      );
+    } catch (e) {
+      Get.snackbar("Error", "Failed to start video call: $e");
     }
   }
 }

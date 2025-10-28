@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
+import 'package:shyeyes/modules/blockedUsers/controller/blocked_controller.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
@@ -14,6 +15,7 @@ import 'package:shyeyes/modules/dashboard/controller/search_controller.dart';
 import 'package:shyeyes/modules/dashboard/view/drawer/custom_drawer.dart';
 import 'package:shyeyes/modules/home/view/home_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
+import 'package:shyeyes/modules/notification/controller/notification_controller.dart';
 import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/widgets/Zego_service.dart';
@@ -44,6 +46,12 @@ class _DashboardPageState extends State<DashboardPage> {
   final FriendController friendController = Get.put(FriendController());
   final ActivePlanController activePlanController = Get.put(
     ActivePlanController(),
+  );
+  final BlockedUserController blockedController = Get.put(
+    BlockedUserController(),
+  );
+  final NotificationsController notificationsController = Get.put(
+    NotificationsController(),
   );
 
   @override
@@ -1087,8 +1095,6 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  // final ProfileController controller = Get.find<ProfileController>();
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -1117,17 +1123,28 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
           ),
-          IconButton(
-            icon: GestureDetector(
-              onTap: () {
+          Obx(() {
+            int unreadCount =
+                notificationsController.unreadRequests.length +
+                notificationsController.unreadLikes.length;
+            return IconButton(
+              icon: Badge(
+                backgroundColor: Colors.orangeAccent,
+                label: Text(
+                  unreadCount.toString(),
+                  style: const TextStyle(color: Colors.black, fontSize: 10),
+                ),
+                isLabelVisible: unreadCount > 0,
+                child: const Icon(Icons.notifications, color: Colors.white),
+              ),
+              onPressed: () {
                 Get.to(() => NotificationsPage());
+                // Clear unread counts on tap
+                notificationsController.unreadRequests.clear();
+                notificationsController.unreadLikes.clear();
               },
-              child: const Icon(Icons.notifications, color: Colors.white),
-            ),
-            onPressed: () {
-              Get.snackbar("Notifications", "No new notifications");
-            },
-          ),
+            );
+          }),
           const SizedBox(width: 1),
           Obx(() {
             final user = controller.profile2.value?.data?.edituser;

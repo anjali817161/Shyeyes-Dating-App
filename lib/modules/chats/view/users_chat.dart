@@ -276,17 +276,11 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          isOnline
-                                              ? "Online"
-                                              : _formatLastSeen(lastSeen),
+                                          "Online",
                                           style: TextStyle(
                                             fontSize: 14,
-                                            color: isOnline
-                                                ? Colors.green
-                                                : Colors.grey.shade600,
-                                            fontWeight: isOnline
-                                                ? FontWeight.w500
-                                                : FontWeight.normal,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ],
@@ -321,22 +315,22 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
     );
   }
 
-  String _formatLastSeen(DateTime? lastSeen) {
-    if (lastSeen == null) return 'Last seen unknown';
+  // String _formatLastSeen(DateTime? lastSeen) {
+  //   if (lastSeen == null) return 'Last seen unknown';
 
-    final now = DateTime.now();
-    final difference = now.difference(lastSeen);
+  //   final now = DateTime.now();
+  //   final difference = now.difference(lastSeen);
 
-    if (difference.inMinutes < 1) return 'Last seen just now';
-    if (difference.inMinutes < 60) {
-      return 'Last seen ${difference.inMinutes}m ago';
-    }
-    if (difference.inHours < 24) {
-      return 'Last seen ${difference.inHours}h ago';
-    }
-    if (difference.inDays < 7) {
-      return 'Last seen ${difference.inDays}d ago';
-    }
-    return 'Last seen ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
-  }
+  //   if (difference.inMinutes < 1) return 'Last seen just now';
+  //   if (difference.inMinutes < 60) {
+  //     return 'Last seen ${difference.inMinutes}m ago';
+  //   }
+  //   if (difference.inHours < 24) {
+  //     return 'Last seen ${difference.inHours}h ago';
+  //   }
+  //   if (difference.inDays < 7) {
+  //     return 'Last seen ${difference.inDays}d ago';
+  //   }
+  //   return 'Last seen ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  // }
 }

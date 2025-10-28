@@ -14,6 +14,10 @@ class NotificationsController extends GetxController {
   var likes = <Map<String, dynamic>>[].obs;
   var isLoading = false.obs;
 
+  // Unread counters
+  RxSet<String> unreadRequests = <String>{}.obs;
+  RxSet<String> unreadLikes = <String>{}.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -82,6 +86,7 @@ class NotificationsController extends GetxController {
         requests.assignAll(
           invites.map(
             (r) => {
+              "id": r.id.toString(),
               "name": r.user1?.name?.firstName ?? "Unknown",
               "message": "sent you a friend request",
               "avatar":
@@ -90,6 +95,9 @@ class NotificationsController extends GetxController {
             },
           ),
         );
+
+        // Mark all new requests as unread
+        unreadRequests.addAll(invites.map((e) => e.id.toString()));
       }
     } catch (e) {
       print("Error fetching requests: $e");
@@ -111,6 +119,7 @@ class NotificationsController extends GetxController {
         likes.assignAll(
           (data.rlikes ?? []).map(
             (l) => {
+              "id": l.liker?.sId.toString() ?? l.sId.toString(),
               "name": l.liker?.name ?? "User",
               "message": "liked your profile",
               "avatar":
@@ -118,6 +127,14 @@ class NotificationsController extends GetxController {
               "type": "like",
             },
           ),
+        );
+
+        // Mark all new likes as unread
+        unreadLikes.addAll(
+          data.rlikes?.map(
+                (l) => l.liker?.sId.toString() ?? l.sId.toString(),
+              ) ??
+              [],
         );
       }
     } catch (e) {

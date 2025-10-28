@@ -146,7 +146,33 @@ class _HomeViewState extends State<HomeView> {
                   children: [
                     GestureDetector(
                       onDoubleTap: () async {
-                        await usersController.toggleFavorite(userId);
+                        // Optimistic update for double tap
+                        final currentUser = users[index];
+                        final wasLiked =
+                            widget.viewType == HomeViewType.activeUsers
+                            ? (currentUser as Users).likedByMe ?? false
+                            : (currentUser as BestmatchModel).likedByMe ??
+                                  false;
+
+                        // Flip locally
+                        if (widget.viewType == HomeViewType.activeUsers) {
+                          (currentUser as Users).likedByMe = !wasLiked;
+                        } else {
+                          (currentUser as BestmatchModel).likedByMe = !wasLiked;
+                        }
+
+                        // Call API
+                        try {
+                          await usersController.toggleFavorite(userId);
+                        } catch (e) {
+                          // Rollback
+                          if (widget.viewType == HomeViewType.activeUsers) {
+                            (currentUser as Users).likedByMe = wasLiked;
+                          } else {
+                            (currentUser as BestmatchModel).likedByMe =
+                                wasLiked;
+                          }
+                        }
                       },
                       child: imageUrl.isNotEmpty
                           ? Image.network(
@@ -492,86 +518,48 @@ class _HomeViewState extends State<HomeView> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Obx(() {
-                          //   // Determine users list based on viewType
-                          //   final users =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? usersController.users
-                          //       : usersController.matches;
-
-                          //   if (users.isEmpty) return const SizedBox.shrink();
-
-                          //   // Clamp _currentIndex to valid range
-                          //   final currentIndexSafe =
-                          //       (_currentIndex < users.length)
-                          //       ? _currentIndex
-                          //       : users.length - 1;
-
-                          //   // Get current user safely
-                          //   final currentUser =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? (users[currentIndexSafe] as Users)
-                          //       : (users[currentIndexSafe] as BestmatchModel);
-
-                          //   final String userId =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? (currentUser as Users).id ?? ""
-                          //       : (currentUser as BestmatchModel).id ?? "";
-
-                          //   // Determine if user is liked (API likedByMe or recently liked locally)
-                          //   final bool isLiked =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? ((currentUser as Users).likedByMe ?? false) ||
-                          //             usersController.recentlyLikedUsers
-                          //                 .contains(userId)
-                          //       : ((currentUser as BestmatchModel).likedByMe ??
-                          //                 false) ||
-                          //             usersController.recentlyLikedUsers
-                          //                 .contains(userId);
-
-                          //   return buildActionButton(
-                          //     isLiked ? Icons.favorite : Icons.favorite_border,
-                          //     isLiked ? Colors.red : Colors.grey,
-                          //     30,
-                          //     () async {
-                          //       // Optimistic toggle
-                          //       if (isLiked) {
-                          //         usersController.recentlyLikedUsers.remove(
-                          //           userId,
-                          //         );
-                          //       } else {
-                          //         usersController.recentlyLikedUsers.add(
-                          //           userId,
-                          //         );
-                          //       }
-
-                          //       // Call API after local update
-                          //       try {
-                          //         await usersController.toggleFavorite(userId);
-                          //       } catch (e) {
-                          //         // Rollback if API fails
-                          //         if (isLiked) {
-                          //           usersController.recentlyLikedUsers.add(
-                          //             userId,
-                          //           );
-                          //         } else {
-                          //           usersController.recentlyLikedUsers.remove(
-                          //             userId,
-                          //           );
-                          //         }
-                          //       }
-                          //     },
-                          //   );
-                          // }),
                           Obx(() {
-                            final bool isLiked = usersController.isLiked(
-                              userId,
-                            );
+                            final users =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? usersController.users
+                                : usersController.matches;
+                            final currentUser = users[index];
+                            final bool isLiked =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? ((currentUser as Users).likedByMe ?? false)
+                                : ((currentUser as BestmatchModel).likedByMe ??
+                                      false);
                             return buildActionButton(
                               Icons.favorite,
                               isLiked ? Colors.red : Colors.grey,
                               30,
-                              () => usersController.toggleFavorite(userId),
+                              () async {
+                                // Optimistic update for button tap
+                                final wasLiked = isLiked;
+
+                                // Flip locally
+                                if (widget.viewType ==
+                                    HomeViewType.activeUsers) {
+                                  (currentUser as Users).likedByMe = !wasLiked;
+                                } else {
+                                  (currentUser as BestmatchModel).likedByMe =
+                                      !wasLiked;
+                                }
+
+                                // Call API
+                                try {
+                                  await usersController.toggleFavorite(userId);
+                                } catch (e) {
+                                  // Rollback
+                                  if (widget.viewType ==
+                                      HomeViewType.activeUsers) {
+                                    (currentUser as Users).likedByMe = wasLiked;
+                                  } else {
+                                    (currentUser as BestmatchModel).likedByMe =
+                                        wasLiked;
+                                  }
+                                }
+                              },
                             );
                           }),
 

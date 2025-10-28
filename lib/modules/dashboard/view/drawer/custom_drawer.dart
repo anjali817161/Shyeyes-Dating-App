@@ -76,7 +76,7 @@ class CustomDrawer extends StatelessWidget {
         icon: Icons.logout,
         label: 'Logout',
         ontap: () {
-          Navigator.pop(context); // close the drawer first
+          Scaffold.of(context).closeEndDrawer(); // close the drawer first
           LogoutHelper.showLogoutDialog(context, Theme.of(context));
         },
       ),
@@ -171,7 +171,9 @@ class CustomDrawer extends StatelessWidget {
                 final item = items[index];
                 return InkWell(
                   onTap: () {
-                    Navigator.pop(context);
+                    if (item.label != 'Logout') {
+                      Scaffold.of(context).closeEndDrawer();
+                    }
                     item.ontap();
                   },
                   child: Padding(

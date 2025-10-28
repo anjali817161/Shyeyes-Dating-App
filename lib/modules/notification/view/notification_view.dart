@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/invitation/controller/invitation_controller.dart';
 import 'package:shyeyes/modules/likes/showlikescontroller.dart';
+import 'package:shyeyes/modules/notification/controller/notification_controller.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:intl/intl.dart';
 
@@ -18,12 +19,9 @@ class _NotificationsPageState extends State<NotificationsPage>
   final friendController = Get.put(FriendController());
   final invitationController = Get.put(InvitationController());
   final likesController = Get.put(LikesController());
+  final notificationsController = Get.put(NotificationsController());
 
   late TabController tabController;
-
-  // For tracking unread items
-  final RxSet<String> unreadRequests = <String>{}.obs;
-  final RxSet<String> unreadLikes = <String>{}.obs;
 
   @override
   void initState() {
@@ -32,9 +30,9 @@ class _NotificationsPageState extends State<NotificationsPage>
     _fetchAll();
     tabController.addListener(() {
       if (tabController.index == 1) {
-        unreadRequests.clear();
+        notificationsController.unreadRequests.clear();
       } else if (tabController.index == 2) {
-        unreadLikes.clear();
+        notificationsController.unreadLikes.clear();
       }
     });
   }
@@ -47,11 +45,11 @@ class _NotificationsPageState extends State<NotificationsPage>
     ]);
 
     // Mark all new ones as unread
-    unreadRequests.addAll(
+    notificationsController.unreadRequests.addAll(
       invitationController.invitations.map((e) => e.id.toString()).toList(),
     );
 
-    unreadLikes.addAll(
+    notificationsController.unreadLikes.addAll(
       likesController.likesList.map((e) => e.liker!.sId.toString()).toList(),
     );
   }
@@ -103,7 +101,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text("Requests"),
-                    if (unreadRequests.isNotEmpty)
+                    if (notificationsController.unreadRequests.isNotEmpty)
                       Container(
                         margin: const EdgeInsets.only(left: 6),
                         padding: const EdgeInsets.symmetric(
@@ -115,7 +113,8 @@ class _NotificationsPageState extends State<NotificationsPage>
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          unreadRequests.length.toString(),
+                          notificationsController.unreadRequests.length
+                              .toString(),
                           style: const TextStyle(
                             fontSize: 10,
                             color: Colors.white,
@@ -132,7 +131,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text("Likes"),
-                    if (unreadLikes.isNotEmpty)
+                    if (notificationsController.unreadLikes.isNotEmpty)
                       Container(
                         margin: const EdgeInsets.only(left: 6),
                         padding: const EdgeInsets.symmetric(
@@ -144,7 +143,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          unreadLikes.length.toString(),
+                          notificationsController.unreadLikes.length.toString(),
                           style: const TextStyle(
                             fontSize: 10,
                             color: Colors.white,
@@ -330,8 +329,8 @@ class _NotificationsPageState extends State<NotificationsPage>
         final isRequest = notif["type"] == "request";
         final id = notif["id"].toString();
         final isUnread = isRequest
-            ? unreadRequests.contains(id)
-            : unreadLikes.contains(id);
+            ? notificationsController.unreadRequests.contains(id)
+            : notificationsController.unreadLikes.contains(id);
 
         return Material(
           color: Colors.transparent,
@@ -341,12 +340,16 @@ class _NotificationsPageState extends State<NotificationsPage>
               print("Tapped on ${notif["name"]}");
 
               if (notif["type"] == "request") {
-                unreadRequests.remove(notif["id"].toString());
+                notificationsController.unreadRequests.remove(
+                  notif["id"].toString(),
+                );
                 invitationController.invitations.removeWhere(
                   (inv) => inv.id.toString() == notif["id"].toString(),
                 );
               } else if (notif["type"] == "like") {
-                unreadLikes.remove(notif["id"].toString());
+                notificationsController.unreadLikes.remove(
+                  notif["id"].toString(),
+                );
                 likesController.likesList.removeWhere(
                   (like) => like.sId.toString() == notif["id"].toString(),
                 );
