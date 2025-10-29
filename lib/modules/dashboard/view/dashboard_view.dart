@@ -1201,6 +1201,10 @@ class _DashboardPageState extends State<DashboardPage> {
         onRefresh: () async {
           await usersController.fetchActiveUsers();
           await usersController.fetchBestMatches();
+          await controller.fetchProfile();
+          await friendController.fetchFriends();
+          await notificationsController.fetchAllNotifications();
+          await activePlanController.fetchActivePlan();
         },
         child: SingleChildScrollView(
           child: Padding(
