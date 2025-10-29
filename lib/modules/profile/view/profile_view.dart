@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/edit_profile/edit_profile.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/profile/uploadmore_photo/view/uploadmorephoto.dart';
@@ -16,6 +17,14 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   final ProfileController controller = Get.put(ProfileController());
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +50,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
           return Center(child: Text("Error: ${controller.errorMessage}"));
         }
         if (controller.profile2.value == null ||
-            controller.profile2.value!.data!.user == null) {
+            controller.profile2.value!.data!.edituser == null) {
           return const Center(child: Text("No profile data"));
         }
 
-        final profileData = controller.profile2.value!.data!.user!;
+        final profileData = controller.profile2.value!.data!.edituser!;
 
         // ✅ DOB ko safe string me convert karna
         String dobText = profileData.dob != null
@@ -60,12 +69,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
             (profileData.profilePic as String).isNotEmpty) {
           // 👇 yaha prefix kar diya
           imageUrl =
-              "https://shyeyes-b.onrender.com/uploads/${profileData.profilePic}";
+              "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.profilePic}";
         } else if (profileData.photos != null &&
             profileData.photos!.isNotEmpty) {
           // Agar photos list me path aaye toh uspe bhi prefix lagana hai
           imageUrl =
-              "https://shyeyes-b.onrender.com/uploads/${profileData.photos!.first}";
+              "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.photos!.first}";
         }
 
         return _buildProfileView(
@@ -117,13 +126,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
             clipBehavior: Clip.none,
             children: [
               // ✅ Conditional: show slider if photos exist
-              if (controller.profile2.value!.data!.user!.photos != null &&
-                  controller.profile2.value!.data!.user!.photos!.isNotEmpty)
+              if (controller.profile2.value!.data!.edituser!.photos != null &&
+                  controller.profile2.value!.data!.edituser!.photos!.isNotEmpty)
                 PhotoSliderBanner(
                   height: 200,
-                  photos: (controller.profile2.value!.data!.user!.photos ?? [])
-                      .map((e) => e.toString())
-                      .toList(),
+                  photos:
+                      (controller.profile2.value!.data!.edituser!.photos ?? [])
+                          .map((e) => e.toString())
+                          .toList(),
                 )
               else
                 Container(
@@ -337,6 +347,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ],
       ),
     );
+  }
+
+  onPaymentSuccess() async {
+    // ✅ Get existing controller
+    final ActivePlanController planController =
+        Get.find<ActivePlanController>();
+
+    // ✅ Refresh API data
+    await planController.fetchActivePlan();
+    print("🔄 Active plan refreshed after payment");
+    // ✅ Optional feedback
+    Get.snackbar("Success", "Your plan has been activated successfully!");
+
+    // ✅ Close PaymentView
+    Get.back();
   }
 
   Widget _buildDetail(String label, String value) {

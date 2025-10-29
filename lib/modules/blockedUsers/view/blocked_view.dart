@@ -4,6 +4,7 @@ import 'package:shyeyes/modules/about/controller/block_controller.dart';
 import 'package:shyeyes/modules/blockedUsers/controller/blocked_controller.dart';
 import 'package:shyeyes/modules/blockedUsers/model/blocked_model.dart';
 import 'package:intl/intl.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class BlockedUserView extends StatelessWidget {
   final BlockedUserController controller = Get.put(BlockedUserController());
@@ -214,7 +215,7 @@ class BlockedUserView extends StatelessWidget {
                           child: ClipOval(
                             child: user.profilePic != null
                                 ? Image.network(
-                                    "https://shyeyes-b.onrender.com/uploads/${user.profilePic}",
+                                    "${ApiEndpoints.imgUrl}${user.profilePic}",
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return _buildFallbackAvatar(

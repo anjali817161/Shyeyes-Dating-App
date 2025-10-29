@@ -53,6 +53,8 @@ class Friend {
   List<String>? hobbies;
   String? friendshipStatus;
   bool? likedByMe;
+  bool? isOnline; // Add this field
+  DateTime? lastSeen;
 
   Friend({
     this.userId,
@@ -64,6 +66,8 @@ class Friend {
     this.hobbies,
     this.friendshipStatus,
     this.likedByMe,
+    this.isOnline,
+    this.lastSeen,
   });
 
   factory Friend.fromJson(Map<String, dynamic> json) => Friend(
@@ -78,6 +82,15 @@ class Friend {
     hobbies: json["hobbies"] == null ? [] : List<String>.from(json["hobbies"]),
     friendshipStatus: json["friendshipStatus"],
     likedByMe: json["likedByMe"],
+    isOnline:
+        json['isOnline'] ??
+        json['userId']?['isOnline'] ??
+        false, // Handle online status
+    lastSeen: json['lastSeen'] != null
+        ? DateTime.parse(json['lastSeen'])
+        : json['userId']?['lastSeen'] != null
+        ? DateTime.parse(json['userId']?['lastSeen'])
+        : null, // Handle last seen
   );
 
   Map<String, dynamic> toJson() => {

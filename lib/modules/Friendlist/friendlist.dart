@@ -391,7 +391,7 @@ class _FriendListItem extends StatelessWidget {
                       backgroundColor: Colors.red.shade50,
                       backgroundImage: hasImage
                           ? NetworkImage(
-                              ApiEndpoints.imgUrl + friend.profilePic,
+                              "${ApiEndpoints.imgUrl}${friend.profilePic}",
                             )
                           : null,
                       child: !hasImage

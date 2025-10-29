@@ -1,0 +1,6 @@
+- [ ] Add 3 dots menu icon after audio/video call icons in AppBar
+- [ ] Implement popup menu with "Clear Chat" option
+- [ ] Add confirmation dialog for clearing chat
+- [ ] Integrate with existing clearChat() method in ChatController
+- [ ] Update clearChat() to clear local storage and message IDs
+- [ ] Test the functionality

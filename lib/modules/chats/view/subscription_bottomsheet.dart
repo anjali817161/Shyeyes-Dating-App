@@ -193,39 +193,61 @@ class _SubscriptionBottomSheetState extends State<SubscriptionBottomSheet> {
                                       Spacer(),
                                       SizedBox(
                                         width: double.infinity,
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                theme.colorScheme.primary,
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 14,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            elevation: 2,
-                                          ),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) => PaymentPage(
-                                                  plan: plan.planType ?? '',
-                                                ),
+                                        child: Obx(() {
+                                          // Disable button while loading
+                                          final isLoading =
+                                              planController.isLoading.value;
+                                          return ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  theme.colorScheme.primary,
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 14,
                                               ),
-                                            );
-                                          },
-                                          child: Text(
-                                            'Select Plan',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              elevation: 2,
                                             ),
-                                          ),
-                                        ),
+                                            onPressed: () async {
+                                              await _showPaymentPopup(plan.id!);
+
+                                              //  isLoading
+                                              //     ? null
+                                              //     : () async {
+                                              //         // Call purchase plan flow
+                                              //         final planId =
+                                              //             plan.id ?? '';
+                                              //         if (planId.isEmpty) return;
+
+                                              //         await planController
+                                              //             .purchasePlan(planId);
+
+                                              // Optionally, close the bottom sheet after purchase
+                                              Navigator.pop(context);
+                                            },
+                                            child: isLoading
+                                                ? SizedBox(
+                                                    width: 20,
+                                                    height: 20,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color: Colors.white,
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  )
+                                                : Text(
+                                                    'Select Plan',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                          );
+                                        }),
                                       ),
                                     ],
                                   ),
@@ -316,6 +338,81 @@ class _SubscriptionBottomSheetState extends State<SubscriptionBottomSheet> {
         ),
       );
     });
+  }
+
+  Future<void> _showPaymentPopup(String planId) async {
+    final TextEditingController utrController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.payment, color: theme.colorScheme.primary),
+              SizedBox(width: 8),
+              Text("Confirm Payment"),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Enter your UTR / Transaction Number to confirm your payment for this plan.",
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: utrController,
+                decoration: InputDecoration(
+                  labelText: "Enter UTR / Transaction ID",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: Icon(Icons.numbers_rounded),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                final utr = utrController.text.trim();
+                if (utr.isEmpty) {
+                  Get.snackbar("Error", "Please enter a valid UTR number");
+                  return;
+                }
+
+                Navigator.pop(context); // Close the dialog before hitting API
+                await planController.purchasePlan(planId);
+                Get.back(); // Close the bottom sheet if successful
+              },
+              child: Text(
+                "Confirm Purchase",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildFeatureItem(String text, ThemeData theme) {

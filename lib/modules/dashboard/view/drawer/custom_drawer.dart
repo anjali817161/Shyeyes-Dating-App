@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/Friendlist/friendlist.dart';
+import 'package:shyeyes/modules/auth/logout/logout_handler.dart';
 import 'package:shyeyes/modules/blockedUsers/view/blocked_view.dart';
 import 'package:shyeyes/modules/pending_requests/view/pending_request_view.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
@@ -9,6 +10,7 @@ import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/invitation/view/invitation_view.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 
@@ -74,7 +76,8 @@ class CustomDrawer extends StatelessWidget {
         icon: Icons.logout,
         label: 'Logout',
         ontap: () {
-          _showLogoutDialog(context, theme);
+          Scaffold.of(context).closeEndDrawer(); // close the drawer first
+          LogoutHelper.showLogoutDialog(context, Theme.of(context));
         },
       ),
     ];
@@ -85,7 +88,7 @@ class CustomDrawer extends StatelessWidget {
         children: [
           /// DrawerHeader linked with Profile Data
           Obx(() {
-            final user = controller.profile2.value?.data?.user;
+            final user = controller.profile2.value?.data?.edituser;
 
             final displayName =
                 (user?.name?.firstName ?? '') +
@@ -110,7 +113,7 @@ class CustomDrawer extends StatelessWidget {
                         (user?.profilePic != null &&
                             user!.profilePic!.toString().isNotEmpty)
                         ? NetworkImage(
-                            "https://shyeyes-b.onrender.com/uploads/${user.profilePic}",
+                            "${ApiEndpoints.imgUrl}${user.profilePic}",
                           )
                         : null, // if null → fallback to child
                     child:
@@ -168,7 +171,9 @@ class CustomDrawer extends StatelessWidget {
                 final item = items[index];
                 return InkWell(
                   onTap: () {
-                    Navigator.pop(context);
+                    if (item.label != 'Logout') {
+                      Scaffold.of(context).closeEndDrawer();
+                    }
                     item.ontap();
                   },
                   child: Padding(
@@ -208,58 +213,58 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 
-  static void _showLogoutDialog(BuildContext context, ThemeData theme) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.logout, color: theme.colorScheme.primary),
-            const SizedBox(width: 8),
-            Text(
-              "Logout",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          "Are you sure you want to logout?",
-          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.8)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-          ),
-          const Spacer(),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () async {
-              Navigator.pop(context);
-              final authRepo = AuthRepository();
-              await authRepo.logout();
-              Get.offAll(() => LoginView());
-              print("User Logged Out");
-            },
-            child: const Text("Logout", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
+  // static void _showLogoutDialog(BuildContext context, ThemeData theme) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       backgroundColor: theme.colorScheme.surface,
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //       title: Row(
+  //         children: [
+  //           Icon(Icons.logout, color: theme.colorScheme.primary),
+  //           const SizedBox(width: 8),
+  //           Text(
+  //             "Logout",
+  //             style: TextStyle(
+  //               fontWeight: FontWeight.bold,
+  //               color: theme.colorScheme.onSurface,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //       content: Text(
+  //         "Are you sure you want to logout?",
+  //         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.8)),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: Text(
+  //             "Cancel",
+  //             style: TextStyle(color: theme.colorScheme.primary),
+  //           ),
+  //         ),
+  //         const Spacer(),
+  //         ElevatedButton(
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: theme.colorScheme.primary,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //           ),
+  //           onPressed: () async {
+  //             Navigator.pop(context);
+  //             final authRepo = AuthRepository();
+  //             await authRepo.logout();
+  //             Get.offAll(() => LoginView());
+  //             print("User Logged Out");
+  //           },
+  //           child: const Text("Logout", style: TextStyle(color: Colors.white)),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 class _DrawerItem {

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
 import 'package:shyeyes/modules/likes/showlikescontroller.dart';
 import 'package:intl/intl.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class LikesPage extends StatefulWidget {
   const LikesPage({Key? key}) : super(key: key);
@@ -27,9 +28,9 @@ class _LikesPageState extends State<LikesPage> {
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-        ),
+        // shape: const RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+        // ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -214,7 +215,7 @@ class _LikesPageState extends State<LikesPage> {
                                 (likedUser?.profilePic != null &&
                                     likedUser!.profilePic!.isNotEmpty)
                                 ? Image.network(
-                                    "https://shyeyes-b.onrender.com/uploads/${likedUser.profilePic!}",
+                                    "${ApiEndpoints.imgUrl}${likedUser.profilePic!}",
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return _buildPlaceholderAvatar(theme);

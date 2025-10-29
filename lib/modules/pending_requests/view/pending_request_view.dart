@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/pending_requests/controller/pending_request_conroller.dart';
 import 'package:shyeyes/modules/pending_requests/model/pending_Requests_model.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class PendingRequestView extends StatelessWidget {
   final PendingRequestController controller = Get.put(
@@ -136,7 +137,7 @@ class PendingRequestView extends StatelessWidget {
                     child:
                         user?.profilePic != null && user!.profilePic!.isNotEmpty
                         ? Image.network(
-                            "https://shyeyes-b.onrender.com/uploads/${user.profilePic}",
+                            "${ApiEndpoints.imgUrl}${user.profilePic}",
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return _buildPlaceholderAvatar();

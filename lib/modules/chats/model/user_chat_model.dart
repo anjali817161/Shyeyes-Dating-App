@@ -1,50 +1,35 @@
+// models/chat_preview_model.dart
 class ChatPreviewModel {
-  final String userId;          // sender or receiver id
-  final String receiverId;      // new field
-  final String userName;
-  final String profilePic;
-  final String lastMessage;
-  final String lastMessageTime;
-  final bool isRead;
+  final String? chatId;
+  final String? userId;
+  final String? userName;
+  final String? profilePic;
+  final String? lastMessage;
+  final String? lastMessageTime;
+  final String? senderName;
 
   ChatPreviewModel({
-    required this.userId,
-    required this.receiverId,
-    required this.userName,
-    required this.profilePic,
-    required this.lastMessage,
-    required this.lastMessageTime,
-    required this.isRead,
+    this.chatId,
+    this.userId,
+    this.userName,
+    this.profilePic,
+    this.lastMessage,
+    this.lastMessageTime,
+    this.senderName,
   });
 
   factory ChatPreviewModel.fromJson(Map<String, dynamic> json) {
-    return ChatPreviewModel(
-      userId: json['userId'] ?? json['senderId'] ?? '',
-      receiverId: json['receiverId'] ?? json['to'] ?? '',
-      userName: json['userName'] ?? json['name'] ?? '',
-      profilePic: json['profilePic'] ?? json['image'] ?? '',
-      lastMessage: json['lastMessage'] ?? '',
-      lastMessageTime: _formatTime(json['lastMessageTime']),
-      isRead: json['isRead'] == true ||
-              (json['status']?.toString().toLowerCase() == 'read'),
-    );
-  }
+    final otherUser = json["otherUser"] ?? {};
+    final lastMsg = json["lastMessage"] ?? {};
 
-  static String _formatTime(dynamic value) {
-    if (value == null) return '';
-    try {
-      final date = DateTime.tryParse(value.toString());
-      if (date == null) return '';
-      final now = DateTime.now();
-      if (now.difference(date).inDays == 0) {
-        // same day
-        return "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
-      } else {
-        // show date
-        return "${date.day}/${date.month}/${date.year}";
-      }
-    } catch (e) {
-      return '';
-    }
+    return ChatPreviewModel(
+      chatId: json["chatId"] ?? "",
+      userId: otherUser["id"] ?? "",
+      userName: otherUser["name"] ?? "User",
+      profilePic: otherUser["profilePic"] ?? "",
+      lastMessage: lastMsg["message"] ?? "",
+      lastMessageTime: lastMsg["createdAt"] ?? "",
+      senderName: lastMsg["senderName"] ?? "",
+    );
   }
 }

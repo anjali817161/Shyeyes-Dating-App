@@ -66,7 +66,7 @@ class Users {
   String? friendshipStatus;
   List<Friend>? friendsList;
   int? mutualFriendsCount;
-  bool likedByMe;
+  bool? likedByMe;
   Name? name;
 
   Users({

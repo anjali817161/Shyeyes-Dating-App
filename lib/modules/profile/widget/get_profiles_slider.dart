@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class PhotoSliderBanner extends StatefulWidget {
   final List<String> photos;
@@ -22,8 +23,7 @@ class _PhotoSliderBannerState extends State<PhotoSliderBanner> {
         CarouselSlider.builder(
           itemCount: widget.photos.length,
           itemBuilder: (context, index, realIndex) {
-            final imageUrl =
-                "https://shyeyes-b.onrender.com/uploads/${widget.photos[index]}";
+            final imageUrl = "${ApiEndpoints.imgUrl}${widget.photos[index]}";
             return SizedBox(
               width: double.infinity,
               child: Image.network(

@@ -5,7 +5,7 @@ import 'package:shyeyes/modules/widgets/auth_repository.dart';
 class ActivePlanController extends GetxController {
   var isLoading = false.obs;
   var activePlan = Rxn<Plan>();
-  var daysLeft = 0.obs; // ✅ for countdown
+  var daysLeft = 0.obs;
 
   @override
   void onInit() {
@@ -13,7 +13,6 @@ class ActivePlanController extends GetxController {
     fetchActivePlan();
   }
 
-  /// ✅ Fetch Active Plan API
   Future<void> fetchActivePlan() async {
     try {
       isLoading.value = true;
@@ -23,44 +22,29 @@ class ActivePlanController extends GetxController {
         final model = ActivePlanModel.fromJson(response);
         if (model.plan != null) {
           activePlan.value = model.plan;
+          _updateDaysLeft();
         } else {
-          // ✅ If no plan found, set default free plan
-          activePlan.value = _defaultFreePlan();
+          activePlan.value = null; // ❌ no plan at all
         }
       } else {
-        activePlan.value = _defaultFreePlan();
+        activePlan.value = null;
       }
-
-      _updateDaysLeft(); // auto update countdown
     } catch (e) {
       print("❌ Error fetching active plan: $e");
-      activePlan.value = _defaultFreePlan();
-      _updateDaysLeft();
+      activePlan.value = null;
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// ✅ Default Free Plan (shown if user has no active plan)
-  Plan _defaultFreePlan() {
-    final now = DateTime.now();
-    return Plan(
-      planType: "Free",
-      price: 0,
-      durationDays: 7,
-      isActive: true,
-      startDate: now,
-      endDate: now.add(const Duration(days: 7)),
-      limits: Limits(
-        messagesPerDay: 100,
-        videoTimeSeconds: 0,
-        audioTimeSeconds: 0,
-        matchesAllowed: 10,
-      ),
-    );
+  bool get hasActivePaidPlan {
+    final plan = activePlan.value;
+    if (plan == null) return false; // ❌ no plan
+    final planType = plan.planType?.toLowerCase() ?? '';
+    if (planType.contains('free')) return false; // ❌ free plan
+    return plan.isActive == true; // ✅ active paid plan
   }
 
-  /// ✅ Auto-update remaining days based on endDate
   void _updateDaysLeft() {
     final plan = activePlan.value;
     if (plan?.endDate != null) {

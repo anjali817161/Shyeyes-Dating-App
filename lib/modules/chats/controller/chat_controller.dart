@@ -1,9 +1,14 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
+import 'package:shyeyes/modules/chats/view/heart_shape.dart';
+import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/chats/model/chat_model.dart';
@@ -17,7 +22,7 @@ class ChatController extends GetxController {
   final profileController = Get.find<ProfileController>();
   final activeUserController = Get.find<ActiveUsersController>();
 
-  final baseUrl = "https://shyeyes-b.onrender.com/api/chats";
+  final baseUrl = "https://shyeyes-backend.onrender.com/api/chats";
   late IO.Socket socket;
 
   // -------------------------------------------------
@@ -32,20 +37,22 @@ class ChatController extends GetxController {
   var receiverImage = "".obs;
   var remainingMessages = 0.obs;
 
+  final _addedMessageIds = <String>{};
+
   final _box = GetStorage();
 
   late String currentUserId;
   late String token;
 
-  var chats = <ChatPreviewModel>[].obs;
-  var filteredChats = <ChatPreviewModel>[].obs;
+  // var chats = <ChatPreviewModel>[].obs;
+  var conversations = <ChatPreviewModel>[].obs;
 
   void searchChats(String query) {
     if (query.isEmpty) {
-      filteredChats.value = [];
+      conversations.value = [];
     } else {
-      filteredChats.value = chats
-          .where((c) => c.userName.toLowerCase().contains(query.toLowerCase()))
+      conversations.value = conversations
+          .where((c) => c.userName!.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
   }
@@ -53,6 +60,7 @@ class ChatController extends GetxController {
   // -------------------------------------------------
   // ⚙️ Initialize Socket
   // -------------------------------------------------
+  // Update the socket error handling in initSocket:
   Future<void> initSocket() async {
     token = await SharedPrefHelper.getToken() ?? "";
     if (token.isEmpty) {
@@ -61,7 +69,7 @@ class ChatController extends GetxController {
     }
 
     socket = IO.io(
-      "https://shyeyes-b.onrender.com/chat",
+      "https://shyeyes-backend.onrender.com/chat",
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
@@ -73,35 +81,46 @@ class ChatController extends GetxController {
 
     socket.onConnect((_) => print("✅ Socket connected to /chat namespace"));
     socket.onDisconnect((_) => print("❌ Socket disconnected"));
-    socket.on("error", (data) => print("⚠️ Socket error: $data"));
+
+    // Handle subscription errors gracefully
+    socket.on("error", (data) {
+      print("⚠️ Socket error: $data");
+      if (data is Map &&
+          data['message']?.toString().contains('subscription') == true) {
+        Get.snackbar(
+          "Subscription Required",
+          "Both users need active subscriptions to chat",
+          duration: const Duration(seconds: 3),
+        );
+      }
+    });
 
     // 🧹 Prevent duplicate listeners
     socket.off("new_message");
     socket.on("new_message", (rawData) {
       try {
-        // ✅ Safely convert to Map<String, dynamic>
         final Map<String, dynamic> data = {};
         (rawData as Map).forEach((key, value) {
           data[key.toString()] = value;
         });
 
-        // ✅ Handle message as string or map
         final msgData = data['message'];
         final safeMessage = msgData is Map
             ? msgData['text'] ?? ''
             : msgData?.toString() ?? '';
-
         data['message'] = safeMessage;
 
         final msg = MessageModel.fromJson(data);
 
-        // ✅ Prevent duplicates
-        if (!messages.any((m) => m.id == msg.id && m.message == msg.message)) {
+        // Add message if not already added (deduplication by ID)
+        if (!_addedMessageIds.contains(msg.id)) {
+          _addedMessageIds.add(msg.id);
           messages.add(msg);
-          saveMessagesToLocal(); // 💾 Save locally
+          saveMessagesToLocal();
+          print("✅ Added message: ${msg.id}");
+        } else {
+          print("⚠️ Duplicate message ignored: ${msg.id}");
         }
-
-        print("📩 New message received: ${msg.message}");
       } catch (e, st) {
         print("🔥 Error in new_message listener: $e");
         print(st);
@@ -116,13 +135,18 @@ class ChatController extends GetxController {
       if (rm is int) {
         remainingMessages.value = rm;
       } else if (rm is String) {
-        // Try to parse if it's a number string
-        final parsed = int.tryParse(rm);
-        if (parsed != null) {
-          remainingMessages.value = parsed;
+        if (rm == "Unlimited") {
+          remainingMessages.value =
+              999999; // Set to a large number for unlimited
         } else {
-          // handle non-numeric gracefully (keep old value or reset)
-          print("⚠️ Unexpected string for remainingMessages: $rm");
+          // Try to parse if it's a number string
+          final parsed = int.tryParse(rm);
+          if (parsed != null) {
+            remainingMessages.value = parsed;
+          } else {
+            // handle non-numeric gracefully (keep old value or reset)
+            print("⚠️ Unexpected string for remainingMessages: $rm");
+          }
         }
       } else if (rm == null) {
         print("⚠️ remainingMessages is null, keeping old value");
@@ -140,11 +164,14 @@ class ChatController extends GetxController {
   void loadMessagesFromLocal(String rid) {
     final data = _box.read('chat_$rid');
     if (data != null) {
-      messages.assignAll(
-        (data as List)
-            .map((e) => MessageModel.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-      );
+      final loadedMessages = (data as List)
+          .map((e) => MessageModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      messages.assignAll(loadedMessages);
+      // Add IDs to prevent duplicates
+      for (var msg in loadedMessages) {
+        _addedMessageIds.add(msg.id);
+      }
     }
   }
 
@@ -155,12 +182,14 @@ class ChatController extends GetxController {
     required String receiverId,
     required String receiverName,
     required String receiverImage,
+    required Map<String, dynamic> receiverUser,
     String? baseUrl,
   }) async {
     try {
       isLoading.value = true;
 
-      currentUserId = profileController.profile2.value?.data?.user?.id ?? "";
+      currentUserId =
+          profileController.profile2.value?.data?.edituser?.id ?? "";
       if (currentUserId.isEmpty) {
         Get.snackbar("Error", "User ID not found. Please login again.");
         print("currentUserId: ${currentUserId}");
@@ -176,11 +205,9 @@ class ChatController extends GetxController {
       await fetchMessages(receiverId);
 
       // Join chat room
-      socket.emit("join_chat", {"receiverId": receiverId});
       print("📥 Joined chat with $receiverId");
 
       // Load old messages
-      await fetchMessages(receiverId);
     } finally {
       isLoading.value = false;
     }
@@ -198,23 +225,38 @@ class ChatController extends GetxController {
           "Accept": "application/json",
         },
       );
+
       print("body:-------${response.body}");
       print("status code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         if (jsonData["success"] == true) {
-          messages.assignAll(
-            (jsonData["messages"] as List)
-                .map((e) => MessageModel.fromJson(e))
-                .toList(),
-          );
+          final fetchedMessages = (jsonData["messages"] as List)
+              .map((e) => MessageModel.fromJson(e))
+              .toList();
+
+          final uniqueMessages = [
+            ...messages,
+            ...fetchedMessages.where((f) => !messages.any((m) => m.id == f.id)),
+          ];
+
+          messages.assignAll(uniqueMessages);
+        } else {
+          // Handle "No chat found" gracefully - it's not an error, just no messages yet
+          print("No existing chat found - starting fresh");
+          messages.clear();
         }
+      } else if (response.statusCode == 404) {
+        // No chat exists yet - this is normal for new conversations
+        print("No existing chat - starting new conversation");
+        messages.clear();
       } else {
         print("Failed to fetch messages: ${response.body}");
       }
     } catch (e) {
       print("Error fetching messages: $e");
+      // Don't show error to user for "no chat found" scenario
     }
   }
 
@@ -224,76 +266,70 @@ class ChatController extends GetxController {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
+    final activePlanController = Get.find<ActivePlanController>();
+    final friendController = Get.find<FriendController>();
+    final plan = activePlanController.activePlan.value;
+
+    // Check if friend
+    bool isFriend = friendController.friends.any(
+      (f) => f.userId == receiverId.value,
+    );
+    if (!isFriend) {
+      Get.snackbar('Warning', '⚠️ You need to be friends to send messages!');
+      return;
+    }
+
+    // Check if has active plan
+    if (plan == null) {
+      Get.snackbar(
+        'Subscription Required',
+        'Please subscribe to send messages',
+      );
+      return;
+    }
+
+    // Check plan limits based on plan type
+    if (plan.planType?.toLowerCase() == 'free') {
+      // Free plan: 50 messages limit
+      final totalMsgs = messages.length;
+      if (totalMsgs >= 50) {
+        _showLimitDialog('message', 50);
+        return;
+      }
+    } else {
+      // Paid plans: Check usage against limits
+      final messageUsage = plan.usage?.messages?.used ?? 0;
+      final messageLimit = plan.limits?.messagesPerDay ?? 0;
+      if (messageLimit > 0 && messageUsage >= messageLimit) {
+        _showLimitDialog('message', messageLimit);
+        return;
+      }
+    }
+
+    // Block phone numbers
+    final hasNumber = RegExp(r'\d{8,}').hasMatch(text);
+    String sanitizedText = hasNumber
+        ? text.replaceAll(RegExp(r'\d'), 'x')
+        : text;
+
     final tempMsg = MessageModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       from: currentUserId,
       to: receiverId.value,
-      message: text,
+      message: sanitizedText,
       timestamp: DateTime.now(),
       status: "sending",
     );
-    messages.add(tempMsg);
 
-    // --- Send via socket first ---
+    messages.add(tempMsg);
+    _addedMessageIds.add(tempMsg.id);
+    saveMessagesToLocal();
+
+    // Send via socket - message will be updated when received back via new_message event
     socket.emit("send_message", {
       "receiverId": receiverId.value,
-      "message": text,
+      "message": sanitizedText,
     });
-
-    // --- REST fallback / subscription tracking ---
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/send"),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({"to": receiverId.value, "message": text}),
-      );
-      print("body:-------${response.body}");
-      print("status code: ${response.statusCode}");
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        final rm = data["remainingMessages"];
-        if (rm is int) {
-          remainingMessages.value = rm;
-        } else if (rm is String) {
-          final parsed = int.tryParse(rm);
-          if (parsed != null) {
-            remainingMessages.value = parsed;
-          } else {
-            print("⚠️ Unexpected string for remainingMessages: $rm");
-            remainingMessages.value = 999999; // or keep previous value
-          }
-        } else {
-          remainingMessages.value = 0;
-        }
-
-        // update status in message list
-        final index = messages.indexWhere((m) => m.id == tempMsg.id);
-        if (index != -1) {
-          messages[index] = MessageModel(
-            id: tempMsg.id,
-            from: tempMsg.from,
-            to: tempMsg.to,
-            message: tempMsg.message,
-            timestamp: tempMsg.timestamp,
-            status: "sent",
-          );
-        }
-      } else if (response.statusCode == 403) {
-        final error = jsonDecode(response.body);
-        Get.snackbar(
-          "Limit Reached",
-          error["message"] ?? "Subscription expired",
-        );
-      } else {
-        Get.snackbar("Error", "Failed to send message");
-      }
-    } catch (e) {
-      print("Error sending message: $e");
-    }
   }
 
   void markMessageAsRead(String messageId) {
@@ -331,13 +367,16 @@ class ChatController extends GetxController {
         headers: {"Authorization": "Bearer $token"},
       );
 
+      print("body:-------${response.body}");
+      print("status code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data["success"] == true) {
-          final convos = (data["conversations"] as List)
-              .map((e) => ChatPreviewModel.fromJson(e))
-              .toList();
-          return convos;
+        if (data["success"] == true && data["conversations"] != null) {
+          final List convos = data["conversations"];
+          conversations.assignAll(
+            convos.map((e) => ChatPreviewModel.fromJson(e)).toList(),
+          );
         }
       }
     } catch (e) {
@@ -363,6 +402,79 @@ class ChatController extends GetxController {
     } catch (e) {
       print("Error clearing chat: $e");
     }
+  }
+
+  // -------------------------------------------------
+  // 📊 Show Limit Dialog
+  // -------------------------------------------------
+  void _showLimitDialog(String type, int limit) {
+    Get.dialog(
+      Dialog(
+        shape: HeartShapeBorder(),
+        backgroundColor: Get.theme.colorScheme.secondary,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Get.theme.colorScheme.primary,
+                size: 50,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Limit Reached',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Get.theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                type == 'message'
+                    ? 'You have reached the $limit message limit for your plan. Upgrade to continue chatting!'
+                    : 'You have reached the $limit minute limit for your plan. Upgrade to continue calling!',
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                  Get.bottomSheet(
+                    const SubscriptionBottomSheet(),
+                    isScrollControlled: true,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Get.theme.colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Upgrade Now',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   @override
