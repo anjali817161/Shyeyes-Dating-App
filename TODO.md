@@ -1,10 +1,6 @@
-# TODO List for Like Functionality Update
-
-## Tasks
-- [x] Modify like button in home_view.dart to use likedByMe flag from API data instead of usersController.isLiked()
-
-## Completed
-- [x] Analyze about_view.dart and home_view.dart files
-- [x] Create plan for changes
-- [x] Get user approval for plan
-- [x] Implement changes in home_view.dart
+- [ ] Add 3 dots menu icon after audio/video call icons in AppBar
+- [ ] Implement popup menu with "Clear Chat" option
+- [ ] Add confirmation dialog for clearing chat
+- [ ] Integrate with existing clearChat() method in ChatController
+- [ ] Update clearChat() to clear local storage and message IDs
+- [ ] Test the functionality
