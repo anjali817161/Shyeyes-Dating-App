@@ -14,9 +14,7 @@ class SearchUserModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "users": users?.map((x) => x.toJson()).toList(),
-    };
+    return {"users": users?.map((x) => x.toJson()).toList()};
   }
 }
 
@@ -30,7 +28,7 @@ class SearchUser {
 
   factory SearchUser.fromJson(Map<String, dynamic> json) {
     return SearchUser(
-      id: json["_id"],
+      id: json["id"],
       email: json["email"],
       profilePic: json["profilePic"],
       name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
@@ -57,16 +55,10 @@ class Name {
   Name({this.firstName, this.lastName});
 
   factory Name.fromJson(Map<String, dynamic> json) {
-    return Name(
-      firstName: json["firstName"],
-      lastName: json["lastName"],
-    );
+    return Name(firstName: json["firstName"], lastName: json["lastName"]);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "firstName": firstName,
-      "lastName": lastName,
-    };
+    return {"firstName": firstName, "lastName": lastName};
   }
 }

@@ -13,8 +13,7 @@ import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 class AuthRepository {
   //login api
   Future<http.Response> login(String email, String password) {
-    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.login}");
-    print("Email: $email, Password: $password");
+   
 
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.login),
@@ -35,7 +34,7 @@ class AuthRepository {
     required String password,
   }) {
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.signupStep1);
-    print("Signup URL => $url");
+   
 
     final body = {
       "firstName": fName,
@@ -45,7 +44,7 @@ class AuthRepository {
       "password": password,
     };
 
-    print("Signup Body => $body");
+    
 
     return http.post(
       url,
@@ -68,7 +67,7 @@ class AuthRepository {
 
     final body = {"email": email, "otp": otp};
 
-    print("📩 Verify OTP Body => $body");
+   
 
     return await http.post(
       url,
@@ -88,9 +87,9 @@ class AuthRepository {
     String? hobbies,
   }) async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-    print("Token from SharedPref: $token");
+   
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.signupStep2);
-    print("Personal Info URL => $url");
+   
     var request = http.MultipartRequest('POST', url);
 
     // normal fields
@@ -125,11 +124,9 @@ class AuthRepository {
 
   Future<EditProfileModel> getProfile() async {
     final String? token = await SharedPrefHelper.getToken();
-    print("Token from SharedPref: $token");
-    print(ApiEndpoints.baseUrl + ApiEndpoints.profile);
+   
 
     final String Url = ApiEndpoints.baseUrl + ApiEndpoints.profile;
-    print("Fetching profile from :: $Url with token: $token");
     final response = await http.get(
       Uri.parse(Url),
       headers: {
@@ -137,11 +134,9 @@ class AuthRepository {
         "Authorization": "Bearer $token", // 🔑 usually
       },
     );
-    print("Status Code: ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      print("Profile fetched successfully");
-      print("Response Body: ${response.body}");
+    
     } else {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
     }
@@ -152,11 +147,9 @@ class AuthRepository {
   static Future<Map<String, dynamic>?> searchUsers(String query) async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
-    print("Searching users with query: '$query' and token: $token");
-    print("URL: ${ApiEndpoints.baseUrl}search?q=$query");
+ 
     try {
       if (token == null) {
-        print("❌ No token found!");
         return null;
       }
 
@@ -174,11 +167,9 @@ class AuthRepository {
         final data = jsonDecode(response.body);
         return data;
       } else {
-        print("❌ Search API failed: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("❌ Error in searchUsers: $e");
       return null;
     }
   }
@@ -187,14 +178,13 @@ class AuthRepository {
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.activeUsers);
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
-    print("Fetching active users from: $url with token: $token");
 
     final response = await http.get(
       url,
       headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
     );
 
-    print("response body:------ ${response.body}");
+   
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -208,8 +198,7 @@ class AuthRepository {
 
   Future<List<BestmatchModel>> fetchBestMatches() async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-    print("print token===== $token");
-    print("print url===== ${ApiEndpoints.baseUrl + ApiEndpoints.bestMatches}");
+   
 
     try {
       final response = await http.get(
@@ -221,12 +210,10 @@ class AuthRepository {
         },
       );
 
-      print("Best Matches Status Code: ${response.statusCode}");
-      print("Best Matches Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-        print("Best Matches Decoded: $decoded");
+       
 
         // Check different possible response structures
         if (decoded["status"] == true) {
@@ -247,24 +234,21 @@ class AuthRepository {
             return [];
           }
         } else {
-          print("API returned status false: ${decoded["message"]}");
           return [];
         }
       } else {
-        print("Failed with status code: ${response.statusCode}");
         throw Exception("Failed to fetch best matches: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error in fetchBestMatches: $e");
       rethrow;
     }
   }
 
   Future<void> logout() async {
     await SharedPrefHelper.clearToken(); // clears token from shared prefs
-    print("Token cleared. User logged out.");
+   
     final token = await SharedPrefHelper.getToken();
-    print("Token after logout: $token");
+    
   }
 
   static Future<Map<String, dynamic>?> getActivePlan() async {

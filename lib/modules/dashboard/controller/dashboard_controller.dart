@@ -26,7 +26,6 @@ class ActiveUsersController extends GetxController {
   var requestLoading = <String, bool>{}.obs;
 
   /// Liked users tracking
-  var likedUsers = <String>{}.obs; // store liked userIds as String
   var recentlyLikedUsers = <String>{}.obs; // for double-tap animation
 
   // -----------------------
@@ -204,22 +203,6 @@ class ActiveUsersController extends GetxController {
         "https://shyeyes-b.onrender.com/api/likes/$userId/like",
       );
 
-      // ✅ Check current liked state
-      final bool isCurrentlyLiked = likedUsers.contains(userId);
-
-      // ✅ Instantly update UI (optimistic)
-      if (isCurrentlyLiked) {
-        likedUsers.remove(userId); // turn grey instantly
-      } else {
-        likedUsers.add(userId); // turn red instantly
-        recentlyLikedUsers.add(userId);
-
-        // Heart animation for a second
-        Future.delayed(const Duration(seconds: 1), () {
-          recentlyLikedUsers.remove(userId);
-        });
-      }
-
       // ✅ Hit like/unlike API
       final response = await http.post(
         uri,
@@ -233,13 +216,48 @@ class ActiveUsersController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        final liked = data['liked'] ?? !isCurrentlyLiked;
+        final liked = data['liked'] ?? false;
 
-        // ✅ Sync with backend (in case mismatch)
+        // ✅ Update the likedByMe field in the users list
+        final userIndex = users.indexWhere((u) => u.id == userId);
+        if (userIndex != -1) {
+          users[userIndex] = Users(
+            id: users[userIndex].id,
+            name: users[userIndex].name,
+            age: users[userIndex].age,
+            bio: users[userIndex].bio,
+            profilePic: users[userIndex].profilePic,
+            hobbies: users[userIndex].hobbies,
+            location: users[userIndex].location,
+            friendshipStatus: users[userIndex].friendshipStatus,
+            likedByMe: liked, // 👈 Update liked status
+          );
+          users.refresh();
+        }
+
+        // ✅ Update the likedByMe field in the matches list
+        final matchIndex = matches.indexWhere((m) => m.id == userId);
+        if (matchIndex != -1) {
+          matches[matchIndex] = BestmatchModel(
+            id: matches[matchIndex].id,
+            age: matches[matchIndex].age,
+            bio: matches[matchIndex].bio,
+            status: matches[matchIndex].status,
+            likedByMe: liked, // 👈 Update liked status
+            profilePic: matches[matchIndex].profilePic,
+            hobbies: matches[matchIndex].hobbies,
+            name: matches[matchIndex].name,
+            location: matches[matchIndex].location,
+          );
+          matches.refresh();
+        }
+
+        // Heart animation for like
         if (liked) {
-          likedUsers.add(userId);
-        } else {
-          likedUsers.remove(userId);
+          recentlyLikedUsers.add(userId);
+          Future.delayed(const Duration(seconds: 1), () {
+            recentlyLikedUsers.remove(userId);
+          });
         }
 
         Get.snackbar(
@@ -248,21 +266,11 @@ class ActiveUsersController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
-        // ❌ Revert if API fails
-        if (isCurrentlyLiked) {
-          likedUsers.add(userId);
-        } else {
-          likedUsers.remove(userId);
-        }
         Get.snackbar("Error", "Failed to update like status");
       }
     } catch (e) {
       print("Error in toggleFavorite: $e");
       Get.snackbar("Error", "Something went wrong while liking");
     }
-  }
-
-  bool isLiked(String userId) {
-    return likedUsers.contains(userId);
   }
 }

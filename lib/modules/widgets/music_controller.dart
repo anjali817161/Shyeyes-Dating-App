@@ -3,11 +3,14 @@ import 'package:just_audio/just_audio.dart';
 
 class MusicController extends GetxController {
   final AudioPlayer player = AudioPlayer();
-  var isPlaying = true.obs;
+  RxBool isPlaying = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    player.playingStream.listen((playing) {
+      isPlaying.value = playing;
+    });
     playBackgroundMusic();
   }
 
@@ -16,18 +19,16 @@ class MusicController extends GetxController {
       await player.setAsset('assets/audio/bg.mp3');
       await player.setLoopMode(LoopMode.all);
       await player.play();
-      isPlaying.value = true;
+      // isPlaying will be updated by the stream
     } catch (e) {
       print("Error loading audio: $e");
     }
   }
 
   void toggleMusic() {
-    if (isPlaying.value) {
-      isPlaying.value = false;
+    if (player.playing) {
       player.pause();
     } else {
-      isPlaying.value = true;
       player.play();
     }
   }

@@ -42,64 +42,69 @@ class _UserProfilePageState extends State<UserProfilePage> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (controller.errorMessage.isNotEmpty) {
-          return Center(child: Text("Error: ${controller.errorMessage}"));
-        }
-        if (controller.profile2.value == null ||
-            controller.profile2.value!.data!.edituser == null) {
-          return const Center(child: Text("No profile data"));
-        }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.fetchProfile();
+        },
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (controller.errorMessage.isNotEmpty) {
+            return Center(child: Text("Error: ${controller.errorMessage}"));
+          }
+          if (controller.profile2.value == null ||
+              controller.profile2.value!.data!.edituser == null) {
+            return const Center(child: Text("No profile data"));
+          }
 
-        final profileData = controller.profile2.value!.data!.edituser!;
+          final profileData = controller.profile2.value!.data!.edituser!;
 
-        // ✅ DOB ko safe string me convert karna
-        String dobText = profileData.dob != null
-            ? "${profileData.dob!.year}-${profileData.dob!.month.toString().padLeft(2, '0')}-${profileData.dob!.day.toString().padLeft(2, '0')}"
-            : "N/A";
+          // ✅ DOB ko safe string me convert karna
+          String dobText = profileData.dob != null
+              ? "${profileData.dob!.year}-${profileData.dob!.month.toString().padLeft(2, '0')}-${profileData.dob!.day.toString().padLeft(2, '0')}"
+              : "N/A";
 
-        // ✅ Profile image handling
-        String imageUrl = "https://via.placeholder.com/150";
+          // ✅ Profile image handling
+          String imageUrl = "https://via.placeholder.com/150";
 
-        if (profileData.profilePic != null &&
-            profileData.profilePic is String &&
-            (profileData.profilePic as String).isNotEmpty) {
-          // 👇 yaha prefix kar diya
-          imageUrl =
-              "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.profilePic}";
-        } else if (profileData.photos != null &&
-            profileData.photos!.isNotEmpty) {
-          // Agar photos list me path aaye toh uspe bhi prefix lagana hai
-          imageUrl =
-              "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.photos!.first}";
-        }
+          if (profileData.profilePic != null &&
+              profileData.profilePic is String &&
+              (profileData.profilePic as String).isNotEmpty) {
+            // 👇 yaha prefix kar diya
+            imageUrl =
+                "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.profilePic}";
+          } else if (profileData.photos != null &&
+              profileData.photos!.isNotEmpty) {
+            // Agar photos list me path aaye toh uspe bhi prefix lagana hai
+            imageUrl =
+                "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.photos!.first}";
+          }
 
-        return _buildProfileView(
-          theme,
-          "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
-          profileData.email ?? "No email",
-          profileData.phoneNo ?? "N/A", // pehle phone
-          profileData.age != null
-              ? profileData.age.toString()
-              : "N/A", // fir age
-          profileData.gender ?? "N/A",
-          profileData.location != null
-              ? [
-                  profileData.location!.city ?? "",
-                  profileData.location!.country ?? "",
-                ].where((e) => e.isNotEmpty).join(", ")
-              : "Not Provided",
-          dobText,
-          profileData.bio ?? "Not Provided",
-          imageUrl,
-          (profileData.hobbies != null && profileData.hobbies!.isNotEmpty)
-              ? profileData.hobbies!.join(", ")
-              : "Not Provided",
-        );
-      }),
+          return _buildProfileView(
+            theme,
+            "${profileData.name?.firstName ?? ""} ${profileData.name?.lastName ?? ""}",
+            profileData.email ?? "No email",
+            profileData.phoneNo ?? "N/A", // pehle phone
+            profileData.age != null
+                ? profileData.age.toString()
+                : "N/A", // fir age
+            profileData.gender ?? "N/A",
+            profileData.location != null
+                ? [
+                    profileData.location!.city ?? "",
+                    profileData.location!.country ?? "",
+                  ].where((e) => e.isNotEmpty).join(", ")
+                : "Not Provided",
+            dobText,
+            profileData.bio ?? "Not Provided",
+            imageUrl,
+            (profileData.hobbies != null && profileData.hobbies!.isNotEmpty)
+                ? profileData.hobbies!.join(", ")
+                : "Not Provided",
+          );
+        }),
+      ),
     );
   }
 

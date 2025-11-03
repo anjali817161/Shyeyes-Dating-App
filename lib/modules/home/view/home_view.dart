@@ -146,33 +146,8 @@ class _HomeViewState extends State<HomeView> {
                   children: [
                     GestureDetector(
                       onDoubleTap: () async {
-                        // Optimistic update for double tap
-                        final currentUser = users[index];
-                        final wasLiked =
-                            widget.viewType == HomeViewType.activeUsers
-                            ? (currentUser as Users).likedByMe ?? false
-                            : (currentUser as BestmatchModel).likedByMe ??
-                                  false;
-
-                        // Flip locally
-                        if (widget.viewType == HomeViewType.activeUsers) {
-                          (currentUser as Users).likedByMe = !wasLiked;
-                        } else {
-                          (currentUser as BestmatchModel).likedByMe = !wasLiked;
-                        }
-
-                        // Call API
-                        try {
-                          await usersController.toggleFavorite(userId);
-                        } catch (e) {
-                          // Rollback
-                          if (widget.viewType == HomeViewType.activeUsers) {
-                            (currentUser as Users).likedByMe = wasLiked;
-                          } else {
-                            (currentUser as BestmatchModel).likedByMe =
-                                wasLiked;
-                          }
-                        }
+                        // Call API directly, UI will update based on API response
+                        await usersController.toggleFavorite(userId);
                       },
                       child: imageUrl.isNotEmpty
                           ? Image.network(
@@ -534,31 +509,8 @@ class _HomeViewState extends State<HomeView> {
                               isLiked ? Colors.red : Colors.grey,
                               30,
                               () async {
-                                // Optimistic update for button tap
-                                final wasLiked = isLiked;
-
-                                // Flip locally
-                                if (widget.viewType ==
-                                    HomeViewType.activeUsers) {
-                                  (currentUser as Users).likedByMe = !wasLiked;
-                                } else {
-                                  (currentUser as BestmatchModel).likedByMe =
-                                      !wasLiked;
-                                }
-
-                                // Call API
-                                try {
-                                  await usersController.toggleFavorite(userId);
-                                } catch (e) {
-                                  // Rollback
-                                  if (widget.viewType ==
-                                      HomeViewType.activeUsers) {
-                                    (currentUser as Users).likedByMe = wasLiked;
-                                  } else {
-                                    (currentUser as BestmatchModel).likedByMe =
-                                        wasLiked;
-                                  }
-                                }
+                                // Call API directly, UI will update based on API response
+                                await usersController.toggleFavorite(userId);
                               },
                             );
                           }),

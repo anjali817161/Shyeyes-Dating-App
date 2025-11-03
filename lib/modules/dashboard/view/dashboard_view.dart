@@ -1315,7 +1315,15 @@ class _DashboardPageState extends State<DashboardPage> {
                           title: Text(user.fullName ?? "No Name"),
                           subtitle: Text(user.email ?? "No email provided"),
                           onTap: () {
-                            Get.to(() => AboutView(userId: user.id ?? ""));
+                            final String id = user.id?.toString() ?? '';
+                            if (id.isNotEmpty) {
+                              Get.to(() => AboutView(userId: id));
+                            } else {
+                              Get.snackbar(
+                                'Error',
+                                'Cannot open profile — invalid user id.',
+                              );
+                            }
                           },
                         );
                       },

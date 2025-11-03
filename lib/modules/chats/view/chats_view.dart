@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
@@ -43,10 +45,40 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late String receiverImage;
   late bool isOnline;
   late DateTime? lastSeen;
+  Timer? _refreshTimer;
 
   // Light animation controllers
   late AnimationController _bubbleController;
   late AnimationController _floatingController;
+
+  // Refresh chat data with loading indicator
+  Future<void> refreshChat() async {
+    await controller.initChat(
+      receiverId: receiverId,
+      receiverName: receiverName,
+      receiverImage: receiverImage,
+      receiverUser: receiverUser,
+    );
+  }
+
+  // Silent refresh without loading indicator
+  Future<void> silentRefresh() async {
+    if (!mounted) return;
+
+    // Fetch messages without showing loading state
+    await controller.fetchMessages(receiverId);
+
+    // Update friendship status
+    final isFriend = friendController.friends.any(
+      (friend) => friend.userId == receiverId,
+    );
+    if (mounted) {
+      setState(() {
+        friendshipStatus = isFriend ? "friend" : "none";
+      });
+    }
+  }
+
   late Animation<double> _bubbleAnimation;
   late Animation<double> _floatingAnimation;
 
@@ -57,7 +89,20 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    currentUserId = profileController.profile2?.value?.data?.edituser?.id ?? "";
+    // Initial setup
+    currentUserId = profileController.profile2.value?.data?.edituser?.id ?? "";
+
+    // Start auto-refresh
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      refreshChat();
+      _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+        if (mounted) {
+          silentRefresh();
+        } else {
+          timer.cancel();
+        }
+      });
+    });
     receiverId = widget.receiverId;
     receiverName = widget.receiverName;
     receiverImage = widget.receiverImage;
@@ -80,12 +125,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _initializeAnimations();
 
     // Initialize chat
-    controller.initChat(
-      receiverId: receiverId,
-      receiverName: receiverName,
-      receiverImage: receiverImage,
-      receiverUser: receiverUser,
-    );
+    refreshChat();
+
+    // Set up periodic refresh every 10 seconds
+    Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        silentRefresh();
+      } else {
+        timer.cancel();
+      }
+    });
 
     // Scroll to bottom when messages are loaded or updated
     ever(controller.messages, (messages) {
@@ -154,50 +203,66 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: Stack(
           children: [
-            Stack(
+            Row(
               children: [
-                CircleAvatar(
-                  radius: 25, // optional
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage:
-                      (receiverImage != null &&
-                          receiverImage.isNotEmpty &&
-                          receiverImage.startsWith("http"))
-                      ? NetworkImage(receiverImage)
-                      : null, // no image if empty
-                  child: (receiverImage == null || receiverImage.isEmpty)
-                      ? Icon(Icons.person, size: 25, color: Colors.grey[600])
-                      : null,
-                ),
-
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: isOnline ? Colors.green : Colors.grey,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage:
+                          (receiverImage != null &&
+                              receiverImage.isNotEmpty &&
+                              receiverImage.startsWith("http"))
+                          ? NetworkImage(receiverImage)
+                          : null,
+                      child: (receiverImage == null || receiverImage.isEmpty)
+                          ? Icon(
+                              Icons.person,
+                              size: 20,
+                              color: Colors.grey[600],
+                            )
+                          : null,
                     ),
-                  ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: isOnline ? Colors.green : Colors.grey,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(receiverName, style: TextStyle(fontSize: 16)),
-                const SizedBox(height: 2),
-                Text(
-                  isOnline
-                      ? "Online"
-                      : "Last seen ${_formatLastSeen(lastSeen)}",
-                  style: TextStyle(fontSize: 12, color: Colors.grey[300]),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        receiverName,
+                        style: const TextStyle(fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isOnline ? "Online" : "Last seen recently",
+                        //  "Last seen ${_formatLastSeen(lastSeen)}",
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -215,6 +280,19 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             onPressed: () {
               _handleVideoCall(receiverUser, friendshipStatus);
             },
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'clear_chat') {
+                _showClearChatConfirmation();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'clear_chat',
+                child: Text('Clear Chat'),
+              ),
+            ],
           ),
         ],
       ),
@@ -584,5 +662,35 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     } catch (e) {
       Get.snackbar("Error", "Failed to start video call: $e");
     }
+  }
+
+  void _showClearChatConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear Chat'),
+          content: const Text(
+            'Are you sure you want to clear the chat history? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close the dialog
+                await controller.clearChat(); // Call the clear chat API
+                // The UI will be cleared automatically since controller.messages.clear() is called in clearChat
+              },
+              child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

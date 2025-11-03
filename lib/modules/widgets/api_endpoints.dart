@@ -1,7 +1,8 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://shyeyes-backend.onrender.com/api/user/";
+  static const String baseUrl = "https://shyeyes-b.onrender.com/api/user/";
 
-  static const String baseUrl2 = "https://shyeyes-backend.onrender.com/api/friends/";
+  static const String baseUrl2 =
+      "https://shyeyes-backend.onrender.com/api/friends/";
 
   static const String imgUrl =
       "https://res.cloudinary.com/dlhp3v3fd/image/upload/";

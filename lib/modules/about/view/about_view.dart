@@ -435,8 +435,6 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
     );
   }
 
- 
-
   Widget _actionButton(
     ThemeData theme,
     String text, {
@@ -498,22 +496,11 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
 
         // Like button with animation
         Obx(() {
-          final isLiked =
-              controller.aboutModel.value?.user?.likedByMe ??
-              false; // ✅ API se direct check
+          final isLiked = controller.isLiked.value;
 
           return GestureDetector(
             onTap: () async {
-              await userController.toggleFavorite(widget.userId);
-
-              // Toggle ke baad API call karke refresh karna hoga
-              await controller.fetchUserProfile(widget.userId);
-
-              if (controller.aboutModel.value?.user?.likedByMe == true) {
-                setState(() {
-                  playHeartAnimation = true;
-                });
-              }
+              await controller.toggleLike(widget.userId);
             },
             child: Stack(
               clipBehavior: Clip.none,
@@ -528,24 +515,6 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
                     size: 28,
                   ),
                 ),
-
-                if (playHeartAnimation)
-                  Positioned(
-                    top: -77,
-                    child: Lottie.asset(
-                      'assets/lotties/newHeart.json',
-                      width: 200,
-                      height: 200,
-                      repeat: false,
-                      onLoaded: (composition) {
-                        Future.delayed(composition.duration, () {
-                          if (mounted) {
-                            setState(() => playHeartAnimation = false);
-                          }
-                        });
-                      },
-                    ),
-                  ),
               ],
             ),
           );

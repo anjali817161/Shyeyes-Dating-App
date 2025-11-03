@@ -102,8 +102,12 @@ class FriendListScreen extends StatelessWidget {
             );
           }
 
-          // ✅ FIX 3: Use SingleChildScrollView to handle keyboard overflow
+          // Use a single RefreshIndicator (the outer one) and make the
+          // scrollable always scrollable so pull-to-refresh works even when
+          // the content is smaller than the viewport.
           return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            primary: true,
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

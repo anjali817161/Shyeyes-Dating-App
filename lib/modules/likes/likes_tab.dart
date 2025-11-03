@@ -32,33 +32,38 @@ class _LikesPageState extends State<LikesPage> {
         //   borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
         // ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.05),
-              theme.colorScheme.primary.withOpacity(0.02),
-              Colors.transparent,
-            ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.fetchLikedProfiles();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                theme.colorScheme.primary.withOpacity(0.05),
+                theme.colorScheme.primary.withOpacity(0.02),
+                Colors.transparent,
+              ],
+            ),
           ),
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return _buildLoadingState();
+            }
+
+            if (controller.errorMessage.isNotEmpty) {
+              return _buildErrorState(controller.errorMessage.value, theme);
+            }
+
+            if (controller.likesList.isEmpty) {
+              return _buildEmptyState(context, theme);
+            }
+
+            return _buildLikesList(controller, theme);
+          }),
         ),
-        child: Obx(() {
-          if (controller.isLoading.value) {
-            return _buildLoadingState();
-          }
-
-          if (controller.errorMessage.isNotEmpty) {
-            return _buildErrorState(controller.errorMessage.value, theme);
-          }
-
-          if (controller.likesList.isEmpty) {
-            return _buildEmptyState(context, theme);
-          }
-
-          return _buildLikesList(controller, theme);
-        }),
       ),
     );
   }

@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shyeyes/modules/about/model/about_model.dart';
+import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/widgets/auth_repository.dart';
 import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class AboutController extends GetxController {
   var isLoading = false.obs;
   var aboutModel = Rxn<AboutModel>();
+  var isLiked = false.obs;
 
   var requestStatus = "cancelled".obs;
   var requestLoading = false.obs;
@@ -42,6 +44,9 @@ class AboutController extends GetxController {
         } else {
           requestStatus.value = "cancelled";
         }
+
+        // Set initial like status from API
+        isLiked.value = aboutModel.value?.user?.likedByMe ?? false;
       }
     } finally {
       isLoading.value = false;
@@ -70,6 +75,25 @@ class AboutController extends GetxController {
       }
     } finally {
       requestLoading.value = false;
+    }
+  }
+
+  Future<void> toggleLike(String userId) async {
+    // Instantly toggle the UI state
+    isLiked.value = !isLiked.value;
+
+    try {
+      // Get the ActiveUsersController instance
+      final userController = Get.find<ActiveUsersController>();
+
+      // Call the API to toggle like
+      await userController.toggleFavorite(userId);
+
+      // Refresh profile to get updated status from API
+      await fetchUserProfile(userId);
+    } catch (e) {
+      // If API fails, keep the UI state as toggled (optimistic update)
+      print("Error toggling like: $e");
     }
   }
 }
