@@ -545,7 +545,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 (profile.profilePic != null &&
                                     profile.profilePic!.isNotEmpty)
                                 ? "${ApiEndpoints.imgUrl}${profile.profilePic!}"
-                                : "assets/images/profile_image2.png";
+                                : "assets/images/profile_image1.png";
 
                             Get.to(
                               () => ChatScreen(
@@ -1063,7 +1063,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ),
                                   )
                                 : Image.asset(
-                                    "assets/images/profile_image2.png",
+                                    "assets/images/profile_image3.png",
                                     fit: BoxFit.cover,
                                   ),
                           ),
@@ -1252,7 +1252,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: TextField(
                       controller: searchTextController,
                       decoration: InputDecoration(
-                        hintText: "Search users...",
+                        hintText: "Search users by name or location...",
                         prefixIcon: Icon(Icons.search, color: Colors.grey),
                         suffixIcon: searchTextController.text.isNotEmpty
                             ? IconButton(
@@ -1313,7 +1313,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 : null,
                           ),
                           title: Text(user.fullName ?? "No Name"),
-                          subtitle: Text(user.email ?? "No email provided"),
+                          subtitle: Text(user.age.toString()),
                           onTap: () {
                             final String id = user.id?.toString() ?? '';
                             if (id.isNotEmpty) {

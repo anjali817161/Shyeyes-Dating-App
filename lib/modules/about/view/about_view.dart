@@ -4,8 +4,6 @@ import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
 import 'package:shyeyes/modules/about/controller/block_controller.dart';
-import 'package:shyeyes/modules/about/widgets/block_bottomsheet.dart';
-import 'package:shyeyes/modules/about/widgets/report_bottomsheet.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/profile/widget/get_profiles_slider.dart';
@@ -187,11 +185,6 @@ class _AboutViewState extends State<AboutView> {
 
                 const SizedBox(height: 20),
 
-                // _sectionTitle(theme, Icons.chat, "Send a First Impression"),
-                // const SizedBox(height: 10),
-                // _firstImpressionBox(theme),
-                // request Button
-                // Request Button (Send / Cancel toggle)
                 Obx(() {
                   final profileData = controller.aboutModel.value?.user;
                   final isPending = controller.isRequestPending;

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
 import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
-import 'package:shyeyes/modules/customloader/loader.dart';
 
 class OtpVerifyBottomSheet {
   static void show(BuildContext context) {
@@ -132,7 +131,7 @@ class OtpVerifyBottomSheet {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: HeartLoader(),
+                              child: CircularProgressIndicator(),
                             )
                           : GestureDetector(
                               onTap: () {

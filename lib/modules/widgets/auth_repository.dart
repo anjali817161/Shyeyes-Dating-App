@@ -13,8 +13,6 @@ import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 class AuthRepository {
   //login api
   Future<http.Response> login(String email, String password) {
-   
-
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.login),
       headers: {
@@ -34,7 +32,6 @@ class AuthRepository {
     required String password,
   }) {
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.signupStep1);
-   
 
     final body = {
       "firstName": fName,
@@ -43,8 +40,6 @@ class AuthRepository {
       "phoneNo": phone,
       "password": password,
     };
-
-    
 
     return http.post(
       url,
@@ -67,8 +62,6 @@ class AuthRepository {
 
     final body = {"email": email, "otp": otp};
 
-   
-
     return await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -87,9 +80,9 @@ class AuthRepository {
     String? hobbies,
   }) async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-   
+
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.signupStep2);
-   
+
     var request = http.MultipartRequest('POST', url);
 
     // normal fields
@@ -124,7 +117,6 @@ class AuthRepository {
 
   Future<EditProfileModel> getProfile() async {
     final String? token = await SharedPrefHelper.getToken();
-   
 
     final String Url = ApiEndpoints.baseUrl + ApiEndpoints.profile;
     final response = await http.get(
@@ -136,18 +128,16 @@ class AuthRepository {
     );
 
     if (response.statusCode == 200) {
-    
     } else {
       throw Exception("Failed to fetch profile: ${response.statusCode}");
     }
     return EditProfileModel.fromJson(jsonDecode(response.body));
   }
 
-  /// Search Users API
+  /// Search Users API (by name)
   static Future<Map<String, dynamic>?> searchUsers(String query) async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
 
- 
     try {
       if (token == null) {
         return null;
@@ -174,17 +164,108 @@ class AuthRepository {
     }
   }
 
+  /// Search Users by Location API
+  static Future<Map<String, dynamic>?> searchUsersByLocation(
+    String city,
+  ) async {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+    try {
+      if (token == null) {
+        return null;
+      }
+
+      final url = Uri.parse(
+        "${ApiEndpoints.baseUrl}search-by-location/new?city=$city",
+      );
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Search Users by Age API
+  static Future<Map<String, dynamic>?> searchUsersByAge(String age) async {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+    try {
+      if (token == null) {
+        return null;
+      }
+
+      final url = Uri.parse("${ApiEndpoints.baseUrl}search-by-age?age=$age");
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Search Users by Gender API
+  static Future<Map<String, dynamic>?> searchUsersByGender(String gender) async {
+    final String token = await SharedPrefHelper.getToken() ?? 'NULL';
+
+    try {
+      if (token == null) {
+        return null;
+      }
+
+      final url = Uri.parse("${ApiEndpoints.baseUrl}search-by-gender?gender=$gender");
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<ActiveUsersModel> getActiveUsers() async {
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.activeUsers);
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-
 
     final response = await http.get(
       url,
       headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
     );
-
-   
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -198,7 +279,6 @@ class AuthRepository {
 
   Future<List<BestmatchModel>> fetchBestMatches() async {
     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-   
 
     try {
       final response = await http.get(
@@ -210,10 +290,8 @@ class AuthRepository {
         },
       );
 
-
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-       
 
         // Check different possible response structures
         if (decoded["status"] == true) {
@@ -246,9 +324,8 @@ class AuthRepository {
 
   Future<void> logout() async {
     await SharedPrefHelper.clearToken(); // clears token from shared prefs
-   
+
     final token = await SharedPrefHelper.getToken();
-    
   }
 
   static Future<Map<String, dynamic>?> getActivePlan() async {
@@ -263,67 +340,15 @@ class AuthRepository {
         },
       );
 
-      print("getActivePlan Response: ${response.body}");
-      print("Status Code: ${response.statusCode}");
-
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
       } else {
-        print(
-          "❌ getActivePlan failed: ${response.statusCode} ${response.body}",
-        );
         return null;
       }
     } catch (e) {
-      print("❌ getActivePlan Exception: $e");
       return null;
     }
   }
-
-  // Future<Message> sendMessage(int receiverId, String text) async {
-  //   final String? token = await SharedPrefHelper.getToken();
-  //   print("Token from SharedPref: $token");
-  //   final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.sendMsg);
-  //   print("Send Message URL => $url");
-
-  //   final response = await http.post(
-  //     url,
-  //     headers: {
-  //       "Accept": "application/json",
-  //       "Authorization": "Bearer $token",
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: jsonEncode({
-  //       'receiver_id': receiverId,
-  //       'message': text,
-  //     }),
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     print("Message sent successfully");
-  //     print("Response Body: ${response.body}");
-  //     return Message.fromJson(jsonDecode(response.body));
-  //   } else {
-  //     throw Exception("Failed to send message: ${response.statusCode}");
-  //   }
-  // }
-  // Future<List<Message>> getMessages(int receiverId) async {
-  //   final url = Uri.parse("baseUrl/messages/$receiverId");
-  //   final response = await http.get(url);
-
-  //   if (response.statusCode == 200) {
-  //     final data = jsonDecode(response.body);
-  //     if (data is Map) {
-  //       // case: single object
-  //       print(response.body);
-  //       return [Message.fromJson(data as Map<String, dynamic>)];
-  //     } else {
-  //       throw Exception("Unexpected response format");
-  //     }
-  //   } else {
-  //     throw Exception("Failed to load messages: ${response.statusCode}");
-  //   }
-  // }
 
   Future<http.Response> editProfile({
     String? fName,
@@ -340,7 +365,6 @@ class AuthRepository {
   }) async {
     final String? token = await SharedPrefHelper.getToken();
     final url = Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.editprofile);
-    print("Edit Profile URL => $url");
 
     var request = http.MultipartRequest('PUT', url);
 
@@ -372,10 +396,6 @@ class AuthRepository {
 
     var streamedResponse = await request.send();
 
-    print("Status Code: ${streamedResponse.statusCode}");
-    print("Fields => ${request.fields}");
-    print("Files => ${request.files.map((f) => f.filename).toList()}");
-
     return http.Response.fromStream(streamedResponse);
   }
 
@@ -396,10 +416,6 @@ class AuthRepository {
         },
       );
 
-      print("Toggle Request Response: ${response.body}");
-      print("Receiver ID: $receiverId");
-      print("Status Code: ${response.statusCode}");
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         // ✅ handle dono status codes
         return jsonDecode(response.body);
@@ -412,47 +428,9 @@ class AuthRepository {
         };
       }
     } catch (e) {
-      print("Error in toggleRequest: $e");
       return null;
     }
   }
-
-  // static Future<Map<String, dynamic>?> cancelRequest(String requestId) async {
-  //   try {
-  //     final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-
-  //     // Using your API constants
-  //     final Uri uri = Uri.parse(
-  //       "${ApiEndpoints.baseUrl2}${ApiEndpoints.deleteRequest}/$requestId",
-  //     );
-
-  //     final response = await http.delete(
-  //       uri,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Accept": "application/json",
-  //         "Authorization": "Bearer $token",
-  //       },
-  //     );
-
-  //     print("Cancel Request Response: ${response.body}");
-  //     print("Request ID: $requestId");
-  //     print("Status Code: ${response.statusCode}");
-
-  //     if (response.statusCode == 200) {
-  //       return jsonDecode(response.body);
-  //     } else {
-  //       return {
-  //         "message": "Failed",
-  //         "status_code": response.statusCode,
-  //         "body": response.body,
-  //       };
-  //     }
-  //   } catch (e) {
-  //     print("Error canceling request: $e");
-  //     return null;
-  //   }
-  // }
 
   static Future<Map<String, dynamic>?> getInvitations() async {
     try {
@@ -467,16 +445,12 @@ class AuthRepository {
         },
       );
 
-      print(" Invitations Response: ${response.body}");
-      print(" Status Code: ${response.statusCode}");
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         return {"message": "Failed", "status_code": response.statusCode};
       }
     } catch (e) {
-      print(" Error fetching invitations: $e");
       return null;
     }
   }
@@ -485,10 +459,7 @@ class AuthRepository {
   static Future<Map<String, dynamic>?> acceptInvite(String invitationId) async {
     try {
       final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-      print("token======$token");
-      print(
-        "${ApiEndpoints.baseUrl2 + ApiEndpoints.acceptInvite}/$invitationId",
-      );
+
       final url = Uri.parse(
         "${ApiEndpoints.baseUrl2 + ApiEndpoints.acceptInvite}/$invitationId",
       );
@@ -500,8 +471,6 @@ class AuthRepository {
           "Authorization": "Bearer $token",
         },
       );
-      print(" Accept Invitation Response: ${response.body}");
-      print(" Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body);
@@ -509,7 +478,6 @@ class AuthRepository {
         throw Exception("Failed to accept request: ${response.body}");
       }
     } catch (e) {
-      print(" Error accepting invitation: $e");
       return null;
     }
   }
@@ -518,10 +486,7 @@ class AuthRepository {
   static Future<Map<String, dynamic>?> cancelInvite(String invitationId) async {
     try {
       final String token = await SharedPrefHelper.getToken() ?? 'NULL';
-      print("token======$token");
-      print(
-        "${ApiEndpoints.baseUrl2 + ApiEndpoints.cancelInvite}/$invitationId",
-      );
+
       final url = Uri.parse(
         "${ApiEndpoints.baseUrl2 + ApiEndpoints.cancelInvite}/$invitationId",
       );
@@ -534,8 +499,6 @@ class AuthRepository {
         },
         body: jsonEncode({"status": "rejected"}),
       );
-      print(" Accept Invitation Response: ${response.body}");
-      print(" Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body);
@@ -543,7 +506,6 @@ class AuthRepository {
         throw Exception("Failed to reject request: ${response.body}");
       }
     } catch (e) {
-      print(" Error rejecting invitation: $e");
       return null;
     }
   }
@@ -555,7 +517,6 @@ class AuthRepository {
       final url = Uri.parse(
         ApiEndpoints.baseUrl2 + ApiEndpoints.acceptedRequests,
       );
-      print("👉 Fetching accepted requests:---- $url");
 
       final response = await http.get(
         url,
@@ -565,8 +526,6 @@ class AuthRepository {
           "Authorization": "Bearer $token",
         },
       );
-      print("response body: ${response.body}");
-      print("status code----------${response.statusCode}");
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -574,7 +533,6 @@ class AuthRepository {
         throw Exception("Failed to load accepted requests: ${response.body}");
       }
     } catch (e) {
-      print("❌ Error fetching accepted requests: $e");
       return null;
     }
   }
@@ -583,9 +541,6 @@ class AuthRepository {
 
   // auth_repository.dart
   Future<http.Response> Forgetpassword(String email) {
-    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetemail}");
-    // print("Email: $email);
-
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.forgetemail),
       headers: {
@@ -598,9 +553,7 @@ class AuthRepository {
 
   // otp verify
 
-  Future<http.Response> forgetOtpVerify(String otp,  String email) {
-    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.forgetotp}");
-
+  Future<http.Response> forgetOtpVerify(String otp, String email) {
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.forgetotp),
       headers: {
@@ -618,8 +571,6 @@ class AuthRepository {
     String Confrimpass,
     String email,
   ) {
-    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword}");
-
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.Createpaaword),
       headers: {
@@ -637,9 +588,6 @@ class AuthRepository {
   // you sent like show favorite
 
   Future<http.Response> Sentlikes(String token) {
-    print("URL===== ${ApiEndpoints.likes + ApiEndpoints.sentrequestlike}");
-    // print("Email: $email);
-
     return http.get(
       Uri.parse(ApiEndpoints.likes + ApiEndpoints.sentrequestlike),
       headers: {
@@ -653,9 +601,6 @@ class AuthRepository {
   // show who likes my profiles
 
   Future<http.Response> Showlikesprofiles(String token) {
-    print("URL===== ${ApiEndpoints.likes + ApiEndpoints.showlikesprofiles}");
-    // print("Email: $email);
-
     return http.get(
       Uri.parse(ApiEndpoints.likes + ApiEndpoints.showlikesprofiles),
       headers: {
@@ -668,9 +613,6 @@ class AuthRepository {
   // upload more photo
 
   Future<http.Response> Uploadmorephoto(String token) {
-    print("URL===== ${ApiEndpoints.baseUrl + ApiEndpoints.moreuploadphoto}");
-    // print("Email: $email);
-
     return http.post(
       Uri.parse(ApiEndpoints.baseUrl + ApiEndpoints.moreuploadphoto),
       headers: {

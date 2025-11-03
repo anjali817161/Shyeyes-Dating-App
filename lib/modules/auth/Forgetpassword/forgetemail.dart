@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
-import 'package:shyeyes/modules/customloader/loader.dart';
 
 class ForgetEmailBottomSheet {
   static void show(BuildContext context) {
@@ -94,7 +93,7 @@ class ForgetEmailBottomSheet {
                           ? const SizedBox(
                               height: 24,
                               width: 24,
-                              child: HeartLoader()
+                              child: CircularProgressIndicator()
                             )
                           : const Text(
                               'Send OTP',

@@ -22,43 +22,42 @@ class SearchUser {
   String? id;
   String? email;
   String? profilePic;
-  Name? name;
+  String? fullName;
+  int? age;
 
-  SearchUser({this.id, this.email, this.profilePic, this.name});
+  SearchUser({this.id, this.email, this.profilePic, this.fullName, this.age});
 
   factory SearchUser.fromJson(Map<String, dynamic> json) {
+    // Handle different possible keys for id
+    String? userId = json["_id"] ?? json["id"];
+
+    // Handle fullName: if direct, use it; else construct from Name object
+    String? name;
+    if (json["fullName"] != null) {
+      name = json["fullName"];
+    } else if (json["Name"] != null && json["Name"] is Map) {
+      final first = json["Name"]["firstName"] ?? "";
+      final last = json["Name"]["lastName"] ?? "";
+      name = "$first $last".trim();
+      if (name.isEmpty) name = null;
+    }
+
     return SearchUser(
-      id: json["id"],
+      id: userId,
       email: json["email"],
       profilePic: json["profilePic"],
-      name: json["Name"] != null ? Name.fromJson(json["Name"]) : null,
+      fullName: name,
+      age: json["age"] != null ? int.tryParse(json["age"].toString()) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "_id": id,
+      "id": id,
       "email": email,
       "profilePic": profilePic,
-      "Name": name?.toJson(),
+      "fullName": fullName,
+      "age": age,
     };
-  }
-
-  String get fullName =>
-      "${name?.firstName ?? ""} ${name?.lastName ?? ""}".trim();
-}
-
-class Name {
-  String? firstName;
-  String? lastName;
-
-  Name({this.firstName, this.lastName});
-
-  factory Name.fromJson(Map<String, dynamic> json) {
-    return Name(firstName: json["firstName"], lastName: json["lastName"]);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {"firstName": firstName, "lastName": lastName};
   }
 }
