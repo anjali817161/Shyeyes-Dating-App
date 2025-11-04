@@ -304,26 +304,19 @@ class _DashboardPageState extends State<DashboardPage> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
                       ),
-                      child: profile.profilePic != null
-                          ? Image.network(
-                              "${ApiEndpoints.imgUrl}${profile.profilePic!}",
-                              height: 140,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Image.asset(
-                                    "assets/images/profile_image3.png",
-                                    height: 140,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                            )
-                          : Image.asset(
+                      child: Image.network(
+                        resolveImageUrl(profile.profilePic),
+                        height: 140,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
                               "assets/images/profile_image3.png",
                               height: 140,
                               width: double.infinity,
                               fit: BoxFit.cover,
                             ),
+                      ),
                     ),
 
                     const SizedBox(height: 8),
@@ -541,11 +534,9 @@ class _DashboardPageState extends State<DashboardPage> {
                             }, disabled: isDisabled);
                           }),
                           _iconCircle(Icons.chat_bubble_outline, () {
-                            final imageUrl =
-                                (profile.profilePic != null &&
-                                    profile.profilePic!.isNotEmpty)
-                                ? "${ApiEndpoints.imgUrl}${profile.profilePic!}"
-                                : "assets/images/profile_image1.png";
+                            final imageUrl = resolveImageUrl(
+                              profile.profilePic,
+                            );
 
                             Get.to(
                               () => ChatScreen(
@@ -1003,9 +994,9 @@ class _DashboardPageState extends State<DashboardPage> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             scrollDirection: Axis.horizontal,
-            itemCount: controller.users.length,
-            // ? 8
-            // : controller.users.length,
+            itemCount: controller.users.length > 10
+                ? 10
+                : controller.users.length,
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final profile = controller.users[index];
@@ -1046,26 +1037,15 @@ class _DashboardPageState extends State<DashboardPage> {
                             ],
                           ),
                           child: ClipOval(
-                            child:
-                                profile.profilePic != null &&
-                                    profile.profilePic!.isNotEmpty
-                                ? Image.network(
-                                    "${ApiEndpoints.imgUrl}${profile.profilePic!}",
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) => Image.asset(
-                                          "assets/images/profile_image1.png",
-                                          fit: BoxFit.cover,
-                                        ),
-                                  )
-                                : Image.asset(
-                                    "assets/images/profile_image3.png",
+                            child: Image.network(
+                              resolveImageUrl(profile.profilePic),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    "assets/images/profile_image1.png",
                                     fit: BoxFit.cover,
                                   ),
+                            ),
                           ),
                         ),
                         Positioned(bottom: 4, right: 4, child: BlinkingDot()),
@@ -1162,14 +1142,8 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
-            // profilePic check karna
-            final hasProfilePic =
-                user.profilePic != null && user.profilePic!.isNotEmpty;
-
-            // agar profilePic hai toh url banayenge
-            final profilePicUrl = hasProfilePic
-                ? "${ApiEndpoints.imgUrl}${user.profilePic}"
-                : null;
+            final profilePicUrl = resolveImageUrl(user.profilePic);
+            final hasProfilePic = profilePicUrl.isNotEmpty;
 
             return GestureDetector(
               onTap: () {
@@ -1180,7 +1154,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: CircleAvatar(
                   radius: 30,
                   backgroundImage: hasProfilePic
-                      ? NetworkImage(profilePicUrl!)
+                      ? NetworkImage(profilePicUrl)
                       : null,
                   child: !hasProfilePic
                       ? Icon(
@@ -1294,18 +1268,14 @@ class _DashboardPageState extends State<DashboardPage> {
                       itemCount: searchController.results.length,
                       itemBuilder: (context, index) {
                         final user = searchController.results[index];
+                        final profilePicUrl = resolveImageUrl(user.profilePic);
+                        final hasProfilePic = profilePicUrl.isNotEmpty;
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundImage:
-                                user.profilePic != null &&
-                                    user.profilePic!.isNotEmpty
-                                ? NetworkImage(
-                                    "${ApiEndpoints.imgUrl}${user.profilePic}",
-                                  )
+                            backgroundImage: hasProfilePic
+                                ? NetworkImage(profilePicUrl)
                                 : null,
-                            child:
-                                user.profilePic == null ||
-                                    user.profilePic!.isEmpty
+                            child: !hasProfilePic
                                 ? Icon(
                                     Icons.person,
                                     color: Colors.grey.shade200,
@@ -1313,7 +1283,28 @@ class _DashboardPageState extends State<DashboardPage> {
                                 : null,
                           ),
                           title: Text(user.fullName ?? "No Name"),
-                          subtitle: Text(user.age.toString()),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (user.age != null)
+                                Text(
+                                  'Age: ${user.age}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              if (user.location != null &&
+                                  user.location!.isNotEmpty)
+                                Text(
+                                  'Location: ${user.location}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                            ],
+                          ),
                           onTap: () {
                             final String id = user.id?.toString() ?? '';
                             if (id.isNotEmpty) {

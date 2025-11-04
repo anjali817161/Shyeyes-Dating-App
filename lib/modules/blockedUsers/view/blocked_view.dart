@@ -215,7 +215,7 @@ class BlockedUserView extends StatelessWidget {
                           child: ClipOval(
                             child: user.profilePic != null
                                 ? Image.network(
-                                    "${ApiEndpoints.imgUrl}${user.profilePic}",
+                                    resolveImageUrl(user.profilePic),
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return _buildFallbackAvatar(

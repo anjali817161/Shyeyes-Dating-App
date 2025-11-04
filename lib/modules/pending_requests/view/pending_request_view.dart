@@ -137,7 +137,7 @@ class PendingRequestView extends StatelessWidget {
                     child:
                         user?.profilePic != null && user!.profilePic!.isNotEmpty
                         ? Image.network(
-                            "${ApiEndpoints.imgUrl}${user.profilePic}",
+                            resolveImageUrl(user.profilePic),
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return _buildPlaceholderAvatar();

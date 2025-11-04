@@ -175,11 +175,16 @@ class _LikesPageState extends State<LikesPage> {
   }
 
   Widget _buildLikesList(LikesController controller, ThemeData theme) {
+    final validLikes =
+        controller.likesList.where((like) => like.liker != null).toList();
+    if (validLikes.isEmpty) {
+      return _buildEmptyState(context, theme);
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: controller.likesList.length,
+      itemCount: validLikes.length,
       itemBuilder: (context, index) {
-        final like = controller.likesList[index];
+        final like = validLikes[index];
         final likedUser = like.liker;
         final createdAt = like.createdAt;
 
@@ -220,7 +225,7 @@ class _LikesPageState extends State<LikesPage> {
                                 (likedUser?.profilePic != null &&
                                     likedUser!.profilePic!.isNotEmpty)
                                 ? Image.network(
-                                    "${ApiEndpoints.imgUrl}${likedUser.profilePic!}",
+                                    resolveImageUrl(likedUser.profilePic!),
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return _buildPlaceholderAvatar(theme);

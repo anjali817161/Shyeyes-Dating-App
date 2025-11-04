@@ -216,7 +216,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           (receiverImage != null &&
                               receiverImage.isNotEmpty &&
                               receiverImage.startsWith("http"))
-                          ? NetworkImage(receiverImage)
+                          ? NetworkImage(resolveImageUrl(receiverImage))
                           : null,
                       child: (receiverImage == null || receiverImage.isEmpty)
                           ? Icon(
@@ -469,7 +469,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           if (!isMe) ...[
             CircleAvatar(
               backgroundImage: receiverImage.startsWith("http")
-                  ? NetworkImage(receiverImage)
+                  ? NetworkImage(resolveImageUrl(receiverImage))
                   : AssetImage(receiverImage) as ImageProvider,
               radius: 16,
             ),
@@ -546,7 +546,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           ?.profilePic !=
                       null
                   ? NetworkImage(
-                      "${ApiEndpoints.imgUrl}${profileController.profile2.value!.data!.edituser!.profilePic}",
+                      resolveImageUrl(profileController.profile2.value!.data!.edituser!.profilePic),
                     )
                   : AssetImage("assets/images/default_profile.png")
                         as ImageProvider,

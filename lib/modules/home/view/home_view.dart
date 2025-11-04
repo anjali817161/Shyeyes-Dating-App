@@ -105,11 +105,7 @@ class _HomeViewState extends State<HomeView> {
                 if (widget.viewType == HomeViewType.activeUsers) {
                   final Users userData = user as Users;
                   userId = userData.id ?? '';
-                  imageUrl =
-                      (userData.profilePic != null &&
-                          userData.profilePic!.isNotEmpty)
-                      ? "${ApiEndpoints.imgUrl}${userData.profilePic}"
-                      : "https://picsum.photos/seed/$index/600/800"; // stable fallback
+                  imageUrl = resolveImageUrl(userData.profilePic);
 
                   name =
                       "${userData.name?.firstName ?? ''} ${userData.name?.lastName ?? ''}";
@@ -129,11 +125,7 @@ class _HomeViewState extends State<HomeView> {
                   userId = match.id ?? '';
                   name = match.name ?? '';
 
-                  // Use only profilePic with a fallback
-                  imageUrl =
-                      (match.profilePic != null && match.profilePic!.isNotEmpty)
-                      ? "${ApiEndpoints.imgUrl}${match.profilePic}"
-                      : "https://picsum.photos/seed/$index/600/800"; // stable fallback
+                  imageUrl = resolveImageUrl(match.profilePic);
 
                   age = match.age ?? 0;
                   location = match.location != null
@@ -550,11 +542,7 @@ class _HomeViewState extends State<HomeView> {
                                 userId = u.id ?? '';
                                 userName =
                                     "${u.name?.firstName ?? ''} ${u.name?.lastName ?? ''}";
-                                userImage =
-                                    (u.profilePic != null &&
-                                        u.profilePic!.isNotEmpty)
-                                    ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
-                                    : "https://picsum.photos/seed/0/600/800";
+                                userImage = resolveImageUrl(u.profilePic);
                                 status = (u.friendshipStatus ?? 'none')
                                     .toLowerCase();
                               } else {
@@ -562,11 +550,7 @@ class _HomeViewState extends State<HomeView> {
                                     currentUser as BestmatchModel;
                                 userId = u.id ?? '';
                                 userName = u.name ?? '';
-                                userImage =
-                                    (u.profilePic != null &&
-                                        u.profilePic!.isNotEmpty)
-                                    ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
-                                    : "https://picsum.photos/seed/0/600/800";
+                                userImage = resolveImageUrl(u.profilePic);
                                 status = (u.status ?? 'none').toLowerCase();
                               }
 

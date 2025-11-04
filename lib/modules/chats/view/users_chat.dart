@@ -199,8 +199,7 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
                                   () => ChatScreen(
                                     receiverId: user.userId ?? "",
                                     receiverName: user.name ?? "User",
-                                    receiverImage:
-                                        "${ApiEndpoints.imgUrl}${user.profilePic}",
+                                    receiverImage: resolveImageUrl(user.profilePic),
                                     isOnline: isOnline,
                                     lastSeen: lastSeen,
                                   ),
@@ -227,7 +226,7 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
                                           child: CircleAvatar(
                                             radius: 28,
                                             backgroundImage: NetworkImage(
-                                              "${ApiEndpoints.imgUrl}${user.profilePic}",
+                                              resolveImageUrl(user.profilePic),
                                               headers: {
                                                 'Accept': 'application/json',
                                               },

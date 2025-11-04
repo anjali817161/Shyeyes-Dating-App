@@ -23,7 +23,7 @@ class _PhotoSliderBannerState extends State<PhotoSliderBanner> {
         CarouselSlider.builder(
           itemCount: widget.photos.length,
           itemBuilder: (context, index, realIndex) {
-            final imageUrl = "${ApiEndpoints.imgUrl}${widget.photos[index]}";
+            final imageUrl = resolveImageUrl(widget.photos[index]);
             return SizedBox(
               width: double.infinity,
               child: Image.network(

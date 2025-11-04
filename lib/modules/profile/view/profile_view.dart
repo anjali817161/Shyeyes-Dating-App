@@ -7,6 +7,7 @@ import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/profile/uploadmore_photo/view/uploadmorephoto.dart';
 import 'package:shyeyes/modules/profile/widget/get_profiles_slider.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -71,14 +72,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
           if (profileData.profilePic != null &&
               profileData.profilePic is String &&
               (profileData.profilePic as String).isNotEmpty) {
-            // 👇 yaha prefix kar diya
-            imageUrl =
-                "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.profilePic}";
+            imageUrl = resolveImageUrl(profileData.profilePic);
           } else if (profileData.photos != null &&
               profileData.photos!.isNotEmpty) {
-            // Agar photos list me path aaye toh uspe bhi prefix lagana hai
-            imageUrl =
-                "https://res.cloudinary.com/dlhp3v3fd/image/upload/${profileData.photos!.first}";
+            imageUrl = resolveImageUrl(profileData.photos!.first);
           }
 
           return _buildProfileView(

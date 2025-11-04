@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -143,16 +144,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (user.profilePic != null) {
         if (user.profilePic is String &&
             (user.profilePic as String).isNotEmpty) {
-          imageUrl =
-              "https://shyeyes-b.onrender.com/uploads/${user.profilePic}";
+          imageUrl = resolveImageUrl(user.profilePic);
         } else if (user.profilePic is List &&
             (user.profilePic as List).isNotEmpty) {
-          imageUrl =
-              "https://shyeyes-b.onrender.com/uploads/${(user.profilePic as List).first}";
+          imageUrl = resolveImageUrl((user.profilePic as List).first);
         }
       } else if (user.photos != null && user.photos!.isNotEmpty) {
-        imageUrl =
-            "https://shyeyes-b.onrender.com/uploads/${user.photos!.first}";
+        imageUrl = resolveImageUrl(user.photos!.first);
       }
     }
 
@@ -222,24 +220,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Lottie.asset(
-                          'assets/lotties/heart_fly.json',
-                          fit: BoxFit.cover,
-                          repeat: true,
-                        ),
-                      ),
-                      Expanded(
-                        child: Lottie.asset(
-                          'assets/lotties/heart_fly.json',
-                          fit: BoxFit.cover,
-                          repeat: true,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
                 Positioned(bottom: -50, child: _buildProfileImage()),

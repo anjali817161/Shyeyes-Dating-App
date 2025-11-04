@@ -5,54 +5,44 @@ import 'package:shyeyes/modules/widgets/auth_repository.dart';
 class SearchFilterController extends GetxController {
   var isLoading = false.obs;
   var results = <SearchUser>[].obs;
-  var selectedFilter = 'Name'.obs;
 
   Future<void> performSearch(String query) async {
     query = query.trim();
 
     if (query.isEmpty) {
       results.clear();
-      isLoading.value = false;
       return;
     }
 
     isLoading.value = true;
 
-    Map<String, dynamic>? response;
+    try {
+      // Perform all searches concurrently
+      final searchFutures = [
+        AuthRepository.searchUsers(query),
+        AuthRepository.searchUsersByLocation(query),
+        if (int.tryParse(query) != null)
+          AuthRepository.searchUsersByAge(query),
+      ];
 
-    // Perform search based on selected filter
-    switch (selectedFilter.value) {
-      case 'Name':
-        response = await AuthRepository.searchUsers(query);
-        break;
-      case 'Location':
-        response = await AuthRepository.searchUsersByLocation(query);
-        break;
-      case 'Age':
-        // For age, try to parse as int, if not, treat as string
-        final ageQuery = int.tryParse(query) != null ? query : null;
-        if (ageQuery != null) {
-          response = await AuthRepository.searchUsersByAge(ageQuery);
-        } else {
-          results.clear();
-          isLoading.value = false;
-          return;
+      final searchResponses = await Future.wait(searchFutures);
+
+      final combinedUsers = <SearchUser>{}; // Use a Set to handle duplicates
+
+      for (final response in searchResponses) {
+        if (response != null) {
+          final model = SearchUserModel.fromJson(response);
+          if (model.users != null) {
+            combinedUsers.addAll(model.users!);
+          }
         }
-        break;
-      case 'Gender':
-        response = await AuthRepository.searchUsersByGender(query);
-        break;
-      default:
-        response = await AuthRepository.searchUsers(query);
-    }
+      }
 
-    if (response != null) {
-      final model = SearchUserModel.fromJson(response);
-      results.value = model.users ?? [];
-    } else {
+      results.value = combinedUsers.toList();
+    } catch (e) {
       results.clear();
+    } finally {
+      isLoading.value = false;
     }
-
-    isLoading.value = false;
   }
 }

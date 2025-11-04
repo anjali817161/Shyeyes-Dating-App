@@ -44,6 +44,18 @@ class FavouritePage extends StatelessWidget {
             );
           }
 
+          final validLikes = controller.likesList
+              .where((like) => like.liked != null)
+              .toList();
+
+          if (validLikes.isEmpty) {
+            return const Center(
+              child: Text(
+                "No favourites yet 💔",
+                style: TextStyle(fontSize: 16),
+              ),
+            );
+          }
           return Padding(
             padding: const EdgeInsets.all(12.0),
             child: GridView.builder(
@@ -53,18 +65,14 @@ class FavouritePage extends StatelessWidget {
                 mainAxisSpacing: 10,
                 childAspectRatio: 0.60,
               ),
-              itemCount: controller.likesList.length,
+              itemCount: validLikes.length,
               itemBuilder: (context, index) {
-                Likes profile = controller.likesList[index];
-                final likedUser = profile.liked;
-
-                if (likedUser == null) return const SizedBox();
-
+                final likedUser = validLikes[index].liked!;
                 final userId = likedUser.sId ?? "";
                 final profilePicUrl =
                     (likedUser.profilePic != null &&
                         likedUser.profilePic!.isNotEmpty)
-                    ? "${ApiEndpoints.imgUrl}${likedUser.profilePic!}"
+                    ? resolveImageUrl(likedUser.profilePic!)
                     : "";
 
                 final fullName =

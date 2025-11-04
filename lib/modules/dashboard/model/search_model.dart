@@ -21,17 +21,23 @@ class SearchUserModel {
 class SearchUser {
   String? id;
   String? email;
-  String? profilePic;
+  dynamic profilePic;
   String? fullName;
   int? age;
+  String? location;
 
-  SearchUser({this.id, this.email, this.profilePic, this.fullName, this.age});
+  SearchUser({
+    this.id,
+    this.email,
+    this.profilePic,
+    this.fullName,
+    this.age,
+    this.location,
+  });
 
   factory SearchUser.fromJson(Map<String, dynamic> json) {
-    // Handle different possible keys for id
     String? userId = json["_id"] ?? json["id"];
 
-    // Handle fullName: if direct, use it; else construct from Name object
     String? name;
     if (json["fullName"] != null) {
       name = json["fullName"];
@@ -40,6 +46,16 @@ class SearchUser {
       final last = json["Name"]["lastName"] ?? "";
       name = "$first $last".trim();
       if (name.isEmpty) name = null;
+    } else if (json["firstName"] != null) {
+      final first = json["firstName"] ?? "";
+      final last = json["lastName"] ?? "";
+      name = "$first $last".trim();
+      if (name.isEmpty) name = null;
+    }
+
+    String? location;
+    if (json["location"] is Map && json["location"]["city"] != null) {
+      location = json["location"]["city"];
     }
 
     return SearchUser(
@@ -48,6 +64,7 @@ class SearchUser {
       profilePic: json["profilePic"],
       fullName: name,
       age: json["age"] != null ? int.tryParse(json["age"].toString()) : null,
+      location: location,
     );
   }
 
@@ -58,6 +75,16 @@ class SearchUser {
       "profilePic": profilePic,
       "fullName": fullName,
       "age": age,
+      "location": location,
     };
   }
+
+  // Override equals and hashCode to allow for easy deduplication
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SearchUser && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

@@ -112,9 +112,7 @@ class CustomDrawer extends StatelessWidget {
                     backgroundImage:
                         (user?.profilePic != null &&
                             user!.profilePic!.toString().isNotEmpty)
-                        ? NetworkImage(
-                            "${ApiEndpoints.imgUrl}${user.profilePic}",
-                          )
+                        ? NetworkImage(resolveImageUrl(user.profilePic!))
                         : null, // if null → fallback to child
                     child:
                         (user?.profilePic == null ||

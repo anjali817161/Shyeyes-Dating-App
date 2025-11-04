@@ -116,8 +116,9 @@ class InvitationPage extends StatelessWidget {
                                   (invite.user1?.profilePic != null &&
                                       invite.user1!.profilePic!.isNotEmpty)
                                   ? Image.network(
-                                      ApiEndpoints.imgUrl +
-                                          invite.user1!.profilePic!,
+                                      resolveImageUrl(
+                                        invite.user1!.profilePic!,
+                                      ),
                                       fit: BoxFit.cover,
                                       errorBuilder:
                                           (context, error, stackTrace) {
@@ -237,8 +238,9 @@ class InvitationPage extends StatelessWidget {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: OutlinedButton(
-                                    onPressed: () =>
-                                        controller.cancelInvite(invite.user1?.id ?? ''),
+                                    onPressed: () => controller.cancelInvite(
+                                      invite.user1?.id ?? '',
+                                    ),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.red,
                                       side: const BorderSide(color: Colors.red),

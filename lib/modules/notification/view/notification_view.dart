@@ -168,8 +168,6 @@ class _NotificationsPageState extends State<NotificationsPage>
     );
   }
 
-  String imageUrl = ApiEndpoints.imgUrl;
-
   String getFullImageUrl(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) {
       return "https://via.placeholder.com/150";
@@ -179,7 +177,7 @@ class _NotificationsPageState extends State<NotificationsPage>
       return imagePath;
     }
 
-    return "$imageUrl$imagePath";
+    return resolveImageUrl(imagePath);
   }
 
   /// 🔹 ALL TAB (Combine all notifications)
