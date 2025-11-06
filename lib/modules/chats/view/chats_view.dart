@@ -10,6 +10,8 @@ import 'package:shyeyes/modules/widgets/Zego_service.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import '../controller/chat_controller.dart';
 import '../../profile/controller/profile_controller.dart';
+import '../../about/controller/block_controller.dart';
+import '../../blockedUsers/controller/blocked_controller.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverId;
@@ -38,6 +40,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final ScrollController scrollCtrl = ScrollController();
   final ActivePlanController activePlanController = Get.find();
   final FriendController friendController = Get.put(FriendController());
+  final BlockController blockController = Get.put(BlockController());
+  final BlockedUserController blockedController = Get.put(BlockedUserController());
 
   late String currentUserId;
   late String receiverId;
@@ -138,6 +142,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         });
       }
     });
+
+    // Initialize block status
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      blockController.isBlocked.value = blockedController.blockedUsers.any(
+        (user) => user.id == receiverId,
+      );
+    });
   }
 
   void _initializeAnimations() {
@@ -169,6 +180,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // Send message using controller
     controller.sendMessage(text);
     msgCtrl.clear();
+
+    // Silent refresh after sending message
+    silentRefresh();
 
     // Scroll to bottom
     Future.delayed(const Duration(milliseconds: 200), () {
@@ -273,14 +287,29 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             onSelected: (value) {
               if (value == 'clear_chat') {
                 _showClearChatConfirmation();
+              } else if (value == 'block_user') {
+                _showBlockUserConfirmation();
               }
             },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'clear_chat',
-                child: Text('Clear Chat'),
-              ),
-            ],
+            itemBuilder: (BuildContext context) {
+              List<PopupMenuItem<String>> items = [
+                const PopupMenuItem<String>(
+                  value: 'clear_chat',
+                  child: Text('Clear Chat'),
+                ),
+              ];
+              if (friendshipStatus == "friend" || blockController.isBlocked.value) {
+                items.add(
+                  PopupMenuItem<String>(
+                    value: 'block_user',
+                    child: Obx(() => Text(
+                      blockController.isBlocked.value ? 'Unblock' : 'Block',
+                    )),
+                  ),
+                );
+              }
+              return items;
+            },
           ),
         ],
       ),
@@ -331,49 +360,88 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     );
                   }
 
-                  return ListView.builder(
-                    controller: scrollCtrl,
-                    padding: const EdgeInsets.all(8),
-                    itemCount: controller.messages.length,
-                    itemBuilder: (context, index) {
-                      final msg = controller.messages[index];
-                      final isMe = msg.from == currentUserId;
+                  return RefreshIndicator(
+                    onRefresh: silentRefresh,
+                    child: ListView.builder(
+                      controller: scrollCtrl,
+                      padding: const EdgeInsets.all(8),
+                      itemCount: controller.messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = controller.messages[index];
+                        final isMe = msg.from == currentUserId;
 
-                      return _buildMessageBubble(msg, isMe, theme);
-                    },
+                        return _buildMessageBubble(msg, isMe, theme);
+                      },
+                    ),
                   );
                 }),
               ),
-              Container(
-                padding: EdgeInsets.only(
-                  left: 8,
-                  right: 8,
-                  top: 10,
-                  bottom: 10 + MediaQuery.of(context).padding.bottom,
-                ),
-                color: theme.colorScheme.secondary,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: msgCtrl,
-                        decoration: InputDecoration(
-                          hintText: 'Type a message...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
+              Obx(() {
+                if (blockController.isBlocked.value) {
+                  return Container(
+                    padding: EdgeInsets.only(
+                      left: 8,
+                      right: 8,
+                      top: 10,
+                      bottom: 10 + MediaQuery.of(context).padding.bottom,
+                    ),
+                    color: Colors.redAccent,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: const Text(
+                            "You have blocked this user. Tap to unblock and start chatting.",
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-                      ),
+                        TextButton(
+                          onPressed: () async {
+                            await blockController.unblockUser(receiverId);
+                            await blockedController.fetchBlockedUsers();
+                            blockController.isBlocked.value = false;
+                            Get.snackbar("Success", "User unblocked successfully");
+                          },
+                          child: const Text(
+                            "Unblock",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    IconButton(
-                      icon: const Icon(Icons.send),
-                      color: theme.colorScheme.primary,
-                      onPressed: _sendMessage,
+                  );
+                } else {
+                  return Container(
+                    padding: EdgeInsets.only(
+                      left: 8,
+                      right: 8,
+                      top: 10,
+                      bottom: 10 + MediaQuery.of(context).padding.bottom,
                     ),
-                  ],
-                ),
-              ),
+                    color: theme.colorScheme.secondary,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: msgCtrl,
+                            decoration: InputDecoration(
+                              hintText: 'Type a message...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.send),
+                          color: theme.colorScheme.primary,
+                          onPressed: _sendMessage,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              }),
             ],
           ),
         ],
@@ -671,6 +739,46 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 // The UI will be cleared automatically since controller.messages.clear() is called in clearChat
               },
               child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showBlockUserConfirmation() {
+    final isBlocked = blockController.isBlocked.value;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(isBlocked ? 'Unblock User' : 'Block User'),
+          content: Text(
+            isBlocked
+                ? 'Are you sure you want to unblock this user? You will be able to chat with them again.'
+                : 'Are you sure you want to block this user? You will no longer receive messages from them.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close the dialog
+                if (isBlocked) {
+                  await blockController.unblockUser(receiverId);
+                  blockController.isBlocked.value = false;
+                } else {
+                  await blockController.blockUser(receiverId);
+                  blockController.isBlocked.value = true;
+                }
+                // Refresh the blocked users list
+                await blockedController.fetchBlockedUsers();
+              },
+              child: Text(isBlocked ? 'Unblock' : 'Block'),
             ),
           ],
         );

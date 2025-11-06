@@ -304,13 +304,13 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
                   ),
                 ),
 
-                // Block / Unblock Button - Only show if friendship status is friend
+                // Block / Unblock Button - Show if friendship status is friend or blocked
                 Obx(() {
                   final profileData = controller.aboutModel.value?.user;
                   final status = profileData?.friendshipStatus?.toLowerCase() ?? "";
                   final isFriend = status == "friend";
 
-                  if (!isFriend) return const SizedBox.shrink();
+                  if (!(isFriend || status == "blocked")) return const SizedBox.shrink();
 
                   final isBlockedFromApi = status == "blocked";
 

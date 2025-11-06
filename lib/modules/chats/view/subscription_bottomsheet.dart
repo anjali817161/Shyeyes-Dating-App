@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shyeyes/modules/payment/view/payment_view.dart';
 import 'package:shyeyes/modules/subscription/controller/subscription_controller.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
+import 'package:shyeyes/modules/profile/view/current_plan.dart';
 
 class SubscriptionBottomSheet extends StatefulWidget {
   const SubscriptionBottomSheet({super.key});
@@ -13,6 +15,7 @@ class SubscriptionBottomSheet extends StatefulWidget {
 
 class _SubscriptionBottomSheetState extends State<SubscriptionBottomSheet> {
   final PlanController planController = Get.put(PlanController());
+  final ActivePlanController activePlanController = Get.find();
   late PageController pageController;
   final RxInt currentPage = 0.obs;
 
@@ -402,7 +405,11 @@ class _SubscriptionBottomSheetState extends State<SubscriptionBottomSheet> {
 
                 Navigator.pop(context); // Close the dialog before hitting API
                 await planController.purchasePlan(planId);
-                Get.back(); // Close the bottom sheet if successful
+                // Refresh active plan
+                await activePlanController.fetchActivePlan();
+                Get.snackbar("Success", "Plan purchased successfully!");
+                // Navigate to active plan bottom sheet
+                showPlanBottomSheet(context);
               },
               child: Text(
                 "Confirm Purchase",

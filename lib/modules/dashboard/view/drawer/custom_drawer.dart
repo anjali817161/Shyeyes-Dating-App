@@ -31,13 +31,6 @@ class CustomDrawer extends StatelessWidget {
           Get.to(() => UserProfilePage());
         },
       ),
-       _DrawerItem(
-        icon: Icons.note_alt_outlined,
-        label: 'My Plan',
-        ontap: () {
-          showPlanBottomSheet(context);
-        },
-      ),
       _DrawerItem(
         icon: Icons.handshake_rounded,
         label: 'Friend list',
@@ -111,6 +104,7 @@ class CustomDrawer extends StatelessWidget {
                 : _buildPlaceholderAvatar();
 
             return DrawerHeader(
+              margin: EdgeInsets.zero,
               decoration: const BoxDecoration(color: Color(0xFFDF314D)),
               child: Row(
                 children: [
@@ -161,6 +155,21 @@ class CustomDrawer extends StatelessWidget {
               ),
             );
           }),
+
+          /// Green bar for viewing active plan
+          GestureDetector(
+            onTap: () => showPlanBottomSheet(context),
+            child: Container(
+              width: double.infinity,
+              color: Colors.green,
+              padding: const EdgeInsets.all(8),
+              child: const Text(
+                'View your active plan',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
 
           /// Drawer Menu Items
           Expanded(

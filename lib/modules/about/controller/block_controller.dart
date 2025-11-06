@@ -39,4 +39,40 @@ class BlockController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  /// Block User
+  Future<void> blockUser(String userId) async {
+    await toggleBlockUser(userId);
+  }
+
+  /// Unblock User
+  Future<void> unblockUser(String userId) async {
+    await toggleBlockUser(userId);
+  }
+
+  /// Check if User is Blocked
+  Future<bool> isUserBlocked(String userId) async {
+    final token = await SharedPrefHelper.getToken() ?? '';
+
+    try {
+      final response = await http.get(
+        Uri.parse("https://shyeyes-b.onrender.com/api/friends/$userId/block"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data["blocked"] ?? false;
+      } else {
+        // Assume not blocked if API fails
+        return false;
+      }
+    } catch (e) {
+      // Assume not blocked on error
+      return false;
+    }
+  }
 }
