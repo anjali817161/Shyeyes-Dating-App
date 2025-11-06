@@ -304,11 +304,15 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
                   ),
                 ),
 
-                // Block / Unblock Button
+                // Block / Unblock Button - Only show if friendship status is friend
                 Obx(() {
                   final profileData = controller.aboutModel.value?.user;
-                  final isBlockedFromApi =
-                      profileData?.friendshipStatus?.toLowerCase() == "blocked";
+                  final status = profileData?.friendshipStatus?.toLowerCase() ?? "";
+                  final isFriend = status == "friend";
+
+                  if (!isFriend) return const SizedBox.shrink();
+
+                  final isBlockedFromApi = status == "blocked";
 
                   // Agar API se "Blocked" mila to wahi dikhao
                   final isBlocked =
@@ -523,39 +527,25 @@ Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.verce
     double size,
     VoidCallback onTap,
   ) {
-    return ValueListenableBuilder<double>(
-      valueListenable: _buttonScale,
-      builder: (context, scale, child) {
-        return GestureDetector(
-          onTapDown: (_) => _buttonScale.value = 0.9,
-          onTapUp: (_) {
-            _buttonScale.value = 1.0;
-            onTap();
-          },
-          onTapCancel: () => _buttonScale.value = 1.0,
-          child: AnimatedScale(
-            scale: scale,
-            duration: const Duration(milliseconds: 150),
-            child: Container(
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: 28,
-                backgroundColor: Colors.white,
-                child: Icon(icon, color: color, size: size),
-              ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+        child: CircleAvatar(
+          radius: 28,
+          backgroundColor: Colors.white,
+          child: Icon(icon, color: color, size: size),
+        ),
+      ),
     );
   }
 }

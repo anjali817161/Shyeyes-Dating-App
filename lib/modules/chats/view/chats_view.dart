@@ -91,18 +91,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     // Initial setup
     currentUserId = profileController.profile2.value?.data?.edituser?.id ?? "";
-
-    // Start auto-refresh
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      refreshChat();
-      _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-        if (mounted) {
-          silentRefresh();
-        } else {
-          timer.cancel();
-        }
-      });
-    });
     receiverId = widget.receiverId;
     receiverName = widget.receiverName;
     receiverImage = widget.receiverImage;
@@ -124,11 +112,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // Initialize light animations
     _initializeAnimations();
 
-    // Initialize chat
+    // Initialize chat asynchronously without blocking UI
     refreshChat();
 
     // Set up periodic refresh every 10 seconds
-    Timer.periodic(const Duration(seconds: 10), (timer) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
         silentRefresh();
       } else {
@@ -315,10 +303,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: Obx(() {
-                  if (controller.isLoading.value) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
                   if (controller.messages.isEmpty) {
                     return Center(
                       child: Column(

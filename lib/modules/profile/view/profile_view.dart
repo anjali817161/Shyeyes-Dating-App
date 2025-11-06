@@ -255,6 +255,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           "assets/images/png_editprofile.png",
                           height: 33,
                           width: 33,
+                          
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(
                               Icons.person,

@@ -8,6 +8,7 @@ import 'package:shyeyes/modules/pending_requests/view/pending_request_view.dart'
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/favourite/view/favourite_view.dart';
 import 'package:shyeyes/modules/invitation/view/invitation_view.dart';
+import 'package:shyeyes/modules/profile/view/current_plan.dart';
 import 'package:shyeyes/modules/profile/view/profile_view.dart';
 import 'package:shyeyes/modules/t&c/t&c.dart';
 import 'package:shyeyes/modules/widgets/api_endpoints.dart';
@@ -28,6 +29,13 @@ class CustomDrawer extends StatelessWidget {
         label: 'My Profile',
         ontap: () {
           Get.to(() => UserProfilePage());
+        },
+      ),
+       _DrawerItem(
+        icon: Icons.note_alt_outlined,
+        label: 'My Plan',
+        ontap: () {
+          showPlanBottomSheet(context);
         },
       ),
       _DrawerItem(
@@ -66,7 +74,7 @@ class CustomDrawer extends StatelessWidget {
         },
       ),
       _DrawerItem(
-        icon: Icons.description,
+        icon: Icons.description_outlined,
         label: 'Terms & Conditions',
         ontap: () {
           Get.to(() => const TermsAndConditions());
