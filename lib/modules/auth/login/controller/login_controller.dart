@@ -38,17 +38,18 @@ class LoginController extends GetxController {
       );
 
       print("Raw Response: ${response.body}");
+      print("Status Code: ${response.statusCode}");
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
         // ✅ Save token
         final token = data['token'];
-        if (token != null) {
+        if (token != null && token.toString().isNotEmpty) {
           await SharedPrefHelper.saveToken(token);
-          print("Token saved: $token");
+          print("🔑 Token saved: $token");
         }
 
-        // ✅ Save user details
+        // ✅ Save user details safely
         final user = data['user'];
         if (user != null) {
           await SharedPrefHelper.saveUserId(user['id'] ?? '');
@@ -58,17 +59,16 @@ class LoginController extends GetxController {
           print("saved:   ${user['id']}");
         }
 
-        Get.snackbar(
-          "Success",
-          data["message"] ?? "You are logged in successfully",
-          backgroundColor: Colors.green.shade100,
-          snackPosition: SnackPosition.TOP,
-        );
+        // Get.snackbar(
+        //   "Success",
+        //   data["message"] ?? "You are logged in successfully",
+        //   backgroundColor: Colors.green.shade100,
+        //   snackPosition: SnackPosition.TOP,
+        // );
 
         // ✅ Navigate to main screen
         Get.offAll(() => MainScaffold());
       } else {
-        // Non-200 response
         Get.snackbar(
           "Login Failed",
           data["message"] ?? "Invalid credentials",

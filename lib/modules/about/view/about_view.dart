@@ -265,14 +265,29 @@ class _AboutViewState extends State<AboutView> {
                 // Share Button
                 GestureDetector(
                   onTap: () {
+                    final profileName =
+                        profileData.name?.firstName ?? "someone special";
+
+                    final shareText =
+                        '''
+✨ Discover ${profileName}'s profile on ShyEyes! 💖
+
+ShyEyes connects you with genuine people looking for meaningful relationships. 
+Explore profiles, match based on your vibe, and start your story today! 🌸
+
+View ${profileName}'s profile here:
+https://shyeyes-frontend.vercel.app/shyeyes/profile/${profileData.id ?? ''}
+
+Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.vercel.app/shyeyes/
+''';
+
                     Share.share(
-                      'Check out ${profileData.name?.firstName ?? ""}\'s profile!',
-                      subject: 'Profile from ShyEyes',
+                      shareText,
+                      subject: 'Check out ${profileName} on ShyEyes 💘',
                     );
                   },
                   child: Container(
-                    width:
-                        double.infinity, // ✅ Make width same as other buttons
+                    width: double.infinity,
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
@@ -280,8 +295,7 @@ class _AboutViewState extends State<AboutView> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center, // ✅ Center icon + text
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.share, color: Colors.blueAccent),
                         const SizedBox(width: 8),
@@ -421,57 +435,7 @@ class _AboutViewState extends State<AboutView> {
     );
   }
 
-  // Widget _firstImpressionBox(ThemeData theme) {
-  //   return Container(
-  //     padding: const EdgeInsets.all(14),
-  //     decoration: BoxDecoration(
-  //       color: theme.colorScheme.surfaceVariant,
-  //       borderRadius: BorderRadius.circular(14),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text(
-  //           "Say something to break the ice!",
-  //           style: TextStyle(color: theme.colorScheme.onSurface),
-  //         ),
-  //         const SizedBox(height: 10),
-  //         Row(
-  //           children: [
-  //             Expanded(
-  //               child: TextField(
-  //                 style: TextStyle(color: theme.colorScheme.onSurface),
-  //                 decoration: InputDecoration(
-  //                   hintText: "Write a message...",
-  //                   hintStyle: TextStyle(
-  //                     color: theme.colorScheme.onSurface.withOpacity(0.6),
-  //                   ),
-  //                   filled: true,
-  //                   fillColor: theme.colorScheme.background,
-  //                   contentPadding: const EdgeInsets.symmetric(
-  //                     horizontal: 14,
-  //                     vertical: 12,
-  //                   ),
-  //                   border: OutlineInputBorder(
-  //                     borderRadius: BorderRadius.circular(30),
-  //                     borderSide: BorderSide(
-  //                       color: theme.colorScheme.outlineVariant,
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ),
-  //             ),
-  //             const SizedBox(width: 8),
-  //             IconButton(
-  //               onPressed: () {},
-  //               icon: Icon(Icons.send, color: theme.colorScheme.primary),
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+ 
 
   Widget _actionButton(
     ThemeData theme,

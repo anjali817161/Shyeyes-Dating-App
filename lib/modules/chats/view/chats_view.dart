@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
+import 'package:shyeyes/modules/chats/model/chat_model.dart';
+import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
+import 'package:shyeyes/modules/widgets/Zego_service.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import '../controller/chat_controller.dart';
 import '../../profile/controller/profile_controller.dart';
 
@@ -7,45 +13,115 @@ class ChatScreen extends StatefulWidget {
   final String receiverId;
   final String receiverName;
   final String receiverImage;
+  final bool isOnline;
+  final DateTime? lastSeen;
 
   const ChatScreen({
     Key? key,
     required this.receiverId,
     required this.receiverName,
     required this.receiverImage,
+    this.isOnline = false,
+    this.lastSeen,
   }) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final ChatController controller = Get.put(ChatController());
-  final ProfileController profileController =
-      Get.find(); // ✅ Get logged-in user
+  final ProfileController profileController = Get.find();
   final TextEditingController msgCtrl = TextEditingController();
   final ScrollController scrollCtrl = ScrollController();
+  final ActivePlanController activePlanController = Get.find();
+  final FriendController friendController = Get.put(FriendController());
 
   late String currentUserId;
   late String receiverId;
   late String receiverName;
   late String receiverImage;
+  late bool isOnline;
+  late DateTime? lastSeen;
+
+  // Light animation controllers
+  late AnimationController _bubbleController;
+  late AnimationController _floatingController;
+  late Animation<double> _bubbleAnimation;
+  late Animation<double> _floatingAnimation;
+
+  late dynamic receiverUser;
+  late String friendshipStatus;
 
   @override
   void initState() {
     super.initState();
 
-    // Get current user ID from ProfileController
-    currentUserId = profileController.profile2?.value?.data?.user?.id ?? "";
+    currentUserId = profileController.profile2?.value?.data?.edituser?.id ?? "";
     receiverId = widget.receiverId;
     receiverName = widget.receiverName;
     receiverImage = widget.receiverImage;
+    isOnline = widget.isOnline;
+    lastSeen = widget.lastSeen;
+
+    receiverUser = {
+      "id": receiverId,
+      "name": receiverName,
+      "profilePic": receiverImage,
+    };
+
+    // Determine friendship status
+    bool isFriend = friendController.friends.value.any(
+      (friend) => friend.userId == receiverId,
+    );
+    friendshipStatus = isFriend ? "friend" : "none";
+
+    // Initialize light animations
+    _initializeAnimations();
 
     // Initialize chat
     controller.initChat(
       receiverId: receiverId,
       receiverName: receiverName,
       receiverImage: receiverImage,
+      receiverUser: receiverUser,
+    );
+
+    // Scroll to bottom when messages are loaded or updated
+    ever(controller.messages, (messages) {
+      if (messages.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (scrollCtrl.hasClients) {
+            scrollCtrl.animateTo(
+              scrollCtrl.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    });
+  }
+
+  void _initializeAnimations() {
+    // Bubble floating animation
+    _bubbleController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _bubbleAnimation = Tween<double>(begin: -10, end: 10).animate(
+      CurvedAnimation(parent: _bubbleController, curve: Curves.easeInOut),
+    );
+
+    // Floating element animation
+    _floatingController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _floatingAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
     );
   }
 
@@ -66,6 +142,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   @override
+  void dispose() {
+    _bubbleController.dispose();
+    _floatingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -73,90 +156,433 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundImage: receiverImage.startsWith("http")
-                  ? NetworkImage(receiverImage)
-                  : AssetImage(receiverImage) as ImageProvider,
-            ),
-
-            const SizedBox(width: 10),
-            Text(receiverName),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (controller.messages.isEmpty) {
-                return const Center(
-                  child: Text("Let's break the ice by saying hii👋"),
-                );
-              }
-
-              return ListView.builder(
-                controller: scrollCtrl,
-                itemCount: controller.messages.length,
-                itemBuilder: (context, index) {
-                  final msg = controller.messages[index];
-                  final isMe = msg.from == currentUserId;
-
-                  return Align(
-                    alignment: isMe
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.all(8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isMe
-                            ? theme.colorScheme.primary
-                            : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        msg.message,
-                        style: TextStyle(
-                          color: isMe ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            color: Colors.white,
-            child: Row(
+            Stack(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: msgCtrl,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
+                CircleAvatar(
+                  radius: 25, // optional
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage:
+                      (receiverImage != null &&
+                          receiverImage.isNotEmpty &&
+                          receiverImage.startsWith("http"))
+                      ? NetworkImage(receiverImage)
+                      : null, // no image if empty
+                  child: (receiverImage == null || receiverImage.isEmpty)
+                      ? Icon(Icons.person, size: 25, color: Colors.grey[600])
+                      : null,
+                ),
+
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: isOnline ? Colors.green : Colors.grey,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  color: theme.colorScheme.primary,
-                  onPressed: _sendMessage,
+              ],
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(receiverName, style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 2),
+                Text(
+                  isOnline
+                      ? "Online"
+                      : "Last seen ${_formatLastSeen(lastSeen)}",
+                  style: TextStyle(fontSize: 12, color: Colors.grey[300]),
                 ),
               ],
             ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: () {
+              _handleAudioCall(receiverUser, friendshipStatus);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam),
+            onPressed: () {
+              _handleVideoCall(receiverUser, friendshipStatus);
+            },
+          ),
+        ],
+      ),
+
+      body: Stack(
+        children: [
+          // Background image
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/chat_back.jpeg"),
+                fit: BoxFit.cover, // fills entire container
+              ),
+            ),
+          ),
+
+          Column(
+            children: [
+              Expanded(
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (controller.messages.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _floatingAnimation,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _floatingAnimation.value,
+                                child: Icon(
+                                  Icons.chat_bubble_outline,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Let's break the ice by saying hii👋",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: scrollCtrl,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = controller.messages[index];
+                      final isMe = msg.from == currentUserId;
+
+                      return _buildMessageBubble(msg, isMe, theme);
+                    },
+                  );
+                }),
+              ),
+              Container(
+                padding: EdgeInsets.only(
+                  left: 8,
+                  right: 8,
+                  top: 10,
+                  bottom: 10 + MediaQuery.of(context).padding.bottom,
+                ),
+                color: theme.colorScheme.secondary,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: msgCtrl,
+                        decoration: InputDecoration(
+                          hintText: 'Type a message...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      color: theme.colorScheme.primary,
+                      onPressed: _sendMessage,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildLightBackgroundAnimation() {
+    final theme = Theme.of(context);
+
+    return IgnorePointer(
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          children: [
+            // Floating circles
+            for (int i = 0; i < 8; i++)
+              Positioned(
+                left: (i * 50) % MediaQuery.of(context).size.width,
+                top: (i * 70) % MediaQuery.of(context).size.height,
+                child: AnimatedBuilder(
+                  animation: _bubbleAnimation,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, _bubbleAnimation.value),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[100]?.withOpacity(0.3),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            // Floating dots
+            for (int i = 0; i < 12; i++)
+              Positioned(
+                left: (i * 40 + 20) % MediaQuery.of(context).size.width,
+                top: (i * 60 + 40) % MediaQuery.of(context).size.height,
+                child: AnimatedBuilder(
+                  animation: _floatingController,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: 0.1 + 0.1 * _floatingAnimation.value,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: theme.colorScheme.primary.withOpacity(0.2),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(MessageModel msg, bool isMe, ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.all(8),
+      child: Row(
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMe) ...[
+            CircleAvatar(
+              backgroundImage: receiverImage.startsWith("http")
+                  ? NetworkImage(receiverImage)
+                  : AssetImage(receiverImage) as ImageProvider,
+              radius: 16,
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? theme.colorScheme.primary
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft: isMe
+                          ? const Radius.circular(16)
+                          : const Radius.circular(4),
+                      bottomRight: isMe
+                          ? const Radius.circular(4)
+                          : const Radius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    msg.message,
+                    style: TextStyle(
+                      color: isMe ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTime(msg.timestamp),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      ),
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          msg.status == "read" ? Icons.done_all : Icons.done,
+                          size: 12,
+                          color: msg.status == "read"
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isMe) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              backgroundImage:
+                  profileController
+                          .profile2
+                          .value
+                          ?.data
+                          ?.edituser
+                          ?.profilePic !=
+                      null
+                  ? NetworkImage(
+                      "${ApiEndpoints.imgUrl}${profileController.profile2.value!.data!.edituser!.profilePic}",
+                    )
+                  : AssetImage("assets/images/default_profile.png")
+                        as ImageProvider,
+              radius: 16,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime timestamp) {
+    return '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatLastSeen(DateTime? lastSeen) {
+    if (lastSeen == null) return 'unknown';
+
+    final now = DateTime.now();
+    final difference = now.difference(lastSeen);
+
+    if (difference.inMinutes < 1) return 'just now';
+    if (difference.inMinutes < 60) return '${difference.inMinutes}m ago';
+    if (difference.inHours < 24) return '${difference.inHours}h ago';
+    return '${difference.inDays}d ago';
+  }
+
+  Future<void> _handleAudioCall(dynamic user, String status) async {
+    final name = user["name"] ?? "User";
+
+    // Check if user is friend
+    if (status.toLowerCase() != "friend") {
+      // Show subscription upgrade popup if not friend
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
+
+    // Check if user has active paid plan
+    if (!activePlanController.hasActivePaidPlan) {
+      // Show subscription upgrade popup
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
+
+    try {
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: false,
+        currentPlan: activePlanController.activePlan.value?.planType ?? "free",
+        isFriend: friendController.friends.value.any(
+          (friend) => friend.userId == user["id"],
+        ),
+      );
+    } catch (e) {
+      Get.snackbar("Error", "Failed to start audio call: $e");
+    }
+  }
+
+  Future<void> _handleVideoCall(dynamic user, String status) async {
+    final name = user["name"] ?? "User";
+
+    // Check if user is friend
+    if (status.toLowerCase() != "friend") {
+      // Show subscription upgrade popup if not friend
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
+
+    // Check if user has active paid plan
+    if (!activePlanController.hasActivePaidPlan) {
+      // Show subscription upgrade popup
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => const SubscriptionBottomSheet(),
+      );
+      return;
+    }
+
+    try {
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: true,
+        currentPlan: activePlanController.activePlan.value?.planType ?? "free",
+        isFriend: friendController.friends.value.any(
+          (friend) => friend.userId == user["id"],
+        ),
+      );
+    } catch (e) {
+      Get.snackbar("Error", "Failed to start video call: $e");
+    }
   }
 }

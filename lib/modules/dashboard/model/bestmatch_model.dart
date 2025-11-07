@@ -69,7 +69,7 @@ class BestmatchModel {
   final String? status;
   final List<Friend>? friendsList;
   final int? mutualFriendsCount;
-  final bool? likedByMe;
+  bool? likedByMe;
   final Location? location;
 
   BestmatchModel({

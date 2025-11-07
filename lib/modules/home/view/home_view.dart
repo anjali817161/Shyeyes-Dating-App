@@ -1,23 +1,26 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
 import 'package:shyeyes/modules/Voice_call/view/voice_call.dart';
 import 'package:shyeyes/modules/about/controller/about_controller.dart';
-import 'package:shyeyes/modules/about/model/about_model.dart';
 import 'package:shyeyes/modules/about/view/about_view.dart';
+
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/chats/view/heart_shape.dart';
 import 'package:shyeyes/modules/chats/view/subscription_bottomsheet.dart';
 import 'package:shyeyes/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:shyeyes/modules/dashboard/model/bestmatch_model.dart';
 import 'package:shyeyes/modules/dashboard/model/dashboard_model.dart';
-import 'package:shyeyes/modules/profile/view/current_plan.dart';
+import 'package:shyeyes/modules/profile/controller/current_plan_controller.dart';
+import 'package:shyeyes/modules/profile/controller/profile_controller.dart';
 import 'package:shyeyes/modules/videocall_screen/view/videocall.dart';
+import 'package:shyeyes/modules/widgets/Zego_service.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 
 enum HomeViewType { activeUsers, bestMatches }
 
@@ -31,42 +34,30 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final AboutController controller = Get.put(AboutController());
-  final ActiveUsersController usersController = Get.put(
-    ActiveUsersController(),
-  );
+  late final AboutController controller;
+  late final ActiveUsersController usersController;
+  final FriendController friendController = Get.put(
+    FriendController(),
+    permanent: true,
+  ); // ✅ Added
+
+  final activePlanController = Get.put(
+    ActivePlanController(),
+    permanent: true,
+  ); // ✅ Added
+
   final ValueNotifier<double> _buttonScale = ValueNotifier(1.0);
-
   int _currentIndex = 0;
-
-  // final AboutModel dummyUsers = AboutModel(
-  //   image: 'assets/images/profile_image1.png',
-  //   name: 'Shaan',
-  //   age: 25,
-  //   distance: '2 km away',
-  //   job: 'Software Engineer',
-  //   college: 'IIT Delhi',
-  //   location: 'New Delhi',
-  //   about: 'Loves traveling and coffee.',
-  //   interests: ['Music', 'Travel', 'Coding', 'Gaming'],
-  //   pets: 'Dog',
-  //   drinking: 'Socially',
-  //   smoking: 'No',
-  //   workout: 'Daily',
-  //   zodiac: 'Leo',
-  //   education: 'Masters',
-  //   vaccine: 'Yes',
-  //   communication: 'English, Hindi',
-  //   height: '',
-  //   active: '',
-  // );
 
   @override
   void initState() {
     super.initState();
+    controller = Get.put(AboutController(), permanent: true);
+    usersController = Get.put(ActiveUsersController(), permanent: true);
+
     if (widget.viewType == HomeViewType.activeUsers) {
       usersController.fetchActiveUsers();
-    } else if (widget.viewType == HomeViewType.bestMatches) {
+    } else {
       usersController.fetchBestMatches();
     }
   }
@@ -108,8 +99,7 @@ class _HomeViewState extends State<HomeView> {
                 final String imageUrl;
                 final String name;
                 final int age;
-                final String location;
-                final String about;
+                String location;
                 final String userId;
 
                 if (widget.viewType == HomeViewType.activeUsers) {
@@ -118,7 +108,7 @@ class _HomeViewState extends State<HomeView> {
                   imageUrl =
                       (userData.profilePic != null &&
                           userData.profilePic!.isNotEmpty)
-                      ? "https://shyeyes-b.onrender.com/uploads/${userData.profilePic}"
+                      ? "${ApiEndpoints.imgUrl}${userData.profilePic}"
                       : "https://picsum.photos/seed/$index/600/800"; // stable fallback
 
                   name =
@@ -128,7 +118,9 @@ class _HomeViewState extends State<HomeView> {
                   if (userData.location != null) {
                     location =
                         '${userData.location!.city ?? ''}, ${userData.location!.country ?? ''}';
-                    if (location.trim() == ',') 'N/A';
+                    if (location.trim() == ',') {
+                      location = 'N/A';
+                    }
                   } else {
                     location = 'N/A';
                   }
@@ -140,14 +132,13 @@ class _HomeViewState extends State<HomeView> {
                   // Use only profilePic with a fallback
                   imageUrl =
                       (match.profilePic != null && match.profilePic!.isNotEmpty)
-                      ? "https://shyeyes-b.onrender.com/uploads/${match.profilePic}"
+                      ? "${ApiEndpoints.imgUrl}${match.profilePic}"
                       : "https://picsum.photos/seed/$index/600/800"; // stable fallback
 
                   age = match.age ?? 0;
                   location = match.location != null
                       ? "${match.location!.street ?? ''},${match.location!.city ?? ''},${match.location!.state ?? ''}, ${match.location!.country ?? ''}"
                       : 'N/A';
-                  about = match.bio ?? '';
                 }
 
                 return Stack(
@@ -155,7 +146,33 @@ class _HomeViewState extends State<HomeView> {
                   children: [
                     GestureDetector(
                       onDoubleTap: () async {
-                        await usersController.toggleFavorite(userId);
+                        // Optimistic update for double tap
+                        final currentUser = users[index];
+                        final wasLiked =
+                            widget.viewType == HomeViewType.activeUsers
+                            ? (currentUser as Users).likedByMe ?? false
+                            : (currentUser as BestmatchModel).likedByMe ??
+                                  false;
+
+                        // Flip locally
+                        if (widget.viewType == HomeViewType.activeUsers) {
+                          (currentUser as Users).likedByMe = !wasLiked;
+                        } else {
+                          (currentUser as BestmatchModel).likedByMe = !wasLiked;
+                        }
+
+                        // Call API
+                        try {
+                          await usersController.toggleFavorite(userId);
+                        } catch (e) {
+                          // Rollback
+                          if (widget.viewType == HomeViewType.activeUsers) {
+                            (currentUser as Users).likedByMe = wasLiked;
+                          } else {
+                            (currentUser as BestmatchModel).likedByMe =
+                                wasLiked;
+                          }
+                        }
                       },
                       child: imageUrl.isNotEmpty
                           ? Image.network(
@@ -501,142 +518,125 @@ class _HomeViewState extends State<HomeView> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Obx(() {
-                          //   // Determine users list based on viewType
-                          //   final users =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? usersController.users
-                          //       : usersController.matches;
-
-                          //   if (users.isEmpty) return const SizedBox.shrink();
-
-                          //   // Clamp _currentIndex to valid range
-                          //   final currentIndexSafe =
-                          //       (_currentIndex < users.length)
-                          //       ? _currentIndex
-                          //       : users.length - 1;
-
-                          //   // Get current user safely
-                          //   final currentUser =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? (users[currentIndexSafe] as Users)
-                          //       : (users[currentIndexSafe] as BestmatchModel);
-
-                          //   final String userId =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? (currentUser as Users).id ?? ""
-                          //       : (currentUser as BestmatchModel).id ?? "";
-
-                          //   // Determine if user is liked (API likedByMe or recently liked locally)
-                          //   final bool isLiked =
-                          //       widget.viewType == HomeViewType.activeUsers
-                          //       ? ((currentUser as Users).likedByMe ?? false) ||
-                          //             usersController.recentlyLikedUsers
-                          //                 .contains(userId)
-                          //       : ((currentUser as BestmatchModel).likedByMe ??
-                          //                 false) ||
-                          //             usersController.recentlyLikedUsers
-                          //                 .contains(userId);
-
-                          //   return buildActionButton(
-                          //     isLiked ? Icons.favorite : Icons.favorite_border,
-                          //     isLiked ? Colors.red : Colors.grey,
-                          //     30,
-                          //     () async {
-                          //       // Optimistic toggle
-                          //       if (isLiked) {
-                          //         usersController.recentlyLikedUsers.remove(
-                          //           userId,
-                          //         );
-                          //       } else {
-                          //         usersController.recentlyLikedUsers.add(
-                          //           userId,
-                          //         );
-                          //       }
-
-                          //       // Call API after local update
-                          //       try {
-                          //         await usersController.toggleFavorite(userId);
-                          //       } catch (e) {
-                          //         // Rollback if API fails
-                          //         if (isLiked) {
-                          //           usersController.recentlyLikedUsers.add(
-                          //             userId,
-                          //           );
-                          //         } else {
-                          //           usersController.recentlyLikedUsers.remove(
-                          //             userId,
-                          //           );
-                          //         }
-                          //       }
-                          //     },
-                          //   );
-                          // }),
                           Obx(() {
-                            final bool isLiked = usersController.isLiked(
-                              userId,
-                            );
+                            final users =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? usersController.users
+                                : usersController.matches;
+                            final currentUser = users[index];
+                            final bool isLiked =
+                                widget.viewType == HomeViewType.activeUsers
+                                ? ((currentUser as Users).likedByMe ?? false)
+                                : ((currentUser as BestmatchModel).likedByMe ??
+                                      false);
                             return buildActionButton(
                               Icons.favorite,
                               isLiked ? Colors.red : Colors.grey,
                               30,
-                              () => usersController.toggleFavorite(userId),
+                              () async {
+                                // Optimistic update for button tap
+                                final wasLiked = isLiked;
+
+                                // Flip locally
+                                if (widget.viewType ==
+                                    HomeViewType.activeUsers) {
+                                  (currentUser as Users).likedByMe = !wasLiked;
+                                } else {
+                                  (currentUser as BestmatchModel).likedByMe =
+                                      !wasLiked;
+                                }
+
+                                // Call API
+                                try {
+                                  await usersController.toggleFavorite(userId);
+                                } catch (e) {
+                                  // Rollback
+                                  if (widget.viewType ==
+                                      HomeViewType.activeUsers) {
+                                    (currentUser as Users).likedByMe = wasLiked;
+                                  } else {
+                                    (currentUser as BestmatchModel).likedByMe =
+                                        wasLiked;
+                                  }
+                                }
+                              },
                             );
                           }),
 
+                          // 🎧 Audio Call
                           buildActionButton(
                             Icons.call,
                             Colors.teal[400]!,
                             30,
-                            () {
-                              Get.to(AudioCallScreen());
-                              // _showSubscriptionDialog(context, theme, true);
-                            },
+                            () async =>
+                                await _makeAudioCall(user, userId, name),
                           ),
+
+                          // 🎥 Video Call
                           buildActionButton(
                             Icons.video_call,
                             Colors.lightBlueAccent,
                             32,
-                            () {
-                              Get.to(VideoCallScreen());
-                              //_showSubscriptionDialog(context, theme, false);
-                            },
+                            () async =>
+                                await _makeVideoCall(user, userId, name),
                           ),
-                          buildActionButton(Icons.chat, Colors.blueAccent, 26, () {
-                            final currentUser = users[_currentIndex];
+                          buildActionButton(
+                            Icons.chat,
+                            Colors.blueAccent,
+                            26,
+                            () async {
+                              final currentUser =
+                                  users[_currentIndex % users.length];
 
-                            String userId;
-                            String userName;
-                            String userImage;
-                            String status;
+                              String userId;
+                              String userName;
+                              String userImage;
+                              String status;
 
-                            if (widget.viewType == HomeViewType.activeUsers) {
-                              final Users u = currentUser as Users;
-                              userId = u.id ?? '';
-                              userName =
-                                  "${u.name?.firstName ?? ''} ${u.name?.lastName ?? ''}";
-                              userImage =
-                                  (u.profilePic != null &&
-                                      u.profilePic!.isNotEmpty)
-                                  ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
-                                  : "https://picsum.photos/seed/0/600/800";
-                              status = (u.friendshipStatus ?? 'none')
-                                  .toLowerCase();
-                            } else {
-                              final BestmatchModel u =
-                                  currentUser as BestmatchModel;
-                              userId = u.id ?? '';
-                              userName = u.name ?? '';
-                              userImage =
-                                  (u.profilePic != null &&
-                                      u.profilePic!.isNotEmpty)
-                                  ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
-                                  : "https://picsum.photos/seed/0/600/800";
-                              status = (u.status ?? 'none').toLowerCase();
-                            }
+                              if (widget.viewType == HomeViewType.activeUsers) {
+                                final Users u = currentUser as Users;
+                                userId = u.id ?? '';
+                                userName =
+                                    "${u.name?.firstName ?? ''} ${u.name?.lastName ?? ''}";
+                                userImage =
+                                    (u.profilePic != null &&
+                                        u.profilePic!.isNotEmpty)
+                                    ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
+                                    : "https://picsum.photos/seed/0/600/800";
+                                status = (u.friendshipStatus ?? 'none')
+                                    .toLowerCase();
+                              } else {
+                                final BestmatchModel u =
+                                    currentUser as BestmatchModel;
+                                userId = u.id ?? '';
+                                userName = u.name ?? '';
+                                userImage =
+                                    (u.profilePic != null &&
+                                        u.profilePic!.isNotEmpty)
+                                    ? "https://shyeyes-b.onrender.com/uploads/${u.profilePic}"
+                                    : "https://picsum.photos/seed/0/600/800";
+                                status = (u.status ?? 'none').toLowerCase();
+                              }
 
-                            if (status == 'friend' || status == 'accepted') {
-                              // ✅ Navigate to ChatScreen
+                              // 🔍 Check friendship
+                              bool isFriend =
+                                  status == 'friend' || status == 'accepted';
+
+                              // 🔍 Check active plan
+                              bool hasPlan =
+                                  activePlanController.activePlan.value != null;
+
+                              // ❌ Show popup if not allowed
+                              if (!hasPlan || !isFriend) {
+                                _showPlanOrFriendPopup(
+                                  userName: userName,
+                                  hasPlan: hasPlan,
+                                  isFriend: isFriend,
+                                );
+                                return;
+                              }
+
+                              // ✅ Both conditions passed — go to chat
                               Get.to(
                                 () => ChatScreen(
                                   receiverId: userId.toString(),
@@ -644,21 +644,8 @@ class _HomeViewState extends State<HomeView> {
                                   receiverImage: userImage,
                                 ),
                               );
-                            } else {
-                              // ❌ Show popup
-                              Get.defaultDialog(
-                                title: 'Not Friends Yet',
-                                middleText:
-                                    'You are not friends yet. Please send a friend request first.',
-                                textConfirm: 'Send Request',
-                                textCancel: 'Cancel',
-                                onConfirm: () async {
-                                  await usersController.sendRequest(userId);
-                                  Get.back();
-                                },
-                              );
-                            }
-                          }),
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -670,7 +657,13 @@ class _HomeViewState extends State<HomeView> {
               unlimitedMode: true,
               initialPage: 0,
               onSlideChanged: (index) {
-                setState(() => _currentIndex = index);
+                final totalUsers = widget.viewType == HomeViewType.activeUsers
+                    ? usersController.users.length
+                    : usersController.matches.length;
+
+                setState(() {
+                  _currentIndex = totalUsers > 0 ? index % totalUsers : 0;
+                });
               },
             ),
             Positioned(
@@ -692,16 +685,69 @@ class _HomeViewState extends State<HomeView> {
                         onPressed: () {
                           if (users.isEmpty) return;
                           final currentUser = users[_currentIndex];
-                          final String shareText =
-                              widget.viewType == HomeViewType.activeUsers
-                              ? "${(currentUser as Users).name ?? ''}, ${(currentUser).age}\n${(currentUser).location != null ? "${(currentUser).location!.city ?? ''}, ${(currentUser).location!.country ?? ''}" : ''}\n\nCheck out this profile on ShyEyes App!"
-                              : "${(currentUser as BestmatchModel).name ?? ''}, ${(currentUser).age}\n\nCheck out this profile on ShyEyes App!";
 
-                          Share.share(shareText);
+                          final String profileName;
+                          final String id;
+
+                          if (widget.viewType == HomeViewType.activeUsers) {
+                            final Users user = currentUser as Users;
+                            profileName =
+                                user.name?.firstName ?? "someone special";
+                            id = user.id ?? '';
+                          } else {
+                            final BestmatchModel user =
+                                currentUser as BestmatchModel;
+                            profileName = user.name ?? "someone special";
+                            id = user.id ?? '';
+                          }
+
+                          final shareText =
+                              '''
+✨ Discover ${profileName}'s profile on ShyEyes! 💖
+
+ShyEyes connects you with genuine people looking for meaningful relationships. 
+Explore profiles, match based on your vibe, and start your story today! 🌸
+
+View ${profileName}'s profile here:
+https://www.shyeyes.com/profile/${id}
+
+Join now and see who’s waiting to meet you 👉 https://shyeyes-frontend.vercel.app/shyeyes/
+''';
+
+                          Share.share(
+                            shareText,
+                            subject: 'Check out ${profileName} on ShyEyes 💘',
+                          );
                         },
                       ),
                       const SizedBox(width: 18),
-                      const Icon(Icons.flash_on, color: Colors.amber, size: 24),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.flash_on,
+                          color: Colors.amber,
+                          size: 24,
+                        ),
+                        onPressed: () async {
+                          // Reset the carousel to top
+                          setState(() => _currentIndex = 0);
+
+                          // Fetch fresh data based on view type
+                          if (widget.viewType == HomeViewType.activeUsers) {
+                            await usersController.fetchActiveUsers();
+                          } else {
+                            await usersController.fetchBestMatches();
+                          }
+
+                          // Optional: show a snackbar for feedback
+                          Get.snackbar(
+                            'Refreshed',
+                            'Feed has been updated!',
+                            snackPosition: SnackPosition.TOP,
+                            backgroundColor: Colors.black.withOpacity(0.7),
+                            colorText: Colors.white,
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ],
@@ -711,6 +757,211 @@ class _HomeViewState extends State<HomeView> {
         );
       }),
     );
+  }
+
+  Future<void> _makeAudioCall(
+    dynamic user,
+    String userId,
+    String userName,
+  ) async {
+    try {
+      bool isFriend = friendController.friends.any((f) => f.userId == userId);
+      bool hasActivePlan = activePlanController.activePlan.value != null;
+
+      if (!hasActivePlan || !isFriend) {
+        _showPlanOrFriendPopup(
+          userName: userName,
+          hasPlan: hasActivePlan,
+          isFriend: isFriend,
+        );
+        return;
+      }
+
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: false,
+        currentPlan:
+            activePlanController?.activePlan?.value?.planType ?? 'Free',
+        isFriend: isFriend,
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to start audio call: $e');
+    }
+  }
+
+  void _showPlanOrFriendPopup({
+    required String userName,
+    required bool hasPlan,
+    required bool isFriend,
+  }) {
+    // Dynamic message and button setup
+    String title = "";
+    String message = "";
+    String buttonText = "";
+    VoidCallback onPressed;
+
+    // --- Case handling ---
+    if (!hasPlan && !isFriend) {
+      title = "Unlock Connection with $userName 💝";
+      message =
+          "You need an active plan and friendship to start a call.\nGet a plan and send a friend request to connect!";
+      buttonText = "Get Plan";
+      onPressed = () {
+        Get.back();
+        showModalBottomSheet(
+          context: Get.context!,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (_) => const SubscriptionBottomSheet(),
+        );
+      };
+    } else if (!isFriend) {
+      title = "Connect with $userName 💝";
+      message =
+          "You need to be friends first to start a call.\nSend a friend request to begin your journey!";
+      buttonText = "OK, I Understand";
+      onPressed = () => Get.back();
+    } else if (!hasPlan) {
+      title = "Subscription Needed 💎";
+      message =
+          "You need an active plan to start a call with $userName.\nSubscribe now and stay connected!";
+      buttonText = "Get Plan";
+      onPressed = () {
+        Get.back();
+        showModalBottomSheet(
+          context: Get.context!,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (_) => const SubscriptionBottomSheet(),
+        );
+      };
+    } else {
+      // Safety fallback (shouldn’t occur)
+      title = "All Set!";
+      message = "You can start connecting now.";
+      buttonText = "OK";
+      onPressed = () => Get.back();
+    }
+
+    // --- Show dialog ---
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.pink.shade100, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Heart icon
+                Icon(
+                  Icons.favorite_border,
+                  color: Colors.pink.shade400,
+                  size: 40,
+                ),
+                const SizedBox(height: 16),
+
+                // Title
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.pink,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: onPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade400,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      buttonText,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _makeVideoCall(
+    dynamic user,
+    String userId,
+    String userName,
+  ) async {
+    try {
+      bool isFriend = friendController.friends.any((f) => f.userId == userId);
+      bool hasActivePlan = activePlanController.activePlan.value != null;
+
+      if (!hasActivePlan || !isFriend) {
+        _showPlanOrFriendPopup(
+          userName: userName,
+          hasPlan: hasActivePlan,
+          isFriend: isFriend,
+        );
+        return;
+      }
+
+      if (!isFriend) {
+        Get.snackbar('Warning', '⚠️ You are not a friend!');
+        return;
+      }
+
+      if (!hasActivePlan) {
+        _showSubscriptionDialog(context, Theme.of(context), false);
+        return;
+      }
+
+      await ZegoService.startCall(
+        targetUser: user,
+        isVideoCall: true,
+        currentPlan:
+            activePlanController?.activePlan?.value?.planType ?? 'Free',
+        isFriend: friendController.friends.any((f) => f.userId == userId),
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to start video call: $e');
+    }
   }
 
   void _showSubscriptionDialog(
@@ -792,20 +1043,24 @@ class _HomeViewState extends State<HomeView> {
     IconData icon,
     Color color,
     double size,
-    VoidCallback onTap,
-  ) {
+    VoidCallback callback, {
+    bool disabled = false,
+  }) {
     return ValueListenableBuilder<double>(
       valueListenable: _buttonScale,
       builder: (context, scale, child) {
         return GestureDetector(
-          onTapDown: (_) => _buttonScale.value = 0.9,
-          onTapUp: (_) {
-            _buttonScale.value = 1.0;
-            onTap();
-          },
-          onTapCancel: () => _buttonScale.value = 1.0,
+          onTapDown: disabled ? null : (_) => _buttonScale.value = 0.9,
+          onTapUp: disabled
+              ? null
+              : (_) {
+                  _buttonScale.value = 1.0;
+                  callback();
+                },
+          onTapCancel: disabled ? null : () => _buttonScale.value = 1.0,
+          onTap: disabled ? null : callback,
           child: AnimatedScale(
-            scale: scale,
+            scale: disabled ? 1.0 : scale,
             duration: const Duration(milliseconds: 150),
             child: Container(
               decoration: const BoxDecoration(
@@ -820,8 +1075,12 @@ class _HomeViewState extends State<HomeView> {
               ),
               child: CircleAvatar(
                 radius: 28,
-                backgroundColor: Colors.white,
-                child: Icon(icon, color: color, size: size),
+                backgroundColor: disabled ? Colors.grey.shade300 : Colors.white,
+                child: Icon(
+                  icon,
+                  color: disabled ? Colors.grey : color,
+                  size: size,
+                ),
               ),
             ),
           ),

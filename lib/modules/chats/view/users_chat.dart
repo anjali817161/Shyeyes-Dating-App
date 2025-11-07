@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shyeyes/modules/Friendlist/friendlistcontroller.dart';
+import 'package:shyeyes/modules/chats/controller/chat_controller.dart';
 import 'package:shyeyes/modules/chats/view/chats_view.dart';
 import 'package:shyeyes/modules/notification/view/notification_view.dart';
+import 'package:shyeyes/modules/widgets/api_endpoints.dart';
 import 'package:shyeyes/modules/widgets/pulse_animation.dart';
 
 class ChatLobbyPage extends StatefulWidget {
@@ -13,80 +16,43 @@ class ChatLobbyPage extends StatefulWidget {
 
 class _ChatLobbyPageState extends State<ChatLobbyPage> {
   final TextEditingController searchController = TextEditingController();
+  final FriendController friendsController = Get.put(FriendController());
+  final ChatController chatController = Get.put(ChatController());
   String searchQuery = "";
 
-  // 🔹 Dummy active users list
-  final List<Map<String, String>> activeUsers = [
-    {
-      "name": "Amit",
-      "profilePic": "https://randomuser.me/api/portraits/men/31.jpg",
-    },
-    {
-      "name": "Sneha",
-      "profilePic": "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    {
-      "name": "Ravi",
-      "profilePic": "https://randomuser.me/api/portraits/men/56.jpg",
-    },
-    {
-      "name": "Neha",
-      "profilePic": "https://randomuser.me/api/portraits/women/21.jpg",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    chatController.fetchConversations();
+    // Update online status periodically
+    _updateOnlineStatus();
+  }
 
-  // 🔹 Dummy chat list
-  final List<Map<String, dynamic>> chats = [
-    {
-      "userName": "Amit Sharma",
-      "userId": "1",
-      "profilePic": "https://randomuser.me/api/portraits/men/31.jpg",
-      "lastMessage": "Hey! How are you?",
-      "lastMessageTime": "10:20 AM",
-      "isRead": false,
-    },
-    {
-      "userName": "Sneha Kapoor",
-      "userId": "2",
-      "profilePic": "https://randomuser.me/api/portraits/women/44.jpg",
-      "lastMessage": "Let's meet tomorrow.",
-      "lastMessageTime": "9:50 AM",
-      "isRead": true,
-    },
-    {
-      "userName": "Ravi Verma",
-      "userId": "3",
-      "profilePic": "https://randomuser.me/api/portraits/men/56.jpg",
-      "lastMessage": "Did you check my message?",
-      "lastMessageTime": "Yesterday",
-      "isRead": false,
-    },
-    {
-      "userName": "Neha Singh",
-      "userId": "4",
-      "profilePic": "https://randomuser.me/api/portraits/women/21.jpg",
-      "lastMessage": "See you soon 💬",
-      "lastMessageTime": "Monday",
-      "isRead": true,
-    },
-  ];
+  void _updateOnlineStatus() {
+    // Update online status every 30 seconds
+    Future.delayed(const Duration(seconds: 30), () {
+      if (mounted) {
+        friendsController.fetchFriends();
+        _updateOnlineStatus();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final filteredChats = chats
+    final filteredFriends = friendsController.friends
         .where(
-          (chat) => chat["userName"].toString().toLowerCase().contains(
-            searchQuery.toLowerCase(),
-          ),
+          (friend) =>
+              friend.name!.toLowerCase().contains(searchQuery.toLowerCase()),
         )
         .toList();
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.secondaryContainer,
+      backgroundColor: theme.colorScheme.secondary,
       appBar: AppBar(
         title: const Text(
-          "Chats",
+          "Messages",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: theme.colorScheme.primary,
@@ -102,86 +68,108 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
         children: [
           // 🔍 Search bar
           Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: "Search chats...",
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value;
-                });
-              },
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: "Search friends...",
+                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value;
+                  });
+                },
+              ),
             ),
           ),
 
-          // 🟢 Active users row
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(left: 12),
-              scrollDirection: Axis.horizontal,
-              itemCount: activeUsers.length,
-              itemBuilder: (context, index) {
-                final user = activeUsers[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Column(
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.colorScheme.primary,
-                                width: 1,
+          // 📱 Friends list header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Your Friends",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                Text(
+                  "${filteredFriends.length} friends",
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 👥 Full-width friends list
+          Expanded(
+            child: filteredFriends.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 80,
+                          color: Colors.grey.shade300,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          searchQuery.isEmpty
+                              ? "No friends yet"
+                              : "No friends found",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        if (searchQuery.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              "Start adding friends to chat with them",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade400,
                               ),
-                              color: Colors.white,
-                            ),
-                            child: CircleAvatar(
-                              radius: 28,
-                              backgroundImage: NetworkImage(
-                                user["profilePic"]!,
-                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          // 💚 Blinking online dot
-                          Positioned(bottom: 4, right: 4, child: BlinkingDot()),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        user["name"]!,
-                        style: const TextStyle(fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // 💬 Chat list
-          Expanded(
-            child: filteredChats.isEmpty
-                ? const Center(child: Text("No chats yet."))
+                      ],
+                    ),
+                  )
                 : ListView.builder(
-                    itemCount: filteredChats.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    itemCount: filteredFriends.length,
                     itemBuilder: (context, index) {
-                      final chat = filteredChats[index];
+                      final user = filteredFriends[index];
+                      final isOnline = user.isOnline ?? false;
+                      final lastSeen = user.lastSeen;
+
                       return Container(
                         margin: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -189,55 +177,134 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            radius: 26,
-                            backgroundImage: NetworkImage(chat["profilePic"]!),
-                          ),
-                          title: Text(
-                            chat["userName"],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            chat["lastMessage"],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: chat["isRead"]
-                                  ? Colors.grey
-                                  : Colors.black,
-                              fontWeight: chat["isRead"]
-                                  ? FontWeight.normal
-                                  : FontWeight.bold,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              Get.to(
+                                () => ChatScreen(
+                                  receiverId: user.userId ?? "",
+                                  receiverName: user.name ?? "User",
+                                  receiverImage:
+                                      "${ApiEndpoints.imgUrl}${user.profilePic}",
+                                  isOnline: isOnline,
+                                  lastSeen: lastSeen,
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  // Profile picture with online status
+                                  Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: theme.colorScheme.primary
+                                                .withOpacity(0.3),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 28,
+                                          backgroundImage: NetworkImage(
+                                            "${ApiEndpoints.imgUrl}${user.profilePic}",
+                                            headers: {
+                                              'Accept': 'application/json',
+                                            },
+                                          ),
+                                          onBackgroundImageError:
+                                              (exception, stackTrace) {
+                                                // Handle image loading error
+                                              },
+                                        ),
+                                      ),
+                                      // Online status indicator
+                                      Positioned(
+                                        bottom: 2,
+                                        right: 2,
+                                        child: Container(
+                                          width: 16,
+                                          height: 16,
+                                          decoration: BoxDecoration(
+                                            color: isOnline
+                                                ? Colors.green
+                                                : Colors.grey,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: isOnline
+                                              ? BlinkingDot()
+                                              : null,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 16),
+
+                                  // User info
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          user.name ?? "User",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "Online",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Chat icon
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.chat_bubble_outline,
+                                      color: theme.colorScheme.primary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                chat["lastMessageTime"],
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              if (!chat["isRead"])
-                                const Icon(
-                                  Icons.circle,
-                                  color: Colors.blue,
-                                  size: 10,
-                                ),
-                            ],
-                          ),
-                          onTap: () {
-                            // ✅ Navigate to ChatScreen (dummy)
-                            Get.to(
-                              () => ChatScreen(
-                                receiverId: chat["userId"],
-                                receiverName: chat["userName"],
-                                receiverImage: chat["profilePic"],
-                              ),
-                            );
-                          },
                         ),
                       );
                     },
@@ -247,4 +314,23 @@ class _ChatLobbyPageState extends State<ChatLobbyPage> {
       ),
     );
   }
+
+  // String _formatLastSeen(DateTime? lastSeen) {
+  //   if (lastSeen == null) return 'Last seen unknown';
+
+  //   final now = DateTime.now();
+  //   final difference = now.difference(lastSeen);
+
+  //   if (difference.inMinutes < 1) return 'Last seen just now';
+  //   if (difference.inMinutes < 60) {
+  //     return 'Last seen ${difference.inMinutes}m ago';
+  //   }
+  //   if (difference.inHours < 24) {
+  //     return 'Last seen ${difference.inHours}h ago';
+  //   }
+  //   if (difference.inDays < 7) {
+  //     return 'Last seen ${difference.inDays}d ago';
+  //   }
+  //   return 'Last seen ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  // }
 }

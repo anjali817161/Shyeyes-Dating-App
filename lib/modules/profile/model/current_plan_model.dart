@@ -47,8 +47,9 @@ class Plan {
       price: json['price'],
       durationDays: json['durationDays'],
       isActive: json['isActive'],
-      startDate:
-          json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate'])
+          : null,
       endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
       limits: json['limits'] != null ? Limits.fromJson(json['limits']) : null,
       usage: json['usage'] != null ? Usage.fromJson(json['usage']) : null,
@@ -81,10 +82,7 @@ class Name {
   Name({this.firstName, this.lastName});
 
   factory Name.fromJson(Map<String, dynamic> json) {
-    return Name(
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-    );
+    return Name(firstName: json['firstName'], lastName: json['lastName']);
   }
 }
 
@@ -103,9 +101,9 @@ class Limits {
 
   factory Limits.fromJson(Map<String, dynamic> json) {
     return Limits(
-      messagesPerDay: json['messagesPerDay'],
-      videoTimeSeconds: json['videoTimeSeconds'],
-      audioTimeSeconds: json['audioTimeSeconds'],
+      messagesPerDay: json['totalMessagesAllowed'],
+      videoTimeSeconds: json['totalVideoTimeSeconds'],
+      audioTimeSeconds: json['totalAudioTimeSeconds'],
       matchesAllowed: json['matchesAllowed'],
     );
   }
@@ -122,22 +120,23 @@ class Usage {
     return Usage(
       audio: json['audio'] != null ? UsageDetail.fromJson(json['audio']) : null,
       video: json['video'] != null ? UsageDetail.fromJson(json['video']) : null,
-      messages:
-          json['messages'] != null ? UsageDetail.fromJson(json['messages']) : null,
+      messages: json['messages'] != null
+          ? UsageDetail.fromJson(json['messages'])
+          : null,
     );
   }
 }
 
 class UsageDetail {
   int? used;
-  int? remaining;
+  String? remaining;
 
   UsageDetail({this.used, this.remaining});
 
   factory UsageDetail.fromJson(Map<String, dynamic> json) {
     return UsageDetail(
       used: json['used'],
-      remaining: json['remaining'],
+      remaining: json['remaining'].toString(),
     );
   }
 }

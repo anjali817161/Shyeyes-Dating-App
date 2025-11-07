@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:shyeyes/modules/profile/model/current_plan_model.dart';
 
 void showPlanBottomSheet(BuildContext context) {
-  final ActivePlanController controller = Get.put(ActivePlanController());
-
+final ActivePlanController controller = Get.put(ActivePlanController(), permanent: true);
+  controller.fetchActivePlan(); 
   showModalBottomSheet(
     backgroundColor: const Color(0xFFFFF3F3),
     context: context,
@@ -23,7 +23,12 @@ void showPlanBottomSheet(BuildContext context) {
           }
 
           // ✅ Use API plan or fallback Free plan
-          final plan = controller.activePlan.value ?? _getDefaultFreePlan();
+          final plan = controller.activePlan.value;
+
+          if (plan == null) {
+            // 🚫 No plan case
+            return _buildNoPlanView(context);
+          }
 
           return Container(
             constraints: BoxConstraints(
@@ -56,23 +61,88 @@ void showPlanBottomSheet(BuildContext context) {
   );
 }
 
-/// ✅ Default free plan model
-_getDefaultFreePlan() {
-  return Plan(
-    planType: "Free Plan",
-    price: 0,
-    durationDays: 30,
-    isActive: true,
-    startDate: DateTime.now(),
-    endDate: DateTime.now().add(const Duration(days: 30)),
-    limits: Limits(
-      messagesPerDay: 10,
-      videoTimeSeconds: 60 * 5,
-      audioTimeSeconds: 60 * 5,
-      matchesAllowed: 5,
+Widget _buildNoPlanView(BuildContext context) {
+  return Container(
+    height: MediaQuery.of(context).size.height * 0.45,
+    padding: const EdgeInsets.all(24),
+    decoration: const BoxDecoration(
+      color: Color(0xFFFFF3F3),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.lock_outline, size: 60, color: Color(0xFFDF314D)),
+        const SizedBox(height: 16),
+        const Text(
+          'No Active Plan',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Subscribe to a plan to unlock premium features.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (_) => const SubscriptionBottomSheet(),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDF314D),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Subscribe Now',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }
+
+// /// ✅ Default free plan model
+// _getDefaultFreePlan() {
+//   return Plan(
+//     planType: "Free Plan",
+//     price: 0,
+//     durationDays: 30,
+//     isActive: true,
+//     startDate: DateTime.now(),
+//     endDate: DateTime.now().add(const Duration(days: 30)),
+//     limits: Limits(
+//       messagesPerDay: 10,
+//       videoTimeSeconds: 60 * 5,
+//       audioTimeSeconds: 60 * 5,
+//       matchesAllowed: 5,
+//     ),
+//   );
+// }
 
 Widget _buildHeader(BuildContext context) {
   return Row(
@@ -285,80 +355,215 @@ Widget _buildFeaturesSection(Plan plan) {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
-        'Features',
+        'Plan Features & Usage',
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: Colors.black87,
         ),
       ),
-      const SizedBox(height: 10),
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.red.shade50,
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              _buildFeatureItem(
-                "Messages per day: ${plan.limits?.messagesPerDay ?? 0}",
+      const SizedBox(height: 12),
+
+      // Total Limits Section
+      _buildFeatureCategory(
+        title: "Total Limits",
+        icon: Icons.lock_outline,
+        children: [
+          _buildFeatureRow(
+            "Messages per day",
+            "${plan.limits?.messagesPerDay ?? 0}",
+            Icons.message,
+          ),
+          _buildFeatureRow(
+            "Video time",
+            "${(plan.limits?.videoTimeSeconds ?? 0) ~/ 60} mins",
+            Icons.video_call,
+          ),
+          _buildFeatureRow(
+            "Audio time",
+            "${(plan.limits?.audioTimeSeconds ?? 0) ~/ 60} mins",
+            Icons.mic,
+          ),
+          _buildFeatureRow(
+            "Matches allowed",
+            "${plan.limits?.matchesAllowed ?? "Unlimited"}",
+            Icons.favorite,
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 16),
+
+      // Usage Section - Only show if usage data exists
+      if (plan.usage != null)
+        _buildFeatureCategory(
+          title: "Current Usage",
+          icon: Icons.analytics_outlined,
+          children: [
+            if (plan.usage?.messages != null)
+              _buildUsageRow(
+                "Messages",
+                "${plan.usage?.messages?.used ?? 0}",
+                "${plan.usage?.messages?.remaining ?? 0}",
                 Icons.message,
               ),
-              _buildFeatureItem(
-                "Video time: ${(plan.limits?.videoTimeSeconds ?? 0) ~/ 60} mins",
-                Icons.video_call,
-              ),
-              _buildFeatureItem(
-                "Audio time: ${(plan.limits?.audioTimeSeconds ?? 0) ~/ 60} mins",
+            if (plan.usage?.audio != null)
+              _buildUsageRow(
+                "Audio",
+                "${plan.usage?.audio?.used ?? 0}",
+                "${plan.usage?.audio?.remaining ?? 0}",
                 Icons.mic,
               ),
-              _buildFeatureItem(
-                "Matches allowed: ${plan.limits?.matchesAllowed ?? "Unlimited"}",
-                Icons.favorite,
+            if (plan.usage?.video != null)
+              _buildUsageRow(
+                "Video",
+                "${plan.usage?.video?.used ?? 0}",
+                "${plan.usage?.video?.remaining ?? 0}",
+                Icons.video_call,
               ),
-            ],
-          ),
+          ],
         ),
-      ),
     ],
   );
 }
 
-Widget _buildFeatureItem(String text, IconData icon) {
+Widget _buildFeatureCategory({
+  required String title,
+  required IconData icon,
+  required List<Widget> children,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.red.shade50,
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category Header
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDF314D).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 16, color: const Color(0xFFDF314D)),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Features List
+          Column(children: children),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildFeatureRow(String feature, String value, IconData icon) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6.0),
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
     child: Row(
       children: [
         Container(
-          width: 26,
-          height: 26,
+          width: 28,
+          height: 28,
           decoration: BoxDecoration(
             color: Colors.green.shade50,
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 14, color: Colors.green.shade700),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Expanded(
           child: Text(
-            text,
+            feature,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade800,
             ),
           ),
         ),
-        Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.green.shade700,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildUsageRow(
+  String type,
+  String used,
+  String remaining,
+  IconData icon,
+) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Row(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 14, color: Colors.blue.shade700),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                type,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                "Used: $used • Remaining: $remaining",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     ),
   );

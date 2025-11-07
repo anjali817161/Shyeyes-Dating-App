@@ -5,7 +5,7 @@ class MessageModel {
   final String message;
   final DateTime timestamp;
   final String status;
-  final dynamic? remainingMessages;
+  final int? remainingMessages;
   final dynamic? messagesUsedTotal;
 
   MessageModel({
@@ -14,7 +14,7 @@ class MessageModel {
     required this.to,
     required this.message,
     required this.timestamp,
-    required this.status,
+    this.status = 'sent',
     this.remainingMessages,
     this.messagesUsedTotal,
   });
@@ -71,17 +71,19 @@ class MessageModel {
         json['deliveryStatus']?.toString() ??
         'pending';
 
+    int remaining = int.tryParse(json['remainingMessages'].toString()) ?? 0;
+
     // -------------------------------
     // Parse remainingMessages
     // -------------------------------
-    dynamic remaining;
-    final rm = json['remainingMessages'];
-    if (rm != null) {
-      if (rm is int)
-        remaining = rm;
-      else if (rm is String)
-        remaining = rm; // Keep "Unlimited" string
-    }
+    // dynamic remaining;
+    // final rm = json['remainingMessages'];
+    // if (rm != null) {
+    //   if (rm is int)
+    //     remaining = rm;
+    //   else if (rm is String)
+    //     remaining = rm; // Keep "Unlimited" string
+    // }
 
     // -------------------------------
     // Parse messagesUsedTotal
@@ -122,4 +124,25 @@ class MessageModel {
     'remainingMessages': remainingMessages,
     'messagesUsedTotal': messagesUsedTotal,
   };
+  MessageModel copyWith({
+    String? id,
+    String? from,
+    String? to,
+    String? message,
+    DateTime? timestamp,
+    String? status,
+    int? remainingMessages,
+    dynamic messagesUsedTotal,
+  }) {
+    return MessageModel(
+      id: id ?? this.id,
+      from: from ?? this.from,
+      to: to ?? this.to,
+      message: message ?? this.message,
+      timestamp: timestamp ?? this.timestamp,
+      status: status ?? this.status,
+      remainingMessages: remainingMessages ?? this.remainingMessages,
+      messagesUsedTotal: messagesUsedTotal ?? this.messagesUsedTotal,
+    );
+  }
 }

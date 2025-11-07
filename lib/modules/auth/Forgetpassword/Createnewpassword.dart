@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:shyeyes/modules/auth/Forgetpassword/controller/forgetpassword.dart';
 import 'package:shyeyes/modules/auth/login/view/login_view.dart';
 import 'package:shyeyes/modules/auth/signup/controller/signup_controller.dart';
+import 'package:shyeyes/modules/widgets/sharedPrefHelper.dart';
 
 class CreatePasswordBottomSheet {
   static void show(BuildContext context) {
@@ -26,118 +27,152 @@ class CreatePasswordBottomSheet {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  height: 5,
-                  width: 50,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                Text(
-                  "Create New Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: primary,
-                  ),
-                ),
-                const SizedBox(height: 24),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool newPasswordObscure = true;
+            bool confirmPasswordObscure = true;
 
-                // New Password
-                _buildTextField(
-                  context,
-                  controller: newPassCtrl,
-                  label: 'New Password',
-                  icon: Icons.lock,
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Enter new password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: 5,
+                      width: 50,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    Text(
+                      "Create New Password",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        color: primary,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                // Confirm Password
-                _buildTextField(
-                  context,
-                  controller: confirmPassCtrl,
-                  label: 'Confirm Password',
-                  icon: Icons.lock_outline,
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Confirm your password';
-                    }
-                    if (value != newPassCtrl.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
+                    // New Password
+                    _buildTextField(
+                      context,
+                      controller: newPassCtrl,
+                      label: 'New Password',
+                      icon: Icons.lock,
+                      obscureText: newPasswordObscure,
+                      onToggleVisibility: () => setState(
+                        () => newPasswordObscure = !newPasswordObscure,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Enter new password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
 
-                // Reset Button
-                SizedBox(
-                  width: double.infinity,
-                  child: Obx(
-                    () => ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    // Confirm Password
+                    _buildTextField(
+                      context,
+                      controller: confirmPassCtrl,
+                      label: 'Confirm Password',
+                      icon: Icons.lock_outline,
+                      obscureText: confirmPasswordObscure,
+                      onToggleVisibility: () => setState(
+                        () => confirmPasswordObscure = !confirmPasswordObscure,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Confirm your password';
+                        }
+                        if (value != newPassCtrl.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Reset Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: Obx(
+                        () => ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final email = controller.emailCtrl.text.trim();
+                            String finalEmail = email.isNotEmpty
+                                ? email
+                                : await SharedPrefHelper.getEmail() ?? '';
+                            if (_formKey.currentState!.validate()) {
+                              // Safely get email
+                              final emailFromCtrl = controller.emailCtrl.text
+                                  .trim();
+                              final savedEmail =
+                                  await SharedPrefHelper.getEmail();
+                              final finalEmail = emailFromCtrl.isNotEmpty
+                                  ? emailFromCtrl
+                                  : savedEmail ?? '';
+
+                              if (finalEmail.isEmpty) {
+                                Get.snackbar(
+                                  "Error",
+                                  "Email not found. Please restart the process.",
+                                );
+                                return;
+                              }
+                              controller.createNewPassword(
+                                newPassCtrl.text.trim(),
+                                confirmPassCtrl.text.trim(),
+                                finalEmail,
+                                context,
+                              );
+                            }
+                          },
+                          child: controller.isLoading.value
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Reset Password',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          controller.createNewPassword(
-                            newPassCtrl.text.trim(),
-                            confirmPassCtrl.text.trim(),
-                            context,
-                          );
-                        }
-                      },
-                      child: controller.isLoading.value
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              'Reset Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -149,6 +184,7 @@ class CreatePasswordBottomSheet {
     required String label,
     required IconData icon,
     bool obscureText = false,
+    VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
   }) {
     final primary = Theme.of(context).colorScheme.primary;
@@ -164,6 +200,15 @@ class CreatePasswordBottomSheet {
         labelText: label,
         labelStyle: TextStyle(color: primary),
         prefixIcon: Icon(icon, color: primary),
+        suffixIcon: onToggleVisibility != null
+            ? IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: primary,
+                ),
+                onPressed: onToggleVisibility,
+              )
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primary),
